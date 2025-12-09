@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { TbMenu3 } from "react-icons/tb";
 import { X, Bell } from "lucide-react";
-// import heartLogo from "/imgs/heart-logo.png";
-// import cure from "/imgs/Ellipse 1539.jpeg";
+
 
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
@@ -36,7 +35,7 @@ export default function Navbar() {
             />
           )}
           <img
-            src={'/imgs/Ellipse 1539.jpeg'}
+            src={'./imgs/Ellipse1539.jpeg'}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent"
           />

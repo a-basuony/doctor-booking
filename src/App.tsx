@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route} from "react-router-dom";
+import { Routes, Route} from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -15,8 +15,7 @@ import DoctorMapPage from "./pages/DoctorMapPage";
 import { PaymentPage } from "./pages/PaymentPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import { Toaster } from "react-hot-toast";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import FQAPage from "./pages/FQAPage";
 
 
 // Tailwind-matching theme
@@ -38,11 +37,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      <BrowserRouter>
         <Toaster position="top-right" reverseOrder={false} />
-
-        {/* Navbar here */}
-        <Navbar/>
 
         <Routes>
           {/* Main Routes */}
@@ -52,6 +47,7 @@ function App() {
           {/* Extra Routes */}
           <Route path="/doctor-details" element={<DoctorDetailsPage />} />
           <Route path="/map" element={<DoctorMapPage />} />
+           <Route path="/FQAPage" element={<FQAPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
 
@@ -60,10 +56,6 @@ function App() {
           <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
           <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
         </Routes>
-
-        {/* Footer here */}
-        <Footer/>
-      </BrowserRouter>
     </ThemeProvider>
   );
 }

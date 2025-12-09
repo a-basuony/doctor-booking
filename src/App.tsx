@@ -4,6 +4,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import OTPVerification from "./pages/auth/OTPVerification";
+import Home from "./pages/Home";
 import { ROUTES } from "./constants/routes";
 
 // Create a custom theme that matches Tailwind colors
@@ -74,11 +75,11 @@ function App() {
           <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
           <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
 
+          {/* Home Route */}
+          <Route path={ROUTES.HOME} element={<Home />} />
+
           {/* Default Route */}
-          <Route
-            path={ROUTES.HOME}
-            element={<Navigate to={ROUTES.SIGN_IN} replace />}
-          />
+          <Route path="*" element={<Navigate to={ROUTES.SIGN_IN} replace />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

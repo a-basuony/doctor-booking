@@ -1,11 +1,27 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import type { ReactNode } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../constants/routes";
 
 interface AuthLayoutProps {
   children: ReactNode;
+  noGoogle?: boolean;
 }
 
-const AuthLayout = ({ children }: AuthLayoutProps) => {
+const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
+  const navigate = useNavigate();
+  const [isSigningInWithGoogle, setIsSigningInWithGoogle] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setIsSigningInWithGoogle(true);
+    //todo: Google sign-in logic
+    setTimeout(() => {
+      setIsSigningInWithGoogle(false);
+      // Navigate to Home
+      navigate(ROUTES.HOME);
+    }, 1000);
+  };
   return (
     <Box
       sx={{
@@ -89,6 +105,39 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
           }}
         >
           {children}
+
+          {noGoogle ?? (
+            <>
+              <p className=" relative w-full h-[2px] bg-neutral-300 ">
+                <span className=" absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/2 bg-white text-neutral-300  w-6 h-6 rounded-full flex justify-center items-center">
+                  or
+                </span>
+              </p>
+
+              <Button
+                type="button"
+                fullWidth
+                variant="outlined"
+                size="small"
+                disabled={isSigningInWithGoogle}
+                onClick={handleGoogleSignIn}
+                sx={{ mt: 3, mb: 2, py: 1.5, textTransform: "capitalize" }}
+              >
+                <Box
+                  component="img"
+                  src={"/imgs/google.png"}
+                  alt="Google logo"
+                  sx={{
+                    objectFit: "contain",
+                    marginRight: "8px",
+                  }}
+                />
+                {isSigningInWithGoogle
+                  ? "Signing in..."
+                  : "Sign in With Google"}
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
     </Box>

@@ -2,6 +2,7 @@ import { Box, TextField, Button, Typography, Link } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
 import { signInSchema } from "../../utils/validation";
@@ -9,6 +10,7 @@ import { signInSchema } from "../../utils/validation";
 type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -20,6 +22,8 @@ const SignIn = () => {
   const onSubmit = async (data: SignInFormData) => {
     console.log("Sign in data:", data);
     //todo: sign-in logic
+    // Navigate to OTP verification
+    navigate(ROUTES.VERIFY_OTP);
   };
 
   return (
@@ -34,7 +38,7 @@ const SignIn = () => {
           Sign in
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Please Enter your phone number{" "}
+          Please enter your phone number and password{" "}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -48,14 +52,24 @@ const SignIn = () => {
             margin="normal"
             autoComplete="tel"
             size="small"
-            sx={{ borderRadius: "10px" }}
+          />
+          <TextField
+            {...register("password")}
+            fullWidth
+            label="Password"
+            type="password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            margin="normal"
+            autoComplete="current-password"
+            size="small"
           />
 
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            size="large"
+            size="small"
             disabled={isSubmitting}
             sx={{ mt: 2, mb: 2, py: 1.5, textTransform: "capitalize" }}
           >

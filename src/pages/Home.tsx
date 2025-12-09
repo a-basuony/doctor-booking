@@ -1,16 +1,12 @@
-import FQACard from "../components/Home/FQACard"
+import FQACard from "../components/Home/FQACard";
 
 const Home = () => {
   return (
     <div>
-
       {/* FQA */}
-      <FQACard/>
-
-
-
+      <FQACard />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

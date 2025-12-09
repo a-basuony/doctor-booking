@@ -55,9 +55,6 @@ function App() {
           <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
           <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
           <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
-
-          {/* Default */}
-          <Route path="*" element={<Navigate to={ROUTES.SIGN_IN} replace />} />
         </Routes>
 
         {/* Footer here */}

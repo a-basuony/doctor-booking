@@ -52,6 +52,7 @@ const SignUp = () => {
             margin="normal"
             autoComplete="name"
             size="small"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
           <TextField
             {...register("email")}
@@ -63,6 +64,7 @@ const SignUp = () => {
             margin="normal"
             autoComplete="email"
             size="small"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
           <TextField
             {...register("phone")}
@@ -74,6 +76,7 @@ const SignUp = () => {
             margin="normal"
             autoComplete="tel"
             size="small"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
             <TextField
@@ -85,6 +88,7 @@ const SignUp = () => {
               helperText={errors.password?.message}
               autoComplete="new-password"
               size="small"
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
             />
             <TextField
               {...register("confirmPassword")}
@@ -95,6 +99,7 @@ const SignUp = () => {
               helperText={errors.confirmPassword?.message}
               autoComplete="new-password"
               size="small"
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
             />
           </Stack>
 
@@ -104,7 +109,7 @@ const SignUp = () => {
             variant="contained"
             size="small"
             disabled={isSubmitting}
-            sx={{ mt: 3, mb: 2, py: 1.5, textTransform: "capitalize" }}
+            sx={{ mt: 3, mb: 2, py: 1.5, textTransform: "capitalize", borderRadius: "10px" }}
           >
             {isSubmitting ? "Creating Account..." : "Sign Up"}
           </Button>

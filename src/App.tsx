@@ -15,6 +15,9 @@ import DoctorMapPage from "./pages/DoctorMapPage";
 import { PaymentPage } from "./pages/PaymentPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import { Toaster } from "react-hot-toast";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
 
 // Tailwind-matching theme
 const theme = createTheme({
@@ -39,6 +42,7 @@ function App() {
         <Toaster position="top-right" reverseOrder={false} />
 
         {/* Navbar here */}
+        <Navbar/>
 
         <Routes>
           {/* Main Routes */}
@@ -58,6 +62,7 @@ function App() {
         </Routes>
 
         {/* Footer here */}
+        <Footer/>
       </BrowserRouter>
     </ThemeProvider>
   );

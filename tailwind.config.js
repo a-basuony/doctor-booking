@@ -1,9 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './src/**/*.{html,js}',
-    './public/**/*.{html,js}',
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
   ],
+  corePlugins: {
+    // Disable Tailwind's preflight to avoid conflicts with MUI
+    preflight: false,
+  },
   theme: {
     extend: {
       colors: {

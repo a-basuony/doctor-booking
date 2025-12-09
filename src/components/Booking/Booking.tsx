@@ -23,7 +23,8 @@ const Booking = () => {
       id: 1,
       date: '2024-07-21',
       time: '11:00 AM',
-      name: 'Jennifer Miller',
+      name: 'mary Miller',
+      imageUrl: 'https://i.pravatar.cc/150?img=32',
       specialty: 'Psychiatrist',
       address: '15161 Nasr Street, Cairo, Egypt',
       status: 'Upcoming'
@@ -32,7 +33,8 @@ const Booking = () => {
       id: 2,
       date: '2024-07-06',
       time: '11:00 AM',
-      name: 'Jennifer Miller',
+      name: 'gustin Miller',
+      imageUrl: 'https://i.pravatar.cc/150?img=47',
       specialty: 'Psychiatrist',
       address: '15161 Nasr Street, Cairo, Egypt',
       status: 'Completed'
@@ -42,6 +44,7 @@ const Booking = () => {
       date: '2024-07-31',
       time: '11:00 AM',
       name: 'Jennifer Miller',
+      imageUrl: 'https://i.pravatar.cc/150?img=12',
       specialty: 'Psychiatrist',
       address: '15161 Nasr Street, Cairo, Egypt',
       status: 'Canceled'
@@ -50,7 +53,8 @@ const Booking = () => {
       id: 4,
       date: '2024-07-21',
       time: '11:00 AM',
-      name: 'Jennifer Miller',
+      name: 'lola marian',
+      imageUrl: 'https://i.pravatar.cc/150?img=5',
       specialty: 'Psychiatrist',
       address: '15161 Nasr Street, Cairo, Egypt',
       status: 'Completed'
@@ -189,8 +193,12 @@ const Booking = () => {
 
               {/* Doctor info */}
               <div className="flex items-start gap-3 mb-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                  {appointment.imageUrl ? (
+                    <img src={appointment.imageUrl} alt={appointment.name} className="w-12 h-12 object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-blue-600" />
+                  )}
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">{appointment.name}</h3>

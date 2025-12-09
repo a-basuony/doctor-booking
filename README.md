@@ -1,8 +1,8 @@
 
 
-#  Doctor Booking App — Frontend
+#  IDoctor Booking App — Frontend
 
-A **modern React + TypeScript** frontend for a Doctor Booking system.  
+A **modern React + TypeScript** frontend for a IDoctor Booking system.  
 The app is built using industry-standard tools to ensure high performance, clean architecture, and scalability.
 
 ---

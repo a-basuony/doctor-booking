@@ -37,7 +37,7 @@ const FQACard: React.FC = () => {
   return (
     <section className="py-5 mt-10 mb-10">
       <div className="max-w-4xl mx-auto text-center px-4">
-       <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-10 border-b-2 border-b-sky-500 pb-3">FQAS</h2>
+       <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-10 border-b w-24 mx-auto border-b-black pb-3">FQAS</h2>
         <div className="space-y-4">
           {faqs.map((f, i) => (
             <Accordion

@@ -12,7 +12,7 @@ export default function Navbar() {
       <div className="flex items-center justify-between md:hidden w-full">
         {/* Logo */}
         <div className="flex-shrink-0">
-          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
+          <img src={'/images/heart-logo.png'} alt="logo" className="w-10 h-10" />
         </div>
 
         {/* Profile + Menu */}
@@ -35,7 +35,7 @@ export default function Navbar() {
             />
           )}
           <img
-            src={'./imgs/Ellipse1539.jpeg'}
+            src={'./images/profile.jpg'}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent"
           />
@@ -47,7 +47,7 @@ export default function Navbar() {
       {/* Desktop Navbar */}
       <div className="hidden md:flex items-center justify-between w-full">
         <div className="flex items-center gap-2 flex-shrink-0">
-          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
+          <img src={'/images/heart-logo.png'} alt="logo" className="w-10 h-10" />
         </div>
 
         <div className="flex-1 max-w-xl mx-4 flex-shrink-0 flex items-center">
@@ -80,7 +80,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4 flex-shrink-0">
           <Bell className="w-6 h-6 cursor-pointer text-gray-700" />
           <img
-            src={'./imgs/Ellipse1539.jpeg'}
+            src={'./images/profile.jpg'}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
           />

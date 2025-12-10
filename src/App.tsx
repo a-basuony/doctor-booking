@@ -1,7 +1,6 @@
-import { BrowserRouter, Routes, Route} from "react-router-dom";
+import {Routes, Route} from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
-
 import BookingPage from "./pages/BookingPage";
 import Home from "./pages/Home";
 import SignIn from "./pages/auth/SignIn";
@@ -80,7 +79,6 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      <BrowserRouter>
         <Toaster position="top-right" reverseOrder={false} />
 
         <Routes>
@@ -108,8 +106,6 @@ function App() {
           <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
         </Routes>
 
-        {/* Footer here */}
-      </BrowserRouter>
     </ThemeProvider>
   );
 }

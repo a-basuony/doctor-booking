@@ -40,7 +40,7 @@ const Footer: React.FC = () => {
           <div>
             <div className="flex items-center mb-4 gap-2">
               <img
-                src={"/imgs/heart-logo.png"}
+                src={"/images/heart-logo.png"}
                 alt="Cure Logo"
                 className="mr-2"
               />
@@ -117,19 +117,19 @@ const Footer: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-white text-xl">
+                  <a href="/chat" className="text-white text-xl">
                     How it works
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-white text-xl">
+                  <Link to="/privacy-policy" className="text-white text-xl">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-white text-xl">
+                  <Link to="/privacy-policy" className="text-white text-xl">
                     Terms & Conditions
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -184,7 +184,7 @@ const Footer: React.FC = () => {
         <div className="md:hidden bg-[#05162c] text-white pt-8 pb-4 px-4 text-center">
           <div className="flex mb-6 justify-center items-center">
             <img
-              src={"/imgs/heart-logo.png"}
+              src={"/images/heart-logo.png"}
               alt="Cure Logo"
               className="w-10 h-10 mr-2"
             />

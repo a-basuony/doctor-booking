@@ -1,4 +1,4 @@
-import { Routes, Route} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -16,18 +16,59 @@ import { PaymentPage } from "./pages/PaymentPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import { Toaster } from "react-hot-toast";
 import FQAPage from "./pages/FQAPage";
-
+import ChatPage from "./pages/ChatPage";
 
 // Tailwind-matching theme
 const theme = createTheme({
   palette: {
-    primary: { light: "#93b4de", main: "#145db8", dark: "#0e4283", contrastText: "#fff" },
-    secondary: { light: "#586372", main: "#05162c", dark: "#04101f", contrastText: "#fff" },
-    error: { light: "#fd8688", main: "#fc4b4e", dark: "#b33537", contrastText: "#fff" },
-    warning: { light: "#ffc46e", main: "#ffa726", dark: "#b5771b", contrastText: "#fff" },
-    info: { light: "#62b5ec", main: "#1490e3", dark: "#0e66a1", contrastText: "#fff" },
-    success: { light: "#87c98a", main: "#4caf50", dark: "#367c39", contrastText: "#fff" },
-    grey: { 50: "#f5f6f7", 100: "#e6e8ea", 200: "#d0d4d8", 300: "#bbc1c7", 400: "#adb5bc", 500: "#99a2ab", 600: "#8b939c", 700: "#6d7379", 800: "#54595e", 900: "#404448" },
+    primary: {
+      light: "#93b4de",
+      main: "#145db8",
+      dark: "#0e4283",
+      contrastText: "#fff",
+    },
+    secondary: {
+      light: "#586372",
+      main: "#05162c",
+      dark: "#04101f",
+      contrastText: "#fff",
+    },
+    error: {
+      light: "#fd8688",
+      main: "#fc4b4e",
+      dark: "#b33537",
+      contrastText: "#fff",
+    },
+    warning: {
+      light: "#ffc46e",
+      main: "#ffa726",
+      dark: "#b5771b",
+      contrastText: "#fff",
+    },
+    info: {
+      light: "#62b5ec",
+      main: "#1490e3",
+      dark: "#0e66a1",
+      contrastText: "#fff",
+    },
+    success: {
+      light: "#87c98a",
+      main: "#4caf50",
+      dark: "#367c39",
+      contrastText: "#fff",
+    },
+    grey: {
+      50: "#f5f6f7",
+      100: "#e6e8ea",
+      200: "#d0d4d8",
+      300: "#bbc1c7",
+      400: "#adb5bc",
+      500: "#99a2ab",
+      600: "#8b939c",
+      700: "#6d7379",
+      800: "#54595e",
+      900: "#404448",
+    },
   },
   typography: { fontFamily: '"Noto Sans Georgian", sans-serif' },
 });
@@ -37,25 +78,26 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-        <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" reverseOrder={false} />
 
-        <Routes>
-          {/* Main Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/BookingPage" element={<BookingPage />} />
+      <Routes>
+        {/* Main Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/BookingPage" element={<BookingPage />} />
 
-          {/* Extra Routes */}
-          <Route path="/doctor-details" element={<DoctorDetailsPage />} />
-          <Route path="/map" element={<DoctorMapPage />} />
-           <Route path="/FQAPage" element={<FQAPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/contact" element={<ContactUsPage />} />
+        {/* Extra Routes */}
+        <Route path="/doctor-details" element={<DoctorDetailsPage />} />
+        <Route path="/map" element={<DoctorMapPage />} />
+        <Route path="/FQAPage" element={<FQAPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
+        <Route path="/chat" element={<ChatPage />} />
 
-          {/* Auth Routes */}
-          <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
-          <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
-          <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
-        </Routes>
+        {/* Auth Routes */}
+        <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
+        <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
+        <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
+      </Routes>
     </ThemeProvider>
   );
 }

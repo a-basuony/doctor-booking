@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route} from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -17,6 +17,8 @@ import ContactUsPage from "./pages/ContactUsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
+import FQAPage from "./pages/FQAPage";
+import ChatPage from "./pages/ChatPage";
 
 // Tailwind-matching theme
 const theme = createTheme({
@@ -81,8 +83,6 @@ function App() {
       <BrowserRouter>
         <Toaster position="top-right" reverseOrder={false} />
 
-        {/* Navbar here */}
-
         <Routes>
           {/* Main Routes */}
           <Route path="/" element={<Home />} />
@@ -93,10 +93,15 @@ function App() {
           <Route path="/map" element={<DoctorMapPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
+          <Route path="/FQAPage" element={<FQAPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+
           {/* Terms and Conditions Page */}
           <Route path={ROUTES.PRIVACY_POLICY} element={<PrivacyPolicyPage />} />
+
           {/* Profile Page */}
           <Route path={ROUTES.PROFILE} element={<Profile />} />
+
           {/* Auth Routes */}
           <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
           <Route path={ROUTES.SIGN_UP} element={<SignUp />} />

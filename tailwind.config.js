@@ -97,6 +97,9 @@ module.exports = {
           '900': '#204a22',
         },
       },
+      fontFamily: {
+         georgia: ['Georgia', 'serif'],
+       },
     },
   },
   plugins: [],

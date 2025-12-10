@@ -1,5 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Phone, Video, MoreVertical, Send, Trash2 } from "lucide-react";
+import {
+  Search,
+  Phone,
+  Video,
+  MoreVertical,
+  Send,
+  Trash2,
+  ArrowLeft,
+} from "lucide-react";
 import type { Chat } from "../../types/chat";
 import { IoMdHappy } from "react-icons/io";
 import { ImAttachment } from "react-icons/im";
@@ -8,12 +16,14 @@ interface ChatWindowProps {
   chat: Chat;
   onSendMessage: (text: string) => void;
   onDeleteMessage: (msgId: number) => void;
+  onBack: () => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   chat,
   onSendMessage,
   onDeleteMessage,
+  onBack,
 }) => {
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,6 +47,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100 h-[72px] flex-shrink-0">
         <div className="flex items-center gap-3">
+          {/* Back Button (Mobile Only) */}
+          <button
+            onClick={onBack}
+            className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+
           <img
             src={chat.avatar}
             alt={chat.fullName}

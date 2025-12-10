@@ -13,6 +13,10 @@ const ChatPage = () => {
   // Initialize state with mock data
   const [chats, setChats] = useState<Chat[]>(mockChats);
 
+  // Selection Mode State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedChatIds, setSelectedChatIds] = useState<number[]>([]);
+
   const activeChat = chats.find((c) => c.id === activeChatId);
 
   const handleSendMessage = (text: string) => {
@@ -68,6 +72,33 @@ const ChatPage = () => {
     );
   };
 
+  // --- Bulk Deletion Logic ---
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    setSelectedChatIds([]); // clear selection on toggle
+  };
+
+  const toggleChatSelection = (chatId: number) => {
+    setSelectedChatIds((prev) =>
+      prev.includes(chatId)
+        ? prev.filter((id) => id !== chatId)
+        : [...prev, chatId]
+    );
+  };
+
+  const deleteSelectedChats = () => {
+    setChats((prev) => prev.filter((c) => !selectedChatIds.includes(c.id)));
+
+    // If active chat was deleted, deselect it
+    if (activeChatId && selectedChatIds.includes(activeChatId)) {
+      setActiveChatId(null);
+    }
+
+    setIsSelectionMode(false);
+    setSelectedChatIds([]);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <main className="flex-1 max-w-[1440px] mx-auto w-full p-4 sm:p-6 lg:p-8 h-[calc(100vh-80px)]">
@@ -84,6 +115,12 @@ const ChatPage = () => {
               onSelectChat={setActiveChatId}
               filterMode={filterMode}
               setFilterMode={setFilterMode}
+              // Selection Props
+              isSelectionMode={isSelectionMode}
+              selectedChatIds={selectedChatIds}
+              onToggleSelectionMode={toggleSelectionMode}
+              onToggleChatSelection={toggleChatSelection}
+              onDeleteSelected={deleteSelectedChats}
             />
           </div>
 
@@ -98,6 +135,7 @@ const ChatPage = () => {
                 chat={activeChat}
                 onSendMessage={handleSendMessage}
                 onDeleteMessage={handleDeleteMessage}
+                onBack={() => setActiveChatId(null)}
               />
             ) : (
               <ChatEmptyState />

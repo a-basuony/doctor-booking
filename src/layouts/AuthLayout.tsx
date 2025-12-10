@@ -79,7 +79,7 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
         {/* Heart Logo */}
         <Box
           component="img"
-          src={"/heart-logo.png"}
+          src={"/images/heart-logo.png"}
           alt="Heart logo"
           sx={{
             width: { xs: "28px", sm: "35px" },
@@ -121,7 +121,13 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
                 size="small"
                 disabled={isSigningInWithGoogle}
                 onClick={handleGoogleSignIn}
-                sx={{ mt: 3, mb: 2, py: 1.5, textTransform: "capitalize", borderRadius: "10px" }}
+                sx={{
+                  mt: 3,
+                  mb: 2,
+                  py: 1.5,
+                  textTransform: "capitalize",
+                  borderRadius: "10px",
+                }}
               >
                 <Box
                   component="img"

@@ -15,6 +15,7 @@ import DoctorMapPage from "./pages/DoctorMapPage";
 import { PaymentPage } from "./pages/PaymentPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 
 // Tailwind-matching theme
@@ -94,6 +95,8 @@ function App() {
           <Route path="/contact" element={<ContactUsPage />} />
           {/* Terms and Conditions Page */}
           <Route path={ROUTES.PRIVACY_POLICY} element={<PrivacyPolicyPage />} />
+          {/* Profile Page */}
+          <Route path={ROUTES.PROFILE} element={<Profile />} />
           {/* Auth Routes */}
           <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
           <Route path={ROUTES.SIGN_UP} element={<SignUp />} />

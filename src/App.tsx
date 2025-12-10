@@ -17,6 +17,7 @@ import ContactUsPage from "./pages/ContactUsPage";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import HeroSection from "./components/Home/HeroSection";
 
 
 // Tailwind-matching theme
@@ -48,6 +49,7 @@ function App() {
           {/* Main Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/BookingPage" element={<BookingPage />} />
+
 
           {/* Extra Routes */}
           <Route path="/doctor-details" element={<DoctorDetailsPage />} />

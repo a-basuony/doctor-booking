@@ -1,44 +1,65 @@
 import { useState } from "react";
 import { TbMenu3 } from "react-icons/tb";
 import { X, Bell } from "lucide-react";
-// import heartLogo from "/imgs/heart-logo.png";
-// import cure from "/imgs/Ellipse 1539.jpeg";
+//import heartLogo from "../../public/imgs/heart-logo.png";
+//import cure from "../../public/imgs/Ellipse1539.jpeg";
+import { CiSearch } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";    
 
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
+  const navigate = useNavigate();
+
+  const menuItems = [
+    { name: "Home", link: "/" },
+    { name: "Bookings", link: "/Booking" },
+    { name: "Chat", link: "/chat" },
+  ];
 
   return (
-    <nav className="w-full bg-white py-4 px-4 flex flex-col gap-4">
+    <nav className="w-full bg-white pt-6 pb-4 px-4 flex flex-col gap-4">
+      
       {/* Mobile Navbar */}
       <div className="flex items-center justify-between md:hidden w-full">
-        {/* Logo */}
-        <div className="flex-shrink-0">
-          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <img src="/imgs/heart-logo.png" alt="logo" className="w-10 h-10" />
         </div>
 
-        {/* Profile + Menu */}
-        <div className="flex items-center gap-3">
-          
-          {openMenu ? (
+        {/* Menu + Profile */}
+        <div className="flex items-center gap-2">
+          {openMenu && (
             <div className="flex items-center gap-2">
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Home</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Bookings</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Chat</button>
+              {menuItems.map((item) => (
+                <span
+                  key={item.name}
+                  onClick={() => {
+                    navigate(item.link);
+                    setOpenMenu(false);
+                  }}
+                  className="px-6 text-[16px] text-gray-800 py-2 text-sm cursor-pointer border border-gray-300 rounded-lg "
+                >
+                  {item.name}
+                </span>
+              ))}
               <X
-                className="w-7 h-7 cursor-pointer text-gray-500"
+                className="w-10 h-10 cursor-pointer p-1.5 rounded-xl text-gray-500"
                 onClick={() => setOpenMenu(false)}
               />
             </div>
-          ) : (
+          )}
+
+          {!openMenu && (
             <TbMenu3
-              className="w-7 h-7 cursor-pointer text-black"
+              className="w-10 h-10 cursor-pointer p-1.5 rounded-xl"
               onClick={() => setOpenMenu(true)}
             />
           )}
+
+          {/* Profile */}
           <img
-            src={'/imgs/Ellipse 1539.jpeg'}
+            src="/imgs/Ellipse1539.jpeg"
             alt="User profile"
-            className="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent"
+            className="w-10 h-10 rounded-full cursor-pointer"
           />
           
         </div>
@@ -47,43 +68,56 @@ export default function Navbar() {
 
       {/* Desktop Navbar */}
       <div className="hidden md:flex items-center justify-between w-full">
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
-        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 p-7 ">
+          <img src="/imgs/heart-logo.png" alt="logo" className="w-10 h-10" />
+        </div> 
 
-        <div className="flex-1 max-w-xl mx-4 flex-shrink-0 flex items-center">
+        {/* Search Bar with icon */}
+        <div className="flex-1 max-w-xl mx-4 relative">
+          <CiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-7 h-7" />
           <input
             type="text"
             placeholder="Search about specialty, doctor"
-            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 text-gray-500 shadow-sm"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-100 text-gray-400 placeholder-gray-400 text-xl focus:outline-none border-none"
           />
         </div>
 
-        <div className="flex items-center flex-shrink-0">
-          {openMenu ? (
+        {/* Menu + Notification + Profile */}
+        <div className="flex items-center gap-2">
+          {openMenu && (
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Home</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Bookings</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Chat</button>
+              {menuItems.map((item) => (
+                <span
+                  key={item.name}
+                  onClick={() => {
+                    navigate(item.link);
+                    setOpenMenu(false);
+                  }}
+                  className="px-6 py-2 text-[16px] text-gray-800 cursor-pointer border-2 border-gray-800 rounded-lg"
+                >
+                  {item.name}
+                </span>
+              ))}
               <X
-                className="w-7 h-7 cursor-pointer text-gray-500"
+                className="w-10 h-10 cursor-pointer p-1.5 rounded-xl text-gray-500"
                 onClick={() => setOpenMenu(false)}
               />
             </div>
-          ) : (
+          )}
+
+          {!openMenu && (
             <TbMenu3
-              className="w-7 h-7 cursor-pointer text-black"
+              className="w-10 h-10 cursor-pointer p-1.5 rounded-xl"
               onClick={() => setOpenMenu(true)}
             />
           )}
-        </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0">
-          <Bell className="w-6 h-6 cursor-pointer text-gray-700" />
+          <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 flex items-center justify-center" />
+
           <img
-            src={'./imgs/Ellipse1539.jpeg'}
+            src="/imgs/Ellipse1539.jpeg"
             alt="User profile"
-            className="w-10 h-10 rounded-full cursor-pointer"
+            className="w-10 h-10 rounded-full cursor-pointer "
           />
         </div>
       </div>

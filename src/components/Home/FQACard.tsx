@@ -35,6 +35,7 @@ const faqs = [
 
 const FQACard: React.FC = () => {
   return (
+    
     <section className="py-5 mt-10 mb-10">
       <div className="max-w-4xl mx-auto text-center px-4">
         <div className="inline-block mb-4">

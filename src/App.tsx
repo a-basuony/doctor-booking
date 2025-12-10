@@ -14,6 +14,8 @@ import DoctorMapPage from "./pages/DoctorMapPage";
 import { PaymentPage } from "./pages/PaymentPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import FQAPage from "./pages/FQAPage"; // ✅ إضافة هذا السطر
+import ChatPage from "./pages/ChatPage"; // ✅ إضافة هذا السطر
 import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
@@ -81,7 +83,7 @@ function App() {
       <CssBaseline />
 
         <Toaster position="top-right" reverseOrder={false} />
-
+<Navbar />
         <Routes>
           {/* Main Routes */}
           <Route path="/" element={<Home />} />
@@ -107,7 +109,7 @@ function App() {
           <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
           <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
         </Routes>
-
+<Footer />
     </ThemeProvider>
   );
 }

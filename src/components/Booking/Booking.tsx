@@ -16,7 +16,8 @@ const Booking = () => {
     { value: '', label: 'All' },
     { value: '2024-07-21', label: 'Monday, July 21' },
     { value: '2024-07-06', label: 'Sunday, July 6' },
-    { value: '2024-07-31', label: 'Wednesday, July 31' }
+    { value: '2024-07-31', label: 'Wednesday, July 31' },
+    { value: '2024-08-20', label: 'Monday, July 20' }
   ];
   const [appointments, setAppointments] = useState([
     {
@@ -179,9 +180,10 @@ const Booking = () => {
         {/* Appointments grid */}
         <div className="flex flex-wrap gap-4">
           {filteredAppointments.map(appointment => (
-            <div key={appointment.id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow flex-shrink-0" style={{width: '320px'}}>
+            <div key={appointment.id} className="border-gray-500 border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow flex-shrink-0" style={{width: '320px'}}>
               {/* Header */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3
+               border-b border-gray-400 pb-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
                   <span>{formatDate(appointment.date)}</span>

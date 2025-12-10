@@ -121,7 +121,10 @@ const OTPVerification = () => {
                 sx={{
                   width: "50px",
                   "& input": {
-                    padding: "16px 8px",
+                    padding: "8px 8px",
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
                   },
                 }}
               />

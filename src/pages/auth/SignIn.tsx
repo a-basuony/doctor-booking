@@ -52,6 +52,7 @@ const SignIn = () => {
             margin="normal"
             autoComplete="tel"
             size="small"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
           <TextField
             {...register("password")}
@@ -63,6 +64,7 @@ const SignIn = () => {
             margin="normal"
             autoComplete="current-password"
             size="small"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
 
           <Button
@@ -71,7 +73,7 @@ const SignIn = () => {
             variant="contained"
             size="small"
             disabled={isSubmitting}
-            sx={{ mt: 2, mb: 2, py: 1.5, textTransform: "capitalize" }}
+            sx={{ mt: 2, mb: 2, py: 1.5, textTransform: "capitalize", borderRadius: "10px" }}
           >
             {isSubmitting ? "Signing In..." : "Sign In"}
           </Button>

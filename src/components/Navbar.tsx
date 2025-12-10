@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { TbMenu3 } from "react-icons/tb";
 import { X, Bell } from "lucide-react";
-//import heartLogo from "../../public/imgs/heart-logo.png";
-//import cure from "../../public/imgs/Ellipse1539.jpeg";
-import { CiSearch } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";    
+// import heartLogo from "/imgs/heart-logo.png";
+// import cure from "/imgs/Ellipse 1539.jpeg";
 
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
@@ -21,8 +19,9 @@ export default function Navbar() {
       
       {/* Mobile Navbar */}
       <div className="flex items-center justify-between md:hidden w-full">
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <img src="/imgs/heart-logo.png" alt="logo" className="w-10 h-10" />
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
         </div>
 
         {/* Menu + Profile */}
@@ -57,7 +56,7 @@ export default function Navbar() {
 
           {/* Profile */}
           <img
-            src="/imgs/Ellipse1539.jpeg"
+            src={'/imgs/Ellipse 1539.jpeg'}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
           />
@@ -68,9 +67,9 @@ export default function Navbar() {
 
       {/* Desktop Navbar */}
       <div className="hidden md:flex items-center justify-between w-full">
-        <div className="flex items-center gap-2 flex-shrink-0 p-7 ">
-          <img src="/imgs/heart-logo.png" alt="logo" className="w-10 h-10" />
-        </div> 
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
+        </div>
 
         {/* Search Bar with icon */}
         <div className="flex-1 max-w-xl mx-4 relative">
@@ -115,7 +114,7 @@ export default function Navbar() {
           <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 flex items-center justify-center" />
 
           <img
-            src="/imgs/Ellipse1539.jpeg"
+            src={'./imgs/Ellipse1539.jpeg'}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer "
           />

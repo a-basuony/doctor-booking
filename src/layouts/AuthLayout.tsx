@@ -34,7 +34,7 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
       {/* Background Images  */}
       <Box
         component="img"
-        src={"/imgs/auth/auth-layout.png"}
+        src={"/images/auth/auth-layout.png"}
         alt="Auth illustration"
         sx={{
           position: "absolute",
@@ -49,7 +49,7 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
       />
       <Box
         component="img"
-        src={"/imgs/auth/auth-line.png"}
+        src={"/images/auth/auth-line.png"}
         alt="Auth decoration"
         sx={{
           position: "absolute",
@@ -79,7 +79,7 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
         {/* Heart Logo */}
         <Box
           component="img"
-          src={"/imgs/heart-logo.png"}
+          src={"/images/heart-logo.png"}
           alt="Heart logo"
           sx={{
             width: { xs: "28px", sm: "35px" },
@@ -121,11 +121,17 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
                 size="small"
                 disabled={isSigningInWithGoogle}
                 onClick={handleGoogleSignIn}
-                sx={{ mt: 3, mb: 2, py: 1.5, textTransform: "capitalize" }}
+                sx={{
+                  mt: 3,
+                  mb: 2,
+                  py: 1.5,
+                  textTransform: "capitalize",
+                  borderRadius: "10px",
+                }}
               >
                 <Box
                   component="img"
-                  src={"/imgs/google.png"}
+                  src={"/images/google.png"}
                   alt="Google logo"
                   sx={{
                     objectFit: "contain",

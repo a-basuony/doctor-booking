@@ -118,22 +118,22 @@ const Footer: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-white text-xl">
+                  <a href="/chat" className="text-white text-xl">
                     How it works
                   </a>
                 </li>
                 <li>
-                  <a
-                    href={ROUTES.PRIVACY_POLICY}
+                  <Link
+                    to={ROUTES.PRIVACY_POLICY}
                     className="text-white text-xl"
                   >
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-white text-xl">
+                  <Link to="/privacy-policy" className="text-white text-xl">
                     Terms & Conditions
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

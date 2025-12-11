@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
-
 import BookingPage from "./pages/BookingPage";
 import Home from "./pages/Home";
 import SignIn from "./pages/auth/SignIn";

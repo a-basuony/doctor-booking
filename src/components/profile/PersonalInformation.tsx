@@ -3,14 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
-
-const personalInfoSchema = z.object({
-  name: z.string().min(2, "First name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-
-  dateOfBirth: z.string().optional(),
-});
+import { personalInfoSchema } from "../../utils/validation";
 
 type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
@@ -106,24 +99,10 @@ const PersonalInformation = () => {
           sx={{ mt: 4, display: "flex", justifyContent: "flex-end", gap: 2 }}
         >
           <Button
-            type="button"
-            variant="outlined"
-            sx={{
-              px: 4,
-              py: 1.5,
-              textTransform: "capitalize",
-              borderRadius: "10px",
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
             type="submit"
             variant="contained"
             disabled={isSubmitting}
             sx={{
-              px: 4,
-              py: 1.5,
               textTransform: "capitalize",
               borderRadius: "10px",
             }}

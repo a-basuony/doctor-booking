@@ -2,12 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer base {
-  *, ::after, ::before {
+  *,
+  ::after,
+  ::before {
     border-width: 0;
     border-style: solid;
     border-color: #e5e7eb;
   }
+}
+
+/* Profile Page - Gradient Border */
+
+.profile-border {
+  width: 119px;
+  height: 119px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffffff 0%, #145db8 100%);
+  z-index: 10;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-border::before {
+  content: "";
+  width: 113px;
+  height: 113px;
+  border-radius: 50%;
+  background: #f5f6f7;
 }

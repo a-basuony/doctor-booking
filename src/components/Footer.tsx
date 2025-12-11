@@ -11,6 +11,7 @@ import { TfiEmail } from "react-icons/tfi";
 import { SlLocationPin } from "react-icons/sl";
 import { FaPhoneVolume } from "react-icons/fa6";
 import { Link } from "react-router-dom";
+import { ROUTES } from "../constants/routes";
 
 const SocialIcon: React.FC<{
   Icon: React.ElementType;
@@ -40,7 +41,7 @@ const Footer: React.FC = () => {
           <div>
             <div className="flex items-center mb-4 gap-2">
               <img
-                src={"/imgs/heart-logo.png"}
+                src={"/images/heart-logo.png"}
                 alt="Cure Logo"
                 className="mr-2"
               />
@@ -122,7 +123,10 @@ const Footer: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-white text-xl">
+                  <a
+                    href={ROUTES.PRIVACY_POLICY}
+                    className="text-white text-xl"
+                  >
                     Privacy Policy
                   </a>
                 </li>
@@ -184,7 +188,7 @@ const Footer: React.FC = () => {
         <div className="md:hidden bg-[#05162c] text-white pt-8 pb-4 px-4 text-center">
           <div className="flex mb-6 justify-center items-center">
             <img
-              src={"/imgs/heart-logo.png"}
+              src={"/images/heart-logo.png"}
               alt="Cure Logo"
               className="w-10 h-10 mr-2"
             />

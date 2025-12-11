@@ -2,7 +2,6 @@ import { useState } from "react";
 import { TbMenu3 } from "react-icons/tb";
 import { X, Bell } from "lucide-react";
 
-
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -12,17 +11,26 @@ export default function Navbar() {
       <div className="flex items-center justify-between md:hidden w-full">
         {/* Logo */}
         <div className="flex-shrink-0">
-          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
+          <img
+            src={"/images/heart-logo.png"}
+            alt="logo"
+            className="w-10 h-10"
+          />
         </div>
 
         {/* Profile + Menu */}
         <div className="flex items-center gap-3">
-          
           {openMenu ? (
             <div className="flex items-center gap-2">
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Home</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Bookings</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Chat</button>
+              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">
+                Home
+              </button>
+              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">
+                Bookings
+              </button>
+              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">
+                Chat
+              </button>
               <X
                 className="w-7 h-7 cursor-pointer text-gray-500"
                 onClick={() => setOpenMenu(false)}
@@ -35,19 +43,21 @@ export default function Navbar() {
             />
           )}
           <img
-            src={'./imgs/Ellipse1539.jpeg'}
+            src={"./images/Ellipse1539.jpeg"}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent"
           />
-          
         </div>
-        
       </div>
 
       {/* Desktop Navbar */}
       <div className="hidden md:flex items-center justify-between w-full">
         <div className="flex items-center gap-2 flex-shrink-0">
-          <img src={'/imgs/heart-logo.png'} alt="logo" className="w-10 h-10" />
+          <img
+            src={"/images/heart-logo.png"}
+            alt="logo"
+            className="w-10 h-10"
+          />
         </div>
 
         <div className="flex-1 max-w-xl mx-4 flex-shrink-0 flex items-center">
@@ -61,9 +71,15 @@ export default function Navbar() {
         <div className="flex items-center flex-shrink-0">
           {openMenu ? (
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Home</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Bookings</button>
-              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">Chat</button>
+              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">
+                Home
+              </button>
+              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">
+                Bookings
+              </button>
+              <button className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-medium">
+                Chat
+              </button>
               <X
                 className="w-7 h-7 cursor-pointer text-gray-500"
                 onClick={() => setOpenMenu(false)}
@@ -80,7 +96,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4 flex-shrink-0">
           <Bell className="w-6 h-6 cursor-pointer text-gray-700" />
           <img
-            src={'./imgs/Ellipse1539.jpeg'}
+            src={"./images/Ellipse1539.jpeg"}
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
           />

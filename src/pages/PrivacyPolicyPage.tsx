@@ -13,14 +13,6 @@ const PrivacyPolicyPage = () => {
             >
               Privacy Policy
             </Typography>
-            <Typography variant="body1" className="!text-neutral-600">
-              Last updated:{" "}
-              {new Date().toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </Typography>
           </Box>
 
           <Divider />
@@ -30,13 +22,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 1. Information We Collect
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed"
               >
                 We collect information that you provide directly to us,
                 including your name, email address, phone number, and any other
@@ -51,13 +43,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 2. How We Use Your Information
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed !mb-3"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed !mb-3"
               >
                 We use the information we collect to:
               </Typography>
@@ -77,13 +69,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 3. Information Sharing and Disclosure
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed"
               >
                 We do not sell your personal information. We may share your
                 information with healthcare providers to facilitate your
@@ -97,13 +89,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 4. Data Security
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed"
               >
                 We implement appropriate technical and organizational security
                 measures to protect your personal information against
@@ -117,13 +109,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 5. Your Rights and Choices
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed !mb-3"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed !mb-3"
               >
                 You have the right to:
               </Typography>
@@ -144,13 +136,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 6. Cookies and Tracking Technologies
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed"
               >
                 We use cookies and similar tracking technologies to collect
                 information about your browsing activities and improve your
@@ -164,13 +156,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 7. Children's Privacy
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed"
               >
                 Our services are not intended for children under 13 years of
                 age. We do not knowingly collect personal information from
@@ -184,13 +176,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 8. Changes to This Privacy Policy
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed"
               >
                 We may update this Privacy Policy from time to time. We will
                 notify you of any changes by posting the new Privacy Policy on
@@ -204,13 +196,13 @@ const PrivacyPolicyPage = () => {
               <Typography
                 variant="h5"
                 component="h2"
-                className="!text-[24px] !font-semibold !text-[#05162c] !mb-3"
+                className="max-sm:!text-center !text-[24px] !font-semibold !text-[#05162c] !mb-3"
               >
                 9. Contact Us
               </Typography>
               <Typography
                 variant="body1"
-                className="!text-neutral-700 !leading-relaxed !mb-3"
+                className="max-sm:!text-center !text-neutral-700 !leading-relaxed !mb-3"
               >
                 If you have any questions about this Privacy Policy or our
                 privacy practices, please contact us:

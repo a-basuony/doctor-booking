@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -79,37 +79,32 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Toaster position="top-right" reverseOrder={false} />
 
-      <BrowserRouter>
-        <Toaster position="top-right" reverseOrder={false} />
+      <Routes>
+        {/* Main Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/BookingPage" element={<BookingPage />} />
 
-        <Routes>
-          {/* Main Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/BookingPage" element={<BookingPage />} />
+        {/* Extra Routes */}
+        <Route path="/doctor-details" element={<DoctorDetailsPage />} />
+        <Route path="/map" element={<DoctorMapPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
+        <Route path="/FQAPage" element={<FQAPage />} />
+        <Route path="/chat" element={<ChatPage />} />
 
-          {/* Extra Routes */}
-          <Route path="/doctor-details" element={<DoctorDetailsPage />} />
-          <Route path="/map" element={<DoctorMapPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/contact" element={<ContactUsPage />} />
-          <Route path="/FQAPage" element={<FQAPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+        {/* Terms and Conditions Page */}
+        <Route path={ROUTES.PRIVACY_POLICY} element={<PrivacyPolicyPage />} />
 
-          {/* Terms and Conditions Page */}
-          <Route path={ROUTES.PRIVACY_POLICY} element={<PrivacyPolicyPage />} />
+        {/* Profile Page */}
+        <Route path={ROUTES.PROFILE} element={<Profile />} />
 
-          {/* Profile Page */}
-          <Route path={ROUTES.PROFILE} element={<Profile />} />
-
-          {/* Auth Routes */}
-          <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
-          <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
-          <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
-        </Routes>
-
-        {/* Footer here */}
-      </BrowserRouter>
+        {/* Auth Routes */}
+        <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
+        <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
+        <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
+      </Routes>
     </ThemeProvider>
   );
 }

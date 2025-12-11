@@ -1,17 +1,20 @@
 import { Box, TextField, Button, Typography, Link, Stack } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
 import { signUpSchema } from "../../utils/validation";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
   const navigate = useNavigate();
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -66,17 +69,29 @@ const SignUp = () => {
             size="small"
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
-          <TextField
-            {...register("phone")}
-            fullWidth
-            label="Phone Number"
-            type="tel"
-            error={!!errors.phone}
-            helperText={errors.phone?.message}
-            margin="normal"
-            autoComplete="tel"
-            size="small"
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <PhoneInput
+                  defaultCountry="EG"
+                  value={value}
+                  onChange={onChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Enter phone number"
+                />
+                {errors.phone && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ mt: 0.5, ml: 1.75, display: "block" }}
+                  >
+                    {errors.phone.message}
+                  </Typography>
+                )}
+              </Box>
+            )}
           />
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
             <TextField

@@ -1,17 +1,20 @@
 import { Box, TextField, Button, Typography, Link } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
 import { signInSchema } from "../../utils/validation";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
   const navigate = useNavigate();
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -42,17 +45,34 @@ const SignIn = () => {
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <TextField
-            {...register("phone")}
-            fullWidth
-            label="Phone Number"
-            type="tel"
-            error={!!errors.phone}
-            helperText={errors.phone?.message}
-            margin="normal"
-            autoComplete="tel"
-            size="small"
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <PhoneInput
+                  defaultCountry="EG"
+                  value={value}
+                  onChange={onChange}
+                  className="w-full px-4 py-3 border border-gray-300 focus:border-none focus:outline-none rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Enter phone number"
+                />
+                {errors.phone && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{
+                      mt: 0.5,
+                      ml: 1.75,
+                      display: "block",
+                      textAlign: "start",
+                    }}
+                  >
+                    {errors.phone.message}
+                  </Typography>
+                )}
+              </Box>
+            )}
           />
           <TextField
             {...register("password")}
@@ -73,7 +93,13 @@ const SignIn = () => {
             variant="contained"
             size="small"
             disabled={isSubmitting}
-            sx={{ mt: 2, mb: 2, py: 1.5, textTransform: "capitalize", borderRadius: "10px" }}
+            sx={{
+              mt: 2,
+              mb: 2,
+              py: 1.5,
+              textTransform: "capitalize",
+              borderRadius: "10px",
+            }}
           >
             {isSubmitting ? "Signing In..." : "Sign In"}
           </Button>

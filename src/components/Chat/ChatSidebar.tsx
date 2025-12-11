@@ -211,7 +211,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline mb-1">
+                <div className="flex justify-between items-center mb-1">
                   <h3 className="font-semibold text-gray-900 text-[15px]">
                     {chat.fullName}
                   </h3>

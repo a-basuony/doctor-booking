@@ -12,6 +12,11 @@
   }
 }
 
+.no-focus:focus {
+  border: none !important;
+  outline: none !important;
+}
+
 /* Profile Page - Gradient Border */
 
 .profile-border {

@@ -8,6 +8,7 @@ import { ROUTES } from "../../constants/routes";
 import { signUpSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import PasswordInput from "../../components/common/PasswordInput";
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
@@ -78,7 +79,7 @@ const SignUp = () => {
                   defaultCountry="EG"
                   value={value}
                   onChange={onChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg transition"
                   placeholder="Enter phone number"
                 />
                 {errors.phone && (
@@ -94,22 +95,20 @@ const SignUp = () => {
             )}
           />
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
-            <TextField
+            <PasswordInput
               {...register("password")}
               fullWidth
               label="Password"
-              type="password"
               error={!!errors.password}
               helperText={errors.password?.message}
               autoComplete="new-password"
               size="small"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
             />
-            <TextField
+            <PasswordInput
               {...register("confirmPassword")}
               fullWidth
               label="Confirm Password"
-              type="password"
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
               autoComplete="new-password"

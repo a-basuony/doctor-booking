@@ -10,8 +10,8 @@ type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 const PersonalInformation = () => {
   // Mock user data - replace with actual user data from context/state
   const defaultValues: PersonalInfoFormData = {
-    name: "John",
-    email: "john.doe@example.com",
+    name: "seif mohamed",
+    email: "seifmohamed@gamil.com",
     phone: "+1234567890",
     dateOfBirth: "1990-01-01",
   };

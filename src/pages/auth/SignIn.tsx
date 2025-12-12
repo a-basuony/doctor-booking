@@ -1,4 +1,4 @@
-import { Box, TextField, Button, Typography, Link } from "@mui/material";
+import { Box, Button, Typography, Link } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { ROUTES } from "../../constants/routes";
 import { signInSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import PasswordInput from "../../components/common/PasswordInput";
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
@@ -54,7 +55,7 @@ const SignIn = () => {
                   defaultCountry="EG"
                   value={value}
                   onChange={onChange}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-none focus:outline-none rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full px-4 py-3 border border-gray-300 focus:border-none focus:outline-none rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition no-focus"
                   placeholder="Enter phone number"
                 />
                 {errors.phone && (
@@ -74,11 +75,10 @@ const SignIn = () => {
               </Box>
             )}
           />
-          <TextField
+          <PasswordInput
             {...register("password")}
             fullWidth
             label="Password"
-            type="password"
             error={!!errors.password}
             helperText={errors.password?.message}
             margin="normal"

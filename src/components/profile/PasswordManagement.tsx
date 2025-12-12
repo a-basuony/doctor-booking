@@ -1,9 +1,10 @@
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
 import { passwordSchema } from "../../utils/validation";
+import PasswordInput from "../common/PasswordInput";
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
@@ -49,11 +50,10 @@ const PasswordManagement = () => {
           }}
         >
           <Box sx={{ gridColumn: { xs: "1", sm: "1 / -1" } }}>
-            <TextField
+            <PasswordInput
               {...register("currentPassword")}
               fullWidth
               label="Current Password"
-              type="password"
               error={!!errors.currentPassword}
               helperText={errors.currentPassword?.message}
               size="small"
@@ -62,11 +62,10 @@ const PasswordManagement = () => {
             />
           </Box>
 
-          <TextField
+          <PasswordInput
             {...register("newPassword")}
             fullWidth
             label="New Password"
-            type="password"
             error={!!errors.newPassword}
             helperText={errors.newPassword?.message}
             size="small"
@@ -74,11 +73,10 @@ const PasswordManagement = () => {
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
 
-          <TextField
+          <PasswordInput
             {...register("confirmPassword")}
             fullWidth
             label="Confirm New Password"
-            type="password"
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword?.message}
             size="small"

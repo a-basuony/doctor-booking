@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, ChevronDown, Clock, MapPin, User } from 'lucide-react';
-import { getMyBookings } from '../../services/api';
+import { useMyBookings } from '../../hooks/useMyBookings';
 
 // Types
 interface Doctor {
@@ -34,43 +34,50 @@ interface DateOption {
   label: string;
 }
 
+// MOVE mapStatus ABOVE useEffect (FIX ERROR)
+const mapStatus = (apiStatus: string): 'Upcoming' | 'Completed' | 'Canceled' => {
+  switch(apiStatus) {
+    case 'pending_payment':
+      return 'Upcoming';
+    case 'confirmed':
+      return 'Completed';
+    case 'cancelled':
+      return 'Canceled';
+    default:
+      return 'Upcoming';
+  }
+};
+
 const Booking = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const { data, isLoading, error } = getMyBookings();
+  const { data, isLoading, error } = useMyBookings();
 
-  // Update appointments when data changes
   useEffect(() => {
-    if (data?.data) {
-      const mappedAppointments: Appointment[] = data.data.map((item: ApiBooking) => ({
-        id: item.id,
-        date: item.date,
-        time: item.time.replace(':00', ''), // 12:00:00 → 12:00
-        status: mapStatus(item.status),
-        name: item.doctor.name,
-        image: item.doctor.image,
-        specialty: item.doctor.spec || 'General Doctor',
-        address: item.doctor.address || 'No address provided',
-      }));
-      setAppointments(mappedAppointments);
-    }
-  }, [data]);
+  if (data?.data) {
+    const run = () => {
+      const mappedAppointments: Appointment[] = data.data.map(
+        (item: ApiBooking) => ({
+          id: item.id,
+          date: item.date,
+          time: item.time.replace(":00", ""),
+          status: mapStatus(item.status),
+          name: item.doctor.name,
+          image: item.doctor.image,
+          specialty: item.doctor.spec || "General Doctor",
+          address: item.doctor.address || "No address provided",
+        })
+      );
 
-  const mapStatus = (apiStatus: string): 'Upcoming' | 'Completed' | 'Canceled' => {
-    switch(apiStatus) {
-      case 'pending_payment':
-        return 'Upcoming';
-      case 'confirmed':
-        return 'Completed';
-      case 'cancelled':
-        return 'Canceled';
-      default:
-        return 'Upcoming';
-    }
-  };
+      setAppointments(mappedAppointments);
+    };
+
+    run(); // ← كده مش synchronous جوه الـ effect مباشرة
+  }
+}, [data]);
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', { 
@@ -82,7 +89,6 @@ const Booking = () => {
 
   const filters: string[] = ['All', 'Upcoming', 'Completed', 'Canceled'];
 
-  // Extract unique dates
   const dateOptions: DateOption[] = Array.from(
     new Set(appointments.map(a => a.date))
   ).map(date => ({
@@ -90,7 +96,6 @@ const Booking = () => {
     label: formatDate(date)
   }));
 
-  // Filter appointments
   const filteredAppointments = appointments.filter(apt => {
     const matchesFilter = selectedFilter === 'All' || apt.status === selectedFilter;
     const matchesDate = !selectedDate || apt.date === selectedDate;
@@ -99,13 +104,13 @@ const Booking = () => {
 
   const handleBookAgain = (id: number) => {
     setAppointments(prev => prev.map(apt => 
-      apt.id === id ? { ...apt, status: 'Upcoming' as const } : apt
+      apt.id === id ? { ...apt, status: 'Upcoming' } : apt
     ));
   };
 
   const handleCancel = (id: number) => {
     setAppointments(prev => prev.map(apt => 
-      apt.id === id ? { ...apt, status: 'Canceled' as const } : apt
+      apt.id === id ? { ...apt, status: 'Canceled' } : apt
     ));
   };
 
@@ -151,7 +156,7 @@ const Booking = () => {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-2xl font-bold mb-6">Your appointments</h1>
         
-        {/* Filter buttons and date selector */}
+        {/* Filters + Date Picker */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-between gap-3 mb-6">
           <div className="flex gap-2 flex-wrap">
             {filters.map(filter => (
@@ -168,11 +173,11 @@ const Booking = () => {
               </button>
             ))}
           </div>
-          
+
           <div className="relative">
             <button
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-white hover:bg-gray-50 transition-colors w-full sm:w-auto"
+              className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-white hover:bg-gray-50 transition-colors"
             >
               <Calendar className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-medium flex-1 text-left">
@@ -180,7 +185,7 @@ const Booking = () => {
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500" />
             </button>
-            
+
             {showDatePicker && (
               <>
                 <div 
@@ -217,7 +222,7 @@ const Booking = () => {
           </div>
         </div>
 
-        {/* Appointments grid */}
+        {/* Appointments */}
         {filteredAppointments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAppointments.map(appointment => (
@@ -236,9 +241,9 @@ const Booking = () => {
                   </span>
                 </div>
 
-                {/* Doctor info */}
+                {/* Doctor */}
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
                     {appointment.image ? (
                       <img 
                         src={appointment.image} 
@@ -253,7 +258,7 @@ const Booking = () => {
                       <User className="w-6 h-6 text-blue-600" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 truncate">{appointment.name}</h3>
                     <p className="text-sm text-gray-600 truncate">{appointment.specialty}</p>
                   </div>
@@ -261,54 +266,52 @@ const Booking = () => {
 
                 {/* Time */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                  <Clock className="w-4 h-4 flex-shrink-0" />
+                  <Clock className="w-4 h-4" />
                   <span>{appointment.time}</span>
                 </div>
 
                 {/* Address */}
                 <div className="flex items-start gap-2 text-sm text-gray-600 mb-4">
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <MapPin className="w-4 h-4 mt-0.5" />
                   <span className="line-clamp-2">{appointment.address}</span>
                 </div>
 
-                {/* Action buttons */}
+                {/* Buttons */}
                 <div className="flex gap-2">
                   {appointment.status === 'Upcoming' && (
                     <>
                       <button
                         onClick={() => handleCancel(appointment.id)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Cancel
                       </button>
-                      <button
-                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-                      >
+                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">
                         Reschedule
                       </button>
                     </>
                   )}
-                  
+
                   {appointment.status === 'Completed' && (
                     <>
-                      <button className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                      <button className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                         View Details
                       </button>
-                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">
                         Feedback
                       </button>
                     </>
                   )}
-                  
+
                   {appointment.status === 'Canceled' && (
                     <>
                       <button
                         onClick={() => handleBookAgain(appointment.id)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Book again
                       </button>
-                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">
                         Support
                       </button>
                     </>

@@ -2,28 +2,44 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { personalInfoSchema } from "../../utils/validation";
+import type { User } from "../../types/auth";
 
 type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
-const PersonalInformation = () => {
-  // Mock user data - replace with actual user data from context/state
-  const defaultValues: PersonalInfoFormData = {
-    name: "seif mohamed",
-    email: "seifmohamed@gamil.com",
-    phone: "+1234567890",
-    dateOfBirth: "1990-01-01",
-  };
-
+const PersonalInformation = ({ user }: { user: User | null }) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
-    defaultValues,
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      dateOfBirth: "1990-01-01",
+    },
   });
+
+  // Update form values when user data changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        dateOfBirth: user.bir_of_date || "1990-01-01",
+      });
+    }
+  }, [user, reset]);
+
+  if (!user) {
+    return <div>loadding...</div>;
+  }
 
   const onSubmit = async (data: PersonalInfoFormData) => {
     console.log("Personal information data:", data);

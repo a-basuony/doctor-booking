@@ -2,32 +2,29 @@ import { Box, Button, Typography, Link } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
 import { signInSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import PasswordInput from "../../components/common/PasswordInput";
+import { useSignIn } from "../../hooks/useAuth";
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
-  const navigate = useNavigate();
+  const { mutate: signIn, isPending } = useSignIn();
   const {
     control,
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
   });
 
-  const onSubmit = async (data: SignInFormData) => {
-    console.log("Sign in data:", data);
-    //todo: sign-in logic
-    // Navigate to OTP verification
-    navigate(ROUTES.VERIFY_OTP);
+  const onSubmit = (data: SignInFormData) => {
+    signIn(data);
   };
 
   return (
@@ -92,7 +89,7 @@ const SignIn = () => {
             fullWidth
             variant="contained"
             size="small"
-            disabled={isSubmitting}
+            disabled={isPending}
             sx={{
               mt: 2,
               mb: 2,
@@ -101,7 +98,7 @@ const SignIn = () => {
               borderRadius: "10px",
             }}
           >
-            {isSubmitting ? "Signing In..." : "Sign In"}
+            {isPending ? "Signing In..." : "Sign In"}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 3 }}>

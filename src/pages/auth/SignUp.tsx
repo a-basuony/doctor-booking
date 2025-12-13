@@ -2,32 +2,37 @@ import { Box, TextField, Button, Typography, Link, Stack } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
 import { signUpSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import PasswordInput from "../../components/common/PasswordInput";
+import { useSignUp } from "../../hooks/useAuth";
+import type { SignUpData } from "../../types/auth";
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
-  const navigate = useNavigate();
+  const { mutate: signUp, isPending } = useSignUp();
   const {
     control,
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
   });
 
-  const onSubmit = async (data: SignUpFormData) => {
-    console.log("Sign up data:", data);
-    //todo: sign-up logic
-    // Navigate to OTP verification
-    navigate(ROUTES.VERIFY_OTP);
+  const onSubmit = (data: SignUpFormData) => {
+    const formattedData: SignUpData = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      password_confirmation: data.confirmPassword,
+    };
+    signUp(formattedData);
   };
 
   return (
@@ -94,7 +99,11 @@ const SignUp = () => {
               </Box>
             )}
           />
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            sx={{ mt: 2 }}
+          >
             <PasswordInput
               {...register("password")}
               fullWidth
@@ -122,10 +131,16 @@ const SignUp = () => {
             fullWidth
             variant="contained"
             size="small"
-            disabled={isSubmitting}
-            sx={{ mt: 3, mb: 2, py: 1.5, textTransform: "capitalize", borderRadius: "10px" }}
+            disabled={isPending}
+            sx={{
+              mt: 3,
+              mb: 2,
+              py: 1.5,
+              textTransform: "capitalize",
+              borderRadius: "10px",
+            }}
           >
-            {isSubmitting ? "Creating Account..." : "Sign Up"}
+            {isPending ? "Creating Account..." : "Sign Up"}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>

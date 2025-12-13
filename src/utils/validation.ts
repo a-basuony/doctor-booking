@@ -45,3 +45,7 @@ export const passwordSchema = z
     message: "New password must be different from current password",
     path: ["newPassword"],
   });
+
+export const otpSchema = z.object({
+  otp: z.string().length(4, "OTP must be 4 digits"),
+});

@@ -4,17 +4,19 @@ import { useNavigate } from "react-router-dom";
 import PersonalInformation from "../components/profile/PersonalInformation";
 import PasswordManagement from "../components/profile/PasswordManagement";
 import { ROUTES } from "../constants/routes";
+import { useAuthContext } from "../hooks/useAuth";
 
 const Profile = () => {
+  const { user } = useAuthContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
 
   // Mock user data - replace with actual user data from context/state
-  const user = {
-    name: "Seif Mohamed",
-    location: "129,El-Nasr Street, Cairo",
-    avatar: "/path/to/avatar.jpg", // Replace with actual avatar path
-  };
+  // const user = {
+  //   name: "Seif Mohamed",
+  //   location: "129,El-Nasr Street, Cairo",
+  //   avatar: "/path/to/avatar.jpg", // Replace with actual avatar path
+  // };
 
   const tabs = [
     { id: 0, label: "Personal Information", icon: "/images/user.png" },
@@ -118,35 +120,37 @@ const Profile = () => {
               fontSize: { xs: "1.1rem", sm: "1.25rem" },
             }}
           >
-            {user.name}
+            {user?.name}
           </Typography>
 
           {/* Location */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-              textAlign: "center",
-              mb: 4,
-              mx: "auto",
-            }}
-          >
+          {user?.location && (
             <Box
-              component="img"
-              src="/images/location.png"
-              alt="location"
-              sx={{ width: { xs: "16px", sm: "20px" } }}
-            />
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                textAlign: "center",
+                mb: 4,
+                mx: "auto",
+              }}
             >
-              {user.location}
-            </Typography>
-          </Box>
+              <Box
+                component="img"
+                src="/images/location.png"
+                alt="location"
+                sx={{ width: { xs: "16px", sm: "20px" } }}
+              />
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+              >
+                {user.location}
+              </Typography>
+            </Box>
+          )}
 
           {/* Custom Tabs */}
           <Box
@@ -240,7 +244,7 @@ const Profile = () => {
             borderRadius: 2,
           }}
         >
-          {activeTab === 0 && <PersonalInformation />}
+          {activeTab === 0 && <PersonalInformation user={user} />}
           {activeTab === 1 && <PasswordManagement />}
         </Box>
       </Box>

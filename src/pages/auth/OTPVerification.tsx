@@ -1,31 +1,51 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { KeyboardEvent, ClipboardEvent } from "react";
 import { Box, Button, Typography, TextField, Link } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
-
-const otpSchema = z.object({
-  otp: z.string().length(4, "OTP must be 4 digits"),
-});
+import { useVerifyOTP, useResendOTP } from "../../hooks/useAuth";
+import type { VerifyOTPData } from "../../types/auth";
+import { otpSchema } from "../../utils/validation";
 
 type OTPFormData = z.infer<typeof otpSchema>;
 
 const OTPVerification = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { mutate: verifyOTP, isPending: isSending } = useVerifyOTP();
+  const { mutate: resendOTP, isPending: isResending } = useResendOTP();
+
   const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const {
-    handleSubmit,
-    formState: { isSubmitting },
-    setValue,
-  } = useForm<OTPFormData>({
+  const { handleSubmit, setValue } = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
   });
+
+  // Countdown timer for resend
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  // Set canResend based on countdown
+  useEffect(() => {
+    setCanResend(countdown === 0);
+  }, [countdown]);
+
+  useEffect(() => {
+    if (!location.state?.userId) {
+      navigate(ROUTES.SIGN_UP);
+    }
+  }, [location.state?.userId, navigate]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -64,13 +84,31 @@ const OTPVerification = () => {
   const onSubmit = async (data: OTPFormData) => {
     console.log("OTP data:", data);
     //todo: your OTP verification logic
-    // Navigate to Home
-    navigate(ROUTES.HOME);
+    const formattedData: VerifyOTPData = {
+      user_id: location.state?.userId,
+      otp: data.otp,
+    };
+    verifyOTP(formattedData);
   };
 
   const handleResend = () => {
-    console.log("Resending OTP...");
-    //todo:  resend OTP logic
+    if (!canResend) return;
+
+    resendOTP(
+      { phone: location.state.phone, user_id: location.state.userId },
+      {
+        onSuccess: () => {
+          // Reset OTP inputs
+          setOtp(["", "", "", ""]);
+          setValue("otp", "");
+          // Reset countdown
+          setCountdown(60);
+          setCanResend(false);
+          // Focus first input
+          inputRefs.current[0]?.focus();
+        },
+      }
+    );
   };
 
   return (
@@ -88,7 +126,7 @@ const OTPVerification = () => {
           Code has been send to your phone number
         </Typography>
         <Typography variant="body2" color="primary.main" sx={{ mb: 4 }}>
-          Check your phone number{" "}
+          Check your phone number
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -136,7 +174,7 @@ const OTPVerification = () => {
             fullWidth
             variant="contained"
             size="medium"
-            disabled={isSubmitting || otp.join("").length !== 4}
+            disabled={isSending || otp.join("").length !== 4}
             sx={{
               mt: 2,
               mb: 2,
@@ -145,25 +183,39 @@ const OTPVerification = () => {
               borderRadius: "10px",
             }}
           >
-            {isSubmitting ? "Verifying..." : "Verify "}
+            {isSending ? "Verifying..." : "Verify "}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Didn't receive the code?{" "}
-              <Link
-                component="button"
-                type="button"
-                onClick={handleResend}
-                sx={{
-                  color: "primary.main",
-                  textDecoration: "none",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                Resend
-              </Link>
+              {canResend ? (
+                <Link
+                  component="button"
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isResending}
+                  sx={{
+                    color: "primary.main",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    cursor: isResending ? "not-allowed" : "pointer",
+                    opacity: isResending ? 0.6 : 1,
+                  }}
+                >
+                  {isResending ? "Sending..." : "Resend"}
+                </Link>
+              ) : (
+                <Typography
+                  component="span"
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: 600,
+                  }}
+                >
+                  Resend in {countdown}s
+                </Typography>
+              )}
             </Typography>
           </Box>
 

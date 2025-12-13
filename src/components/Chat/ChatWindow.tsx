@@ -87,7 +87,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           </div>
         )}
 
-        {chat.messages.map((msg) => {
+        {(chat.messages || []).map((msg) => {
           const isMe = msg.sender === "me";
           return (
             <div

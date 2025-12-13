@@ -10,9 +10,16 @@ export const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // First check for user auth token from localStorage
+    const authToken = localStorage.getItem("authToken");
+    if (authToken) {
+      config.headers.Authorization = `Bearer ${authToken}`;
+    } else {
+      // Fallback to public API key if no user token
+      const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY;
+      if (publicApiKey) {
+        config.headers.Authorization = `Bearer ${publicApiKey}`;
+      }
     }
     return config;
   },
@@ -33,4 +40,4 @@ api.interceptors.response.use(
     }
     return Promise.reject(error);
   }
-);
+)

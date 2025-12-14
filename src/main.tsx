@@ -7,10 +7,13 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 
+
 import { BrowserRouter } from 'react-router-dom';
 // استدعاء الـ Navbar و Footer
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const queryClient = new QueryClient();
 

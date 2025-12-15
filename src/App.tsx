@@ -19,6 +19,8 @@ import ChatPage from "./pages/ChatPage";
 import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 import SearchDoctor from "./pages/SearchDoctor";
+import BookAppointment from "./pages/BookAppointment";
+import FavoriteDoctors from "./pages/FavoriteDoctors";
 
 // Tailwind-matching theme
 const theme = createTheme({
@@ -88,6 +90,13 @@ function App() {
 
         {/* Search Doctors, appointments */}
         <Route path="/SearchDoctors" element={<SearchDoctor />} />
+        {/* Book Appointment Page */}
+        {/* Use :doctorId as a URL param */}
+        <Route
+          path="/book-appointment/:doctorId"
+          element={<BookAppointment />}
+        />
+        <Route path="/favorites" element={<FavoriteDoctors />} />
 
         {/* Extra Routes */}
         <Route path="/doctor-details" element={<DoctorDetailsPage />} />

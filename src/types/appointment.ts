@@ -22,3 +22,23 @@ export interface FilterState {
   type: "clinic" | "home" | null;
   sort: string;
 }
+
+export interface Review {
+  id: string;
+  name: string;
+  avatar: string;
+  timeAgo: string;
+  rating: number;
+  text: string;
+}
+
+export interface DateSlot {
+  day: string; // e.g., "Mon"
+  date: number; // e.g., 15
+  fullDate: Date;
+}
+
+export interface TimeSlot {
+  id: string;
+  time: string;
+}

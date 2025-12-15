@@ -3,6 +3,7 @@ import { TbMenu3 } from "react-icons/tb";
 import { X, Bell } from "lucide-react";
 import { CiSearch } from "react-icons/ci";
 import { useNavbarLogic } from "../hooks/useNavbar";
+import Notifications from "./Notifications";
 
 const MenuItem = memo(({ item, onClick }: { item: { name: string; link: string }; onClick: () => void }) => (
   <span
@@ -81,13 +82,15 @@ export default function Navbar() {
           ) : (
             <TbMenu3 className="w-10 h-10 cursor-pointer p-1.5 rounded-xl" onClick={toggleMenu} />
           )}
-          <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 border-2 border-white bg-slate-100" />
+           {/* <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 border-2 border-white bg-slate-100" /> */}
+           <Notifications />
           <img
             src="/images/Ellipse1539.jpeg"
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
             onClick={() => handleNavigate("/profile")}
-          />
+          /> 
+          
         </div>
       </div>
     </nav>

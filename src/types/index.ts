@@ -71,3 +71,22 @@ export interface CardFormData {
   expiry: string;
   cvc: string;
 }
+
+
+//////////////////////////////////--INotification--///////////////////////////////////////////////
+
+export interface INotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'upcoming' | 'completed' | 'cancelled' | 'info';
+  isRead: boolean;
+  createdAt: string;
+  appointmentId?: string;
+}
+
+export interface INotificationsResponse {
+  status: boolean;
+  message: string;
+  data: INotification[];
+}

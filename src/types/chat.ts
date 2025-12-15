@@ -4,10 +4,12 @@ export interface Message {
   text: string;
   time: string;
   isRead: boolean;
+  image?: string; // Added for image rendering
 }
 
 export interface Chat {
   id: number;
+  doctorId?: number; // Added for sender identification
   fullName: string;
   avatar: string;
   lastMessage: string;

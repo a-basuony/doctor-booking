@@ -25,8 +25,13 @@ export const chatService = {
         chatsArray = data;
       } else if (Array.isArray(data.data)) {
         chatsArray = data.data;
+      } else if (data.data && Array.isArray(data.data.rooms)) {
+        // Handle { data: { rooms: [...] } }
+        chatsArray = data.data.rooms;
       } else if (Array.isArray(data.chats)) {
         chatsArray = data.chats;
+      } else if (Array.isArray(data.rooms)) {
+        chatsArray = data.rooms;
       } else {
         console.warn("Unexpected API response structure. Expected array or object with data/chats property.", data);
         // Fallback: try to find any array property
@@ -47,14 +52,31 @@ export const chatService = {
     }
   },
 
-  async getMessages(chatId: number, page: number = 1, perPage: number = 15): Promise<{ data: Message[]; meta: any }> {
+  async getMessages(chatId: number, page: number = 1, perPage: number = 15): Promise<{ data: any[]; meta: any }> {
     const { data } = await api.get(`/user/chats/${chatId}/messages`, {
       params: { page, per_page: perPage },
     });
-    return data;
+    
+    // Normalize response based on: { status: true, data: { data: { messages: [...] }, meta: ... } }
+    let messages = [];
+    let meta = {};
+
+    if (data.data?.data?.messages) {
+        messages = data.data.data.messages;
+        meta = data.data.meta || {};
+    } else if (data.data?.messages) {
+        messages = data.data.messages;
+        meta = data.meta || {};
+    } else if (Array.isArray(data.data)) {
+        messages = data.data;
+    } else {
+        messages = data;
+    }
+
+    return { data: messages, meta };
   },
 
-  async sendMessage(payload: FormData | object): Promise<Message> {
+  async sendMessage(payload: FormData | object): Promise<any> {
     const { data } = await api.post("/user/chat/message", payload);
     return data.data || data;
   },

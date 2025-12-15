@@ -16,6 +16,7 @@ interface ChatWindowProps {
   chat: Chat;
   onSendMessage: (text: string) => void;
   onDeleteMessage: (msgId: number) => void;
+  onSendAttachment?: (file: File) => void; // Added prop
   onBack: () => void;
 }
 
@@ -23,10 +24,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   chat,
   onSendMessage,
   onDeleteMessage,
+  onSendAttachment,
   onBack,
 }) => {
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for file input
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,8 +45,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     setMessageText("");
   };
 
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onSendAttachment) {
+      onSendAttachment(file);
+    }
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-white flex-1 min-w-0 relative">
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*" // Restrict to images for now
+        onChange={handleFileChange}
+      />
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100 h-[72px] flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -112,11 +137,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   ${
                     isMe
                       ? "bg-[#145db8] text-white rounded-tr-none"
-                      : "bg-gray-100 text-gray-800 rounded-tl-none"
+                      : "bg-white text-gray-800 rounded-tl-none border border-gray-200 shadow-sm"
                   }
                 `}
               >
                 <p>{msg.text}</p>
+                {msg.image && (
+                  <img
+                    src={msg.image}
+                    alt="attachment"
+                    className="mt-2 rounded-lg max-w-full h-auto object-cover"
+                    style={{ maxHeight: "200px" }}
+                  />
+                )}
                 <span
                   className={`text-[10px] block text-right mt-1 ${
                     isMe ? "text-blue-100" : "text-gray-400"
@@ -155,7 +188,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
-          <button className="text-gray-400 hover:text-gray-600">
+          <button
+            onClick={handleAttachmentClick}
+            className="text-gray-400 hover:text-gray-600"
+          >
             <ImAttachment className="w-5 h-5" />
           </button>
           <button

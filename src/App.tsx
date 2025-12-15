@@ -20,6 +20,11 @@ import FQAPage from "./pages/FQAPage";
 import ChatPage from "./pages/ChatPage";
 import Profile from "./pages/Profile";
 
+// New Features
+import SearchDoctor from "./pages/SearchDoctor";
+import BookAppointment from "./pages/BookAppointment";
+import FavoriteDoctors from "./pages/FavoriteDoctors";
+
 // Tailwind-matching theme
 const theme = createTheme({
   palette: {
@@ -87,6 +92,14 @@ function App() {
         {/* Main Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/BookingPage" element={<BookingPage />} />
+
+        {/* Search & Appointments */}
+        <Route path="/SearchDoctors" element={<SearchDoctor />} />
+        <Route
+          path="/book-appointment/:doctorId"
+          element={<BookAppointment />}
+        />
+        <Route path="/favorites" element={<FavoriteDoctors />} />
 
         {/* Extra Routes */}
         <Route path="/doctor-details" element={<DoctorDetailsPage />} />

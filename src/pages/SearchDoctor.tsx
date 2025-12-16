@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Sidebar } from "../components/SearchDoctors/Sidebar";
 import { DoctorCard } from "../components/SearchDoctors/DoctorCard";
@@ -6,14 +6,14 @@ import mapImg from "../assets/map.png";
 import filterImg from "../assets/filter.png";
 // DOCTORS,
 import { DOCTORS, SPECIALTIES, ICON_MAP } from "../constants/constants";
-import { Map, ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useDoctorsNearYou } from "../hooks/useDoctorsNearYou";
-import { DoctorCardSkeleton } from "../components/SearchDoctors/DoctorCardSkeleton";
-import { ErrorMessage } from "../components/SearchDoctors/ErrorCard";
+// import { useDoctorsNearYou } from "../hooks/useDoctorsNearYou";
+// import { DoctorCardSkeleton } from "../components/SearchDoctors/DoctorCardSkeleton";
+// import { ErrorMessage } from "../components/SearchDoctors/ErrorCard";
 
-const SearchDoctor: React.FC = () => {
+const SearchDoctor = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("1");
   const [showFilters, setShowFilters] = useState(false);
 

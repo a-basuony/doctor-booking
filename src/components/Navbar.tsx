@@ -1,21 +1,30 @@
 import { memo } from "react";
 import { TbMenu3 } from "react-icons/tb";
-import { X, Bell } from "lucide-react";
+import { X } from "lucide-react";
 import { CiSearch } from "react-icons/ci";
 import { useNavbarLogic } from "../hooks/useNavbar";
 import Notifications from "./Notifications";
 
-const MenuItem = memo(({ item, onClick }: { item: { name: string; link: string }; onClick: () => void }) => (
-  <span
-    onClick={onClick}
-    className="px-6 py-2 text-[15px] text-gray-800 cursor-pointer border-2 border-white bg-slate-100 rounded-xl font-sans"
-  >
-    {item.name}
-  </span>
-));
+const MenuItem = memo(
+  ({
+    item,
+    onClick,
+  }: {
+    item: { name: string; link: string };
+    onClick: () => void;
+  }) => (
+    <span
+      onClick={onClick}
+      className="px-6 py-2 text-[15px] text-gray-800 cursor-pointer border-2 border-white bg-slate-100 rounded-xl font-sans"
+    >
+      {item.name}
+    </span>
+  )
+);
 
 export default function Navbar() {
-  const { openMenu, toggleMenu, handleNavigate, query, handleSearch, goToDoctorDetails } = useNavbarLogic();
+  const { openMenu, toggleMenu, handleNavigate, query, handleSearch } =
+    useNavbarLogic();
 
   const menuItems = [
     { name: "Home", link: "/" },
@@ -31,8 +40,12 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {openMenu ? (
             <div className="flex items-center gap-2">
-              {menuItems.map(item => (
-                <MenuItem key={item.name} item={item} onClick={() => handleNavigate(item.link)} />
+              {menuItems.map((item) => (
+                <MenuItem
+                  key={item.name}
+                  item={item}
+                  onClick={() => handleNavigate(item.link)}
+                />
               ))}
               <X
                 className="w-10 h-10 cursor-pointer p-1.5 rounded-xl text-gray-500 border-2 border-white bg-slate-100"
@@ -40,10 +53,13 @@ export default function Navbar() {
               />
             </div>
           ) : (
-            <TbMenu3 className="w-10 h-10 cursor-pointer p-1.5 rounded-xl" onClick={toggleMenu} />
+            <TbMenu3
+              className="w-10 h-10 cursor-pointer p-1.5 rounded-xl"
+              onClick={toggleMenu}
+            />
           )}
           <img
-            src="/images/Ellipse1539.jpeg"
+            src="/images/Ellipse_1539.jpeg"
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
             onClick={() => handleNavigate("/profile")}
@@ -62,7 +78,7 @@ export default function Navbar() {
             type="text"
             placeholder="Search about specialty, doctor"
             value={query}
-            onChange={e => handleSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-100 text-gray-600 placeholder-gray-400 text-xl focus:outline-none border-none"
           />
         </div>
@@ -71,8 +87,12 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {openMenu ? (
             <div className="flex items-center gap-3">
-              {menuItems.map(item => (
-                <MenuItem key={item.name} item={item} onClick={() => handleNavigate(item.link)} />
+              {menuItems.map((item) => (
+                <MenuItem
+                  key={item.name}
+                  item={item}
+                  onClick={() => handleNavigate(item.link)}
+                />
               ))}
               <X
                 className="w-10 h-10 cursor-pointer p-1.5 border-2 border-white bg-slate-100 rounded-xl text-gray-500"
@@ -80,17 +100,19 @@ export default function Navbar() {
               />
             </div>
           ) : (
-            <TbMenu3 className="w-10 h-10 cursor-pointer p-1.5 rounded-xl" onClick={toggleMenu} />
+            <TbMenu3
+              className="w-10 h-10 cursor-pointer p-1.5 rounded-xl"
+              onClick={toggleMenu}
+            />
           )}
-           {/* <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 border-2 border-white bg-slate-100" /> */}
-           <Notifications />
+          {/* <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 border-2 border-white bg-slate-100" /> */}
+          <Notifications />
           <img
-            src="/images/Ellipse1539.jpeg"
+            src="/images/Ellipse_1539.jpeg"
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
             onClick={() => handleNavigate("/profile")}
-          /> 
-          
+          />
         </div>
       </div>
     </nav>

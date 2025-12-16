@@ -9,12 +9,12 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { Calendar, ChevronDown } from "lucide-react";
 
 export default function BasicDateCalendar() {
   const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(dayjs());
+  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -55,7 +55,7 @@ export default function BasicDateCalendar() {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateCalendar
               value={selectedDate}
-              onChange={(newDate) => setSelectedDate(newDate)}
+              onChange={(newDate) => newDate && setSelectedDate(newDate)}
             />
           </LocalizationProvider>
         </DialogContent>

@@ -3,10 +3,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import React, { useState } from "react";
 import {
   Calendar,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
 } from "lucide-react";
 // import { DateSlot, TimeSlot } from "../../types/appointment";
 import { FadeIn } from "./FadeIn";

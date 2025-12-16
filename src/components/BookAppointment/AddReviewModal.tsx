@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star, X } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface AddReviewModalProps {
   isOpen: boolean;

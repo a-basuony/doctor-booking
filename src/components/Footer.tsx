@@ -134,7 +134,7 @@ const Footer = () => {
 
             <span className="text-white text-xl">|</span>
 
-            <p className="no-underline text-white">Privacy Policy</p>
+            <Link to={'/privacy-policy'} className="no-underline text-white">Privacy Policy</Link>
           </div>
         </div>
 

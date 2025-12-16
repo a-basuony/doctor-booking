@@ -39,19 +39,19 @@ export default function HeroSection({
           <div className="flex items-center p-2 justify-center gap-3 mb-8 border-transparent border-gray-300 rounded-full  bg-gray-300/20">
             <div className="flex -space-x-3">
               <img
-                src="/public/images/Ellipse 1539.png"
+                src="/images/Ellipse_1539.png"
                 alt="Patient"
                 className="w-10 h-10 rounded-full border border-transparent object-cover"
                
               />
               <img
-                src="/public/images/Ellipse 1540.png"
+                src="/images/Ellipse_1540.png"
                 alt="Patient"
                 className="w-10 h-10 rounded-full border border-transparent object-cover"
                 
               />
               <img
-                src="/public/images/Ellipse1539.jpeg"
+                src="/images/Ellipse_1539.jpeg"
                 alt="Patient"
                 className="w-10 h-10 rounded-full border border-transparent object-cover"
                

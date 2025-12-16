@@ -34,7 +34,7 @@ export default function ReviewsSection({}: ReviewsSectionProps) {
   const reviewers = [
     { id: 1, img: "/images/Reviews/img1.png", name: "Reviewer 1", marginTop: "0" },
     { id: 2, img: "/images/Reviews/img2.png", name: "Reviewer 2", marginTop: "-20px" },
-    { id: 3, img: "/images/Reviews/img3.png", name: "Reviewer 3", marginTop: "-30px" },
+    { id: 3, img: "/images/Reviews/img3.png", name: "Reviewer 3", marginTop: "0" },
     { id: 4, img: "/images/Reviews/img4.png", name: "Reviewer 4", marginTop: "-20px" },
     { id: 5, img: "/images/Reviews/img5.png", name: "Reviewer 5", marginTop: "0" },
   ];

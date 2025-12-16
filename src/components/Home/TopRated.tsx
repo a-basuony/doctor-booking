@@ -39,7 +39,7 @@ export default function TopRated() {
   const visibleDoctors = isMobile ? topDoctors.slice(0, 1) : topDoctors;
 
   const handleViewAll = () => {
-    navigate('/BookingPage');
+    navigate('/SearchDoctors');
   };
 
   const handleBookAppointment = (doctorId: number) => {

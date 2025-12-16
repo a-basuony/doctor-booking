@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { TbMenu3 } from "react-icons/tb";
-import { X, Bell } from "lucide-react";
+import { X } from "lucide-react";
 import { CiSearch } from "react-icons/ci";
 import { useNavbarLogic } from "../hooks/useNavbar";
 import Notifications from "./Notifications";
@@ -15,7 +15,7 @@ const MenuItem = memo(({ item, onClick }: { item: { name: string; link: string }
 ));
 
 export default function Navbar() {
-  const { openMenu, toggleMenu, handleNavigate, query, handleSearch, goToDoctorDetails } = useNavbarLogic();
+  const { openMenu, toggleMenu, handleNavigate, query, handleSearch } = useNavbarLogic();
 
   const menuItems = [
     { name: "Home", link: "/" },

@@ -34,7 +34,7 @@ export const paymentService = {
       });
    },
 
-   async deletePaymentMethod(paymentMethodId: string): Promise<void> {
+   async deletePaymentMethod(_paymentMethodId: string): Promise<void> {
       return new Promise((resolve) =>
          setTimeout(() => resolve(), 500)
       );
@@ -42,13 +42,13 @@ export const paymentService = {
 
    async createPaymentIntent(
       amount: number,
-      appointmentId: string
+      _appointmentId: string
    ): Promise<PaymentIntent> {
       return  new Promise((resolve) => {
          setTimeout(() => {
             resolve({
                id: `pi_${Date.now()}`,
-               amount: amount * 100, 
+               amount: amount * 100,
                currency: 'usd',
                status: 'pending',
                clientSecret: 'pi_secret_' + Date.now()
@@ -58,8 +58,8 @@ export const paymentService = {
    },
 
    async processPayment(
-      paymentIntentId: string,
-      paymentMethodId: string,
+      _paymentIntentId: string,
+      _paymentMethodId: string,
       appointmentId: string
    ): Promise<{ success: boolean; appointmentId: string }> {
       return new Promise((resolve) => {

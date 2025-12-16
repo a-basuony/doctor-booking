@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Chat, Message } from "../types/chat";
+import type { Chat } from "../types/chat";
 
 export interface SendMessagePayload {
   chat_id?: number;

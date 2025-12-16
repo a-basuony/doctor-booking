@@ -10,9 +10,13 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
+interface AddReviewModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (review: { name: string; rating: number; time: string; comment: string; avatar: string }) => void;
+}
 
-
-export const AddReviewModal = ({ open, onClose, onSubmit }) => {
+export const AddReviewModal = ({ open, onClose, onSubmit }: AddReviewModalProps) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
@@ -35,7 +39,7 @@ export const AddReviewModal = ({ open, onClose, onSubmit }) => {
       <DialogContent className="space-y-4">
         <Box>
           <label className="block mb-1 font-semibold">Rating</label>
-          <Rating value={rating} onChange={(e, v) => setRating(v)} />
+          <Rating value={rating} onChange={(_e, v) => setRating(v || 0)} />
         </Box>
 
         <TextField

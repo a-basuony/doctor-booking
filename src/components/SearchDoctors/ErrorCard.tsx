@@ -1,3 +1,5 @@
+import { AlertCircle } from "lucide-react";
+
 export const ErrorMessage: React.FC<{
   message?: string;
   retry?: () => void;

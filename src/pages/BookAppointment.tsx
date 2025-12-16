@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { FadeIn } from "./../components/BookAppointment/FadeIn";
 import { AddReviewModal } from "./../components/BookAppointment/AddReviewModal";

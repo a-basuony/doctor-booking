@@ -13,7 +13,6 @@ const ChatPage = () => {
     "all"
   );
   const [chats, setChats] = useState<Chat[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Selection Mode State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -25,7 +24,6 @@ const ChatPage = () => {
 
   const loadChats = async () => {
     try {
-      setIsLoading(true);
       const data = await chatService.getChats();
       // Ensure messages array exists
       // Ensure messages array exists
@@ -94,8 +92,6 @@ const ChatPage = () => {
     } catch (error: any) {
       console.error("Failed to load chats:", error);
       toast.error(error.message || "Failed to load chats");
-    } finally {
-      setIsLoading(false);
     }
   };
 

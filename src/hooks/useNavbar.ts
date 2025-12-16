@@ -29,7 +29,7 @@ export function useNavbarLogic() {
   );
 
   const goToDoctorDetails = useCallback(
-    (id: number) => {
+    (_id: number) => {
       navigate(`/doctor-details`);
     },
     [navigate]

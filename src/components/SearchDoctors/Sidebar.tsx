@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export const Sidebar: React.FC = ({
+interface SidebarProps {
+  selectedGender: "male" | "female" | null;
+  setSelectedGender: (gender: "male" | "female" | null) => void;
+}
+
+export const Sidebar = ({
   selectedGender,
   setSelectedGender,
-}: any) => {
+}: SidebarProps) => {
   const [isSortOpen, setIsSortOpen] = useState(true);
   return (
     <motion.aside
@@ -43,7 +48,7 @@ export const Sidebar: React.FC = ({
       <div className="space-y-3">
         <h3 className="font-semibold text-slate-800">Gender</h3>
         <div className="flex items-center justify-start  p-1 gap-2">
-          {["male", "female"].map((g) => (
+          {(["male", "female"] as const).map((g) => (
             <button
               key={g}
               onClick={() => setSelectedGender(g)}

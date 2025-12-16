@@ -119,6 +119,22 @@ const Footer = () => {
                     Contact Us
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to={ROUTES.SIGN_UP}
+                    className="no-underline text-white text-xl"
+                  >
+                    sign up
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={ROUTES.VERIFY_OTP}
+                    className="no-underline text-white text-xl"
+                  >
+                    Verify OTP
+                  </Link>
+                </li>
               </ul>
             </div>
 

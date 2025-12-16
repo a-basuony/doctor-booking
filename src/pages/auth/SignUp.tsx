@@ -8,13 +8,16 @@ import { signUpSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import PasswordInput from "../../components/common/PasswordInput";
-import { useSignUp } from "../../hooks/useAuth";
-import type { SignUpData } from "../../types/auth";
+// import { useSignUp } from "../../hooks/useAuth";
+// import type { SignUpData } from "../../types/auth";
+import { useNavigate } from "react-router-dom";
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
-  const { mutate: signUp, isPending } = useSignUp();
+  const navigate = useNavigate();
+  // const { mutate: signUp, isPending } = useSignUp();
+  const isPending = false; // Mock loading state
   const {
     control,
     register,
@@ -25,14 +28,16 @@ const SignUp = () => {
   });
 
   const onSubmit = (data: SignUpFormData) => {
-    const formattedData: SignUpData = {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      password: data.password,
-      password_confirmation: data.confirmPassword,
-    };
-    signUp(formattedData);
+    console.log(data);
+    navigate(ROUTES.VERIFY_OTP);
+    // const formattedData: SignUpData = {
+    //   name: data.name,
+    //   email: data.email,
+    //   phone: data.phone,
+    //   password: data.password,
+    //   password_confirmation: data.confirmPassword,
+    // };
+    // signUp(formattedData);
   };
 
   return (

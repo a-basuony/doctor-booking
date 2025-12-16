@@ -4,19 +4,23 @@ import { useNavigate } from "react-router-dom";
 import PersonalInformation from "../components/profile/PersonalInformation";
 import PasswordManagement from "../components/profile/PasswordManagement";
 import { ROUTES } from "../constants/routes";
-import { useAuthContext } from "../hooks/useAuth";
+// import { useAuthContext } from "../hooks/useAuth";
 
 const Profile = () => {
-  const { user } = useAuthContext();
+  // const { user } = useAuthContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
 
   // Mock user data - replace with actual user data from context/state
-  // const user = {
-  //   name: "Seif Mohamed",
-  //   location: "129,El-Nasr Street, Cairo",
-  //   avatar: "/path/to/avatar.jpg", // Replace with actual avatar path
-  // };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user: any = {
+    name: "Seif Mohamed",
+    location: "129,El-Nasr Street, Cairo",
+    email: "seif@example.com",
+    phone: "+201234567890",
+    bir_of_date: "1990-01-01",
+    avatar: "/path/to/avatar.jpg", // Replace with actual avatar path
+  };
 
   const tabs = [
     { id: 0, label: "Personal Information", icon: "/images/user.png" },

@@ -2,6 +2,8 @@ import { FiSearch } from 'react-icons/fi';
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useNavigate } from "react-router-dom";
+
 
 // Custom icon for red location pin
 const redIcon = new L.Icon({
@@ -26,6 +28,8 @@ const createDoctorIcon = (imageUrl: string) => {
 };
 
 export default function FindCareMap() {
+  
+  const navigate = useNavigate();
 
   const centerPosition: [number, number] = [44.9778, -93.265];
 
@@ -45,11 +49,11 @@ export default function FindCareMap() {
 
           {/* TEXT = order-1 on mobile */}
           <div className="space-y-6 order-1 lg:order-none text-center lg:text-left">
-            <h1 className="text-5xl font-serif font-normal text-gray-900 leading-tight">
-              Find Care Near You<br />in Seconds
+            <h1 className="text-2xl font-serif font-normal text-gray-900 leading-tight">
+              Find Care Near Youin Seconds
             </h1>
 
-            <p className="text-xl text-[#6D7379] leading-relaxed font-sans max-w-lg mx-auto lg:mx-0">
+            <p className="text-[15px] md:text-sm lg:text-base text-[#6D7379] leading-relaxed font-sans max-w-lg mx-auto lg:mx-0">
               Allow location access or choose your city to<br />
               instantly discover trusted doctors and clinics<br />
               around you—quick, easy, and local.
@@ -98,10 +102,9 @@ export default function FindCareMap() {
           </div>
 
           {/* BUTTON = order-4 on mobile (AFTER MAP) */}
-          <div className="order-4 lg:order-none text-center  lg:text-left    ">
+          <div className="order-4 lg:order-none text-center  lg:text-left     ">
             <button
-              onClick={() => window.location.href = "/doctor-details"}
-
+          onClick={() => navigate("/doctor-details")}
               className="group flex items-center justify-center lg:justify-start gap-3 px-6 py-3 bg-white border border-[#145DB8] rounded-xl 
                           md:w-auto hover:bg-[#145DB8] transition duration-500 lg:mt-[-85px] "
             >

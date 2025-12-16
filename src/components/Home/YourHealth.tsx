@@ -58,14 +58,14 @@ export default function HeroDownload({
 
 
           {/* ---------- MOBILE LAYOUT ---------- */}
-          <div className="md:hidden w-full flex flex-col items-center text-center px-6 py-10">
+          <div className="md:hidden w-full flex flex-col items-center text-center px-6 py-4">
 
             {/* Title + Description */}
-            <h1 className="text-4xl font-georgia font-normal text-white mb-4">
+            <h1 className="text-2xl font-georgia font-normal text-white mb-4">
               {title}
             </h1>
 
-            <p className="text-white  font-georgia font-normal text-[24px] leading-relaxed mb-8">
+            <p className="text-white  font-sans font-normal text-[15px] leading-relaxed mb-8">
               Book appointments, chat with doctors,<br/> and manage your health anytime—right<br/> from your phone. Download the app now <br/>and stay connected wherever you are.
             </p>
 

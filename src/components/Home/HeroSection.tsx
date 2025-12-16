@@ -31,7 +31,7 @@ export default function HeroSection({
             {title}
           </h1>
           
-          <p className="text-base md:text-2xl text-gray-600 leading-relaxed mb-8 font-sans font-normal">
+          <p className="text-[13px] md:text-sm lg:text-base text-gray-600 leading-relaxed mb-8 font-sans font-normal">
            Easily find top-rated specialists near you and book <br/>appointments in just a few clicks. Whether you<br/> need an in-person visit consultation, we're here to<br/> connect you with the right care—fast, simple, and <br/>secure.
           </p>
 
@@ -60,19 +60,18 @@ export default function HeroSection({
             <span className="text-xl font-georgia font-normal text-gray-500">10k+ happy patients</span>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button className="w-full sm:w-auto px-10 py-4 bg-blue-800  text-white  rounded-lg shadow-md  font-sans text-[16px] font-normal">
-              Get started
-            </button>
-            
-            <button className="w-full sm:w-auto px-8 py-4 bg-white  text-blue-600 rounded-lg border border-blue-600 transition-colors flex items-center justify-center gap-2 font-sans font-normal text-[15px]">
-              <GiNotebook className="w-6 h-6" />
-              <span>Book Appointment</span>
-            </button>
-          </div>
+         {/* CTA Buttons */}
+<div className="flex flex-row flex-wrap items-center justify-center gap-4">
+  <button className="px-6 sm:px-10 py-3 sm:py-4 bg-blue-800 text-white rounded-lg shadow-md font-sans text-[14px] sm:text-[16px] font-normal">
+    Get started
+  </button>
+  
+  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-white text-blue-600 rounded-lg border border-blue-600 transition-colors flex items-center justify-center gap-2 font-sans text-[14px] sm:text-[15px] font-normal">
+    <GiNotebook className="w-5 sm:w-6 h-5 sm:h-6" />
+    <span>Book Appointment</span>
+  </button>
+</div>
         </div>
-
        
         <div className="hidden lg:block">
           <div className="absolute left-52 top-56 -translate-y-1/2 flex flex-col items-center gap-2">

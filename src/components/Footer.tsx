@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-
 import { RiFacebookFill, RiTwitterFill } from "react-icons/ri";
 import { IoLogoWhatsapp, IoLogoYoutube, IoLogoLinkedin, IoLogoInstagram } from "react-icons/io";
 import { LiaPhoneVolumeSolid } from "react-icons/lia";
@@ -20,7 +19,7 @@ const SocialIcon: React.FC<SocialIconProps> = ({ Icon, link, isMobile = false })
     target="_blank" 
     rel="noopener noreferrer"
     className={`w-9 h-9 rounded-lg flex items-center justify-center transition text-2xl 
-                ${isMobile ? 'bg-black/20 text-white' : 'bg-white border border-white/30'}`}
+                ${isMobile ? 'bg-black/20 text-white' : 'bg-white border-0 border-white/30'}`}
   >
     <Icon className={isMobile ? 'text-white' : 'text-gray-700'} />
   </a>
@@ -140,7 +139,7 @@ const Footer = () => {
         </div>
 
         {/* Mobile Version */}
-        <div className="md:hidden bg-[#05162c] text-white pt-8 pb-4 px-4 text-center">
+        <div className="md:hidden bg-[#05162c] text-white pt-8 pb-4  text-center">
           
           <div className="flex mb-6 justify-start items-center">
             <img src="/images/BsHeartPulse.png" alt="Cure Logo" className="w-10 h-10" />
@@ -151,20 +150,21 @@ const Footer = () => {
             Let's Discuss <FaPhoneVolume />
           </h4>
 
-          <p className="text-gray-300 text-xl leading-relaxed mb-8  font-georgia">
+          <p className="text-gray-300 text-[15px] leading-relaxed mb-8  font-georgia">
             Cure helps you find trusted doctors,<br/>
             book appointments, and manage your health—<br/>
             quickly and easily.
           </p>
 
-          <div className="border-t border-white/20 pt-4 flex justify-between items-center text-sm text-gray-200">
-            <p className="text-[15px] font-serif">@ Cure - All rights reserved</p> 
+          <div className="border-t border-white pt-4   text-sm text-gray-200">
             <div className="flex gap-2 justify-center">
               <SocialIcon Icon={RiFacebookFill} link="#" isMobile />
               <SocialIcon Icon={RiTwitterFill} link="#" isMobile />
               <SocialIcon Icon={IoLogoInstagram} link="#" isMobile />
               <SocialIcon Icon={IoLogoLinkedin} link="#" isMobile />
             </div>
+                        <p className="text-[16px] font-serif ">@ Cure - All rights reserved</p> 
+
           </div>
         </div>
 

@@ -18,29 +18,23 @@ export function useNavbarLogic() {
     [navigate]
   );
 
-  // البحث الآن مجرد redirect لصفحة doctor-details
-  const handleSearch = useCallback(
-    (value: string) => {
-      setQuery(value);
-      if (!value.trim()) return;
-      navigate(`/doctor-details`); // ID ثابت مؤقت
-    },
-    [navigate]
-  );
+  // تحديث قيمة السيرش فقط (بدون redirect)
+  const handleSearchChange = useCallback((value: string) => {
+    setQuery(value);
+  }, []);
 
-  const goToDoctorDetails = useCallback(
-    (id: number) => {
-      navigate(`/doctor-details`);
-    },
-    [navigate]
-  );
+  // الانتقال لصفحة الدكتور
+  const goToDoctorDetails = useCallback(() => {
+    if (!query.trim()) return;
+    navigate(`/doctor-details?search=${encodeURIComponent(query)}`);
+  }, [navigate, query]);
 
   return {
     openMenu,
     toggleMenu,
     handleNavigate,
     query,
-    handleSearch,
+    handleSearchChange,
     goToDoctorDetails,
   };
 }

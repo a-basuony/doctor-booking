@@ -108,7 +108,7 @@ export default function Navbar() {
           {/* <Bell className="w-10 h-10 p-1.5 rounded-xl cursor-pointer text-gray-700 border-2 border-white bg-slate-100" /> */}
           <Notifications />
           <img
-            src="/images/Ellipse1539.jpeg"
+            src="/images/Ellipse_1539.jpeg"
             alt="User profile"
             className="w-10 h-10 rounded-full cursor-pointer"
             onClick={() => handleNavigate("/profile")}

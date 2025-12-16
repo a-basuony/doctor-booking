@@ -100,7 +100,7 @@ export default function FindCareMap() {
           {/* BUTTON = order-4 on mobile (AFTER MAP) */}
           <div className="order-4 lg:order-none text-center  lg:text-left    ">
             <button
-              onClick={() => window.location.href = "/doctor-details"}
+              onClick={() => window.location.href = "/SearchDoctors"}
 
               className="group flex items-center justify-center lg:justify-start gap-3 px-6 py-3 bg-white border border-[#145DB8] rounded-xl 
                           md:w-auto hover:bg-[#145DB8] transition duration-500 lg:mt-[-85px] "

@@ -89,7 +89,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <h2 className="font-semibold text-gray-900 text-base">
               {chat.fullName}
             </h2>
-            <span className="text-xs text-gray-500">{chat.lastSeen}</span>
           </div>
         </div>
 
@@ -118,11 +117,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <div
               key={msg.id}
               className={`flex ${
-                isMe ? "justify-end" : "justify-start"
+                isMe ? "justify-start" : "justify-end"
               } group relative`}
             >
               {/* Delete Button (Left side for user messages, Right side for others) */}
-              {isMe && (
+              {!isMe && (
                 <button
                   onClick={() => onDeleteMessage(msg.id)}
                   className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-red-400 hover:text-red-600 self-center mr-2"
@@ -136,8 +135,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 className={`max-w-[70%] sm:max-w-[60%] px-4 py-3 rounded-2xl text-[15px] leading-relaxed relative
                   ${
                     isMe
-                      ? "bg-[#145db8] text-white rounded-tr-none"
-                      : "bg-white text-gray-800 rounded-tl-none border border-gray-200 shadow-sm"
+                      ? "bg-[#145db8] text-white rounded-tl-none"
+                      : "bg-white text-gray-800 rounded-tr-none border border-gray-200 shadow-sm"
                   }
                 `}
               >
@@ -159,7 +158,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 </span>
               </div>
 
-              {!isMe && (
+              {isMe && (
                 <button
                   onClick={() => onDeleteMessage(msg.id)}
                   className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-red-400 hover:text-red-600 self-center ml-2"

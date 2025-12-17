@@ -33,7 +33,7 @@ export default function ReviewsSection({}: ReviewsSectionProps) {
   const reviewers = [
     { id: 1, img: "/images/Reviews/img1.png", name: "Reviewer 1", marginTop: "0" },
     { id: 2, img: "/images/Reviews/img2.png", name: "Reviewer 2", marginTop: "-20px" },
-    { id: 3, img: "/images/Reviews/img3.png", name: "Reviewer 3", marginTop: "-30px" },
+    { id: 3, img: "/images/Reviews/img3.png", name: "Reviewer 3", marginTop: "0" },
     { id: 4, img: "/images/Reviews/img4.png", name: "Reviewer 4", marginTop: "-20px" },
     { id: 5, img: "/images/Reviews/img5.png", name: "Reviewer 5", marginTop: "0" },
   ];
@@ -41,18 +41,19 @@ export default function ReviewsSection({}: ReviewsSectionProps) {
   return (
     <section className="w-full bg-white py-10 md:py-20">
       <div className="max-w-6xl mx-auto px-6">
-        
+
         {/* Header */}
         <div className="text-center mb-10">
-          <h2 className="text-4xl font-serif font-normal text-gray-900 mb-2">
-            Reviews<br/>That Speak for Themselves
+          <h2 className="font-serif font-normal text-gray-900 mb-2
+                         text-[28px] md:text-4xl">
+            Reviews<br />That Speak for Themselves
           </h2>
         </div>
 
         {/* Review Card */}
         <div className="max-w-3xl mx-auto">
-          
-          {/* Material-UI Rating Stars */}
+
+          {/* Rating */}
           <div className="flex justify-center mb-8">
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Rating
@@ -60,40 +61,44 @@ export default function ReviewsSection({}: ReviewsSectionProps) {
                 value={value}
                 precision={0.5}
                 getLabelText={getLabelText}
-                onChange={(_event, newValue) => {
+                onChange={(_, newValue) => {
                   setValue(newValue);
                 }}
                 size="large"
                 sx={{
                   fontSize: { xs: '2rem', md: '2.5rem' },
-                  '& .MuiRating-iconFilled': {
-                    color: '#facc15',
-                  },
-                  '& .MuiRating-iconHover': {
-                    color: '#fbbf24',
-                  },
+                  '& .MuiRating-iconFilled': { color: '#facc15' },
+                  '& .MuiRating-iconHover': { color: '#fbbf24' },
                 }}
-                emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
+                emptyIcon={
+                  <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                }
               />
             </Box>
           </div>
 
           {/* Review Text */}
           <div className="mb-8 pb-12">
-            <p className="text-center text-2xl text-gray-500 font-serif font-normal leading-sung">
-              Quick and easy booking! I found a<br/> great dermatologist near me and<br/> booked an appointment in just a <br/>few minutes.
+            <p className="text-center text-gray-500 font-serif font-normal leading-relaxed
+                          text-[18px] md:text-2xl">
+              Quick and easy booking! I found a<br />
+              great dermatologist near me and<br />
+              booked an appointment in just a<br />
+              few minutes.
             </p>
           </div>
 
           {/* Reviewer Images */}
-          <div className="flex justify-center items-end gap-2 flex-wrap ">
+          <div className="flex justify-center items-end gap-2 flex-nowrap overflow-x-hidden">
             {reviewers.map((reviewer, index) => (
               <div
                 key={reviewer.id}
                 style={{ marginTop: reviewer.marginTop }}
                 className={`
-                  ${index === 2 ? 'w-24 md:w-36 h-24 md:h-36' : 'w-20 md:w-28 h-20 md:h-28'}
-                  rounded-full overflow-hidden flex-shrink-0 
+                  ${index === 2
+                    ? 'w-20 h-20 md:w-36 md:h-36'
+                    : 'w-16 h-16 md:w-28 md:h-28'}
+                  rounded-full overflow-hidden flex-shrink-0
                 `}
               >
                 <img
@@ -106,7 +111,6 @@ export default function ReviewsSection({}: ReviewsSectionProps) {
           </div>
 
         </div>
-
       </div>
     </section>
   );

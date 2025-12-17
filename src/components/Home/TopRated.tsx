@@ -39,7 +39,7 @@ export default function TopRated() {
   const visibleDoctors = isMobile ? topDoctors.slice(0, 1) : topDoctors;
 
   const handleViewAll = () => {
-    navigate('/BookingPage');
+    navigate('/SearchDoctors');
   };
 
   const handleBookAppointment = (doctorId: number) => {
@@ -52,7 +52,7 @@ export default function TopRated() {
         {/* Title Section */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-georgia font-normal text-gray-900 mb-3">
+            <h1 className="text-lg md:text-2xl lg:text-3xl font-georgia font-normal text-gray-900 mb-3">
               Top-Rated Doctors Chosen by Patients
             </h1>
             <p className="text-gray-600 text-lg max-w-2xl font-sans leading-relaxed mb-4 md:mb-0">

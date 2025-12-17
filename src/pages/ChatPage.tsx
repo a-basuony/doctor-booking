@@ -47,12 +47,16 @@ const ChatPage = () => {
               ? ("other" as const)
               : ("me" as const),
           text: msg.message_content || "",
-          time: msg.message_created_at
-            ? new Date(msg.message_created_at).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "",
+          time:
+            msg.message_created_at || msg.time
+              ? new Date(msg.message_created_at || msg.time).toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )
+              : "",
           isRead: msg.message_seen === 1 || false,
           image: msg.message_file || null, // Map API file to image
         }));
@@ -65,24 +69,41 @@ const ChatPage = () => {
 
         return {
           id: c.room_id || c.id,
-          doctorId: c.doctor_id || c.doctor?.id, // Store for later
-          messages: mappedMessages,
-          unreadCount: c.unread_count || 0,
+          doctorId: c.doctorId || c.doctor_id || c.doctor?.id, // Store for later
+          messages:
+            mappedMessages.length > 0 ? mappedMessages : c.messages || [],
+          unreadCount:
+            c.unreadCount !== undefined ? c.unreadCount : c.unread_count || 0,
           fullName:
-            c.doctor?.doctor_name || c.doctor_name || c.full_name || "User",
-          lastMessage: lastMsgObj ? lastMsgObj.text : c.last_message || "",
+            c.fullName ||
+            c.doctor?.doctor_name ||
+            c.doctor_name ||
+            c.full_name ||
+            "User",
+          lastMessage:
+            c.lastMessage ||
+            (lastMsgObj ? lastMsgObj.text : c.last_message || ""),
           timestamp: c.last_message_time
-            ? new Date(c.last_message_time).toLocaleDateString()
+            ? new Date(c.last_message_time).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : lastMsgObj
             ? lastMsgObj.time
+            : c.timestamp
+            ? new Date(c.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "",
           avatar:
+            c.avatar ||
             c.doctor?.image ||
             c.doctor?.avatar ||
-            c.avatar ||
             `https://i.pravatar.cc/150?u=${c.room_id || c.id}`,
-          isFavorite: c.isFavorite || false,
-          isUnread: false, // Calculate from messages if needed
+          isFavorite:
+            c.isFavorite !== undefined ? c.isFavorite : c.isFavorite || false,
+          isUnread: c.isUnread !== undefined ? c.isUnread : false,
           lastSeen: c.lastSeen || "Offline",
         };
       });
@@ -118,12 +139,16 @@ const ChatPage = () => {
             ? ("other" as const)
             : ("me" as const), // Default to 'me' if it doesn't match doctor
         text: msg.message_content || msg.text || "",
-        time: msg.message_created_at
-          ? new Date(msg.message_created_at).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "",
+        time:
+          msg.message_created_at || msg.time
+            ? new Date(msg.message_created_at || msg.time).toLocaleTimeString(
+                [],
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              )
+            : "",
         isRead: msg.message_seen === 1 || false,
         image: msg.message_file || null,
       }));

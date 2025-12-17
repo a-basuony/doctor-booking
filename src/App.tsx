@@ -110,10 +110,7 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
 
         {/* Terms & Privacy */}
-        <Route
-          path={ROUTES.PRIVACY_POLICY}
-          element={<PrivacyPolicyPage />}
-        />
+        <Route path={ROUTES.PRIVACY_POLICY} element={<PrivacyPolicyPage />} />
 
         {/* Profile */}
         <Route path={ROUTES.PROFILE} element={<Profile />} />

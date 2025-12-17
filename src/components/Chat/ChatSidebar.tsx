@@ -210,24 +210,20 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 )}
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="font-semibold text-gray-900 text-[15px]">
-                    {chat.fullName}
-                  </h3>
-                  <span
-                    className={`text-xs ${
-                      chat.unreadCount > 0
-                        ? "text-green-600 font-medium"
-                        : "text-gray-400"
-                    }`}
-                  >
-                    {chat.timestamp}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 truncate pr-4 leading-relaxed">
-                  {chat.lastMessage}
-                </p>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <h3 className="font-semibold text-gray-900 text-[15px]">
+                  {chat.fullName}
+                </h3>
+                {!isSelectionMode && (
+                  <div className="flex items-center justify-between mt-0.5 w-full">
+                    <p className="text-sm text-gray-500 truncate pr-2">
+                      {chat.lastMessage}
+                    </p>
+                    <span className="text-xs text-blue-500 flex-shrink-0">
+                      {chat.timestamp}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Unread Badge (hidden in selection mode) */}

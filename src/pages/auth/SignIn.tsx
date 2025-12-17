@@ -8,15 +8,12 @@ import { signInSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import PasswordInput from "../../components/common/PasswordInput";
-// import { useSignIn } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useSignIn } from "../../hooks/useAuth";
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
-  const navigate = useNavigate();
-  // const { mutate: signIn, isPending } = useSignIn();
-  const isPending = false; // Mock loading state
+  const { mutate: signIn, isPending } = useSignIn();
   const {
     control,
     register,
@@ -27,10 +24,7 @@ const SignIn = () => {
   });
 
   const onSubmit = (data: SignInFormData) => {
-    console.log(data);
-    navigate(ROUTES.HOME);
-
-    // signIn(data);
+    signIn(data);
   };
 
   return (

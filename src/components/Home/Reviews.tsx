@@ -29,7 +29,6 @@ function getLabelText(value: number) {
 
 export default function ReviewsSection({}: ReviewsSectionProps) {
   const [value, setValue] = React.useState<number | null>(5);
-  const [hover, setHover] = React.useState(-1);
 
   const reviewers = [
     { id: 1, img: "/images/Reviews/img1.png", name: "Reviewer 1", marginTop: "0" },
@@ -62,11 +61,8 @@ export default function ReviewsSection({}: ReviewsSectionProps) {
                 value={value}
                 precision={0.5}
                 getLabelText={getLabelText}
-                onChange={(event, newValue) => {
+                onChange={(_, newValue) => {
                   setValue(newValue);
-                }}
-                onChangeActive={(event, newHover) => {
-                  setHover(newHover);
                 }}
                 size="large"
                 sx={{

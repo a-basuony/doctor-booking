@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronDown, Clock, MapPin, User } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  Clock,
+  MapPin,
+  User,
+  Loader2,
+} from "lucide-react";
+import { useMyBookings, useCancelBooking } from "../../hooks/useMyBookings";
 
 // Define proper types
 interface DateOption {
@@ -8,67 +16,23 @@ interface DateOption {
   label: string;
 }
 
-interface Appointment {
-  id: number;
-  date: string;
-  time: string;
-  name: string;
-  specialty: string;
-  address: string;
-  status: "Upcoming" | "Completed" | "Canceled";
-}
-
 const Booking = () => {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-  
+
+  // Reschedule Modal State - Removed
+
+  const { data: appointments, isLoading, error } = useMyBookings();
+  const cancelBooking = useCancelBooking();
+
   const availableDates: DateOption[] = [
     { value: "", label: "All" },
     { value: "2024-07-21", label: "Monday, July 21" },
     { value: "2024-07-06", label: "Sunday, July 6" },
     { value: "2024-07-31", label: "Wednesday, July 31" },
   ];
-
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    {
-      id: 1,
-      date: "2024-07-21",
-      time: "11:00 AM",
-      name: "Jennifer Miller",
-      specialty: "Psychiatrist",
-      address: "15161 Nasr Street, Cairo, Egypt",
-      status: "Upcoming",
-    },
-    {
-      id: 2,
-      date: "2024-07-06",
-      time: "11:00 AM",
-      name: "Jennifer Miller",
-      specialty: "Psychiatrist",
-      address: "15161 Nasr Street, Cairo, Egypt",
-      status: "Completed",
-    },
-    {
-      id: 3,
-      date: "2024-07-31",
-      time: "11:00 AM",
-      name: "Jennifer Miller",
-      specialty: "Psychiatrist",
-      address: "15161 Nasr Street, Cairo, Egypt",
-      status: "Canceled",
-    },
-    {
-      id: 4,
-      date: "2024-07-21",
-      time: "11:00 AM",
-      name: "Jennifer Miller",
-      specialty: "Psychiatrist",
-      address: "15161 Nasr Street, Cairo, Egypt",
-      status: "Completed",
-    },
-  ]);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -79,14 +43,23 @@ const Booking = () => {
     });
   };
 
-  const filters: string[] = ["All", "Upcoming", "Completed", "Canceled"];
+  const filters: string[] = [
+    "All",
+    "Pending",
+    "Rescheduled",
+    "Completed",
+    "Cancelled",
+  ];
 
-  const filteredAppointments = appointments.filter((apt) => {
-    const matchesFilter =
-      selectedFilter === "All" || apt.status === selectedFilter;
-    const matchesDate = !selectedDate || apt.date === selectedDate;
-    return matchesFilter && matchesDate;
-  });
+  const filteredAppointments =
+    appointments?.filter((apt) => {
+      const matchesFilter =
+        selectedFilter === "All" ||
+        apt.status.toLowerCase() === selectedFilter.toLowerCase();
+      const matchesDate =
+        !selectedDate || apt.appointment_date === selectedDate;
+      return matchesFilter && matchesDate;
+    }) || [];
 
   const handleReschedule = (id: number): void => {
     navigate(`/book-appointment/${id}`);
@@ -109,25 +82,41 @@ const Booking = () => {
   };
 
   const handleCancel = (id: number): void => {
-    setAppointments(
-      appointments.map((apt) =>
-        apt.id === id ? { ...apt, status: "Canceled" as const } : apt
-      )
-    );
+    cancelBooking.mutate(id);
   };
 
   const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "Upcoming":
+    switch (status.toLowerCase()) {
+      case "pending":
+      case "upcoming":
         return "text-blue-600";
-      case "Completed":
+      case "completed":
         return "text-green-600";
-      case "Canceled":
+      case "canceled":
+      case "cancelled":
         return "text-red-600";
+      case "rescheduled":
+        return "text-orange-600";
       default:
         return "text-gray-600";
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-600">
+        Error loading appointments. Please try again later.
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-6 min-h-screen">
@@ -206,28 +195,37 @@ const Booking = () => {
                 <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="w-4 h-4" />
-                    <span>{formatDate(appointment.date)}</span>
+                    <span>{formatDate(appointment.appointment_date)}</span>
                   </div>
                   <span
                     className={`text-sm font-medium ${getStatusColor(
                       appointment.status
                     )}`}
                   >
-                    {appointment.status}
+                    {appointment.status.charAt(0).toUpperCase() +
+                      appointment.status.slice(1)}
                   </span>
                 </div>
 
                 {/* Doctor info */}
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                    {appointment.doctor.image ? (
+                      <img
+                        src={appointment.doctor.image}
+                        alt={appointment.doctor.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-6 h-6 text-blue-600" />
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 truncate">
-                      {appointment.name}
+                      {appointment.doctor.name}
                     </h3>
                     <p className="text-sm text-gray-600 truncate">
-                      {appointment.specialty}
+                      {appointment.doctor.speciality}
                     </p>
                   </div>
                 </div>
@@ -235,24 +233,29 @@ const Booking = () => {
                 {/* Time */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                   <Clock className="w-4 h-4" />
-                  <span>{appointment.time}</span>
+                  <span>{appointment.appointment_time}</span>
                 </div>
 
                 {/* Address */}
                 <div className="flex items-start gap-2 text-sm text-gray-600 mb-4">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span className="line-clamp-2">{appointment.address}</span>
+                  <span className="line-clamp-2">
+                    {appointment.doctor.address}
+                  </span>
                 </div>
 
                 {/* Action buttons */}
                 <div className="flex gap-2">
-                  {appointment.status === "Upcoming" && (
+                  {(appointment.status === "pending" ||
+                    appointment.status === "rescheduled" ||
+                    appointment.status === "upcoming") && (
                     <>
                       <button
                         onClick={() => handleCancel(appointment.id)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        disabled={cancelBooking.isPending}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Cancel
+                        {cancelBooking.isPending ? "Cancelling..." : "Cancel"}
                       </button>
                       <button
                         onClick={() => handleReschedule(appointment.id)}
@@ -263,7 +266,7 @@ const Booking = () => {
                     </>
                   )}
 
-                  {appointment.status === "Completed" && (
+                  {appointment.status === "completed" && (
                     <>
                       <button
                         onClick={() => handleViewDetails()}
@@ -280,7 +283,8 @@ const Booking = () => {
                     </>
                   )}
 
-                  {appointment.status === "Canceled" && (
+                  {(appointment.status === "canceled" ||
+                    appointment.status === "cancelled") && (
                     <>
                       <button
                         onClick={() => handleBookAgain(appointment.id)}

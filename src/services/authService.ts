@@ -3,7 +3,6 @@ import type {
   SignInData,
   VerifyOTPData,
   ResendOTPData,
-  User,
   ApiResponse,
   SignInResponse,
   SignUpResponse,
@@ -54,23 +53,6 @@ export const authService = {
     return response.data;
   },
 
-  // Get current user from localStorage
-  getCurrentUser: (): User | null => {
-    const userStr = localStorage.getItem("user");
-    const token = localStorage.getItem("authToken");
-
-    if (!token || !userStr) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(userStr) as User;
-    } catch {
-      localStorage.removeItem("user");
-      localStorage.removeItem("authToken");
-      return null;
-    }
-  },
 
   changePassword: async (
     data: ChangePasswordData
@@ -86,8 +68,5 @@ export const authService = {
   logout: async (): Promise<void> => {
     await api.post("/profile/logout");
     localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
-    localStorage.removeItem("tempPhoneNumber");
-    localStorage.removeItem("tempUserData");
   },
 };

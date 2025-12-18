@@ -107,6 +107,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
             {...register("name")}
             fullWidth
             label="Name"
+            InputLabelProps={{ shrink: true }}
             error={!!errors.name}
             helperText={errors.name?.message}
             size="small"
@@ -118,6 +119,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
             fullWidth
             label="Email"
             type="email"
+            InputLabelProps={{ shrink: true }}
             error={!!errors.email}
             helperText={errors.email?.message}
             size="small"
@@ -141,6 +143,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
             fullWidth
             label="Phone Number"
             type="tel"
+            InputLabelProps={{ shrink: true }}
             error={!!errors.phone}
             helperText={errors.phone?.message}
             size="small"

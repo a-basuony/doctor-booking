@@ -1,22 +1,64 @@
-export interface Message {
+export interface User {
   id: number;
-  sender: 'me' | 'other';
-  text: string;
-  time: string;
-  isRead: boolean;
-  image?: string; // Added for image rendering
+  name: string;
+  avatar: string | null;
 }
 
-export interface Chat {
+export interface Message {
   id: number;
-  doctorId?: number; // Added for sender identification
-  fullName: string;
-  avatar: string;
-  lastMessage: string;
-  unreadCount: number;
-  isFavorite: boolean;
-  isUnread: boolean;
-  timestamp: string;
-  lastSeen: string;
-  messages: Message[];
+  body: string;
+  is_read: boolean;
+  type: string;
+  created_at: string;
+  sender_id: number;
+  sender?: User;
+  file_url?: string | null;
+}
+
+export interface Conversation {
+  id: number;
+  is_private: boolean;
+  other_user: User;
+  last_message: Message | null;
+  unread_count: number;
+  is_favorite: boolean;
+  is_archived: boolean;
+  updated_at: string;
+}
+
+export interface PaginationLinks {
+  first: string;
+  last: string;
+  prev: string | null;
+  next: string | null;
+}
+
+export interface PaginationMeta {
+  current_page: number;
+  from: number | null;
+  last_page: number;
+  path: string;
+  per_page: number;
+  to: number | null;
+  total: number;
+}
+
+export interface ConversationsResponse {
+  data: Conversation[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
+}
+
+export interface StartConversationResponse {
+  data: Conversation;
+}
+
+export interface MessagesResponse {
+  data: Message[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
+}
+
+export interface SendMessageResponse {
+  data: Message;
 }

@@ -5,21 +5,22 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 
 import { Sidebar } from "../components/SearchDoctors/Sidebar";
 import { DoctorCard } from "../components/SearchDoctors/DoctorCard";
-import { DOCTORS, SPECIALTIES, ICON_MAP } from "../constants/constants";
 import mapImg from "../assets/map.png";
 import filterImg from "../assets/filter.png";
+// import { DOCTORS, SPECIALTIES, ICON_MAP, Doctor } from "../constants/constants";
+import { DOCTORS, SPECIALTIES, ICON_MAP } from "../constants/constants";
+import type { Doctor } from "../constants/constants";
 
-// Types
+// Update Gender type to match what your Sidebar expects
 type Gender = "male" | "female" | null;
 
-// Constants
 const PAGE_SIZE = 9;
 
 const SearchDoctor = () => {
   // State
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("1");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedGender, setSelectedGender] = useState<Gender>("male");
+  const [selectedGender, setSelectedGender] = useState<Gender>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
 
@@ -36,12 +37,24 @@ const SearchDoctor = () => {
 
   // Filter doctors based on search query, specialty, and gender
   const filteredDoctors = useMemo(() => {
-    return DOCTORS.filter((doctor) => {
+    return DOCTORS.filter((doctor: Doctor) => {
       const matchesSearch =
         doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Find the selected specialty object
+      const selectedSpecialtyObj = SPECIALTIES.find(
+        (s) => s.id === selectedSpecialty
+      );
+
+      // If "1" means "All" or first item in specialties
       const matchesSpecialty =
-        selectedSpecialty === "1" || doctor.specialtyId === selectedSpecialty;
+        selectedSpecialty === "1" ||
+        (selectedSpecialtyObj &&
+          doctor.specialty.toLowerCase() ===
+            selectedSpecialtyObj.name.toLowerCase());
+
+      // Filter by gender
       const matchesGender = !selectedGender || doctor.gender === selectedGender;
 
       return matchesSearch && matchesSpecialty && matchesGender;
@@ -73,21 +86,28 @@ const SearchDoctor = () => {
 
   const handleSpecialtySelect = useCallback((id: string) => {
     setSelectedSpecialty(id);
-    setPage(1); // Reset to first page when changing filters
-  }, []);
-
-  const handleGenderSelect = useCallback((gender: Gender) => {
-    setSelectedGender(gender);
-    setPage(1); // Reset to first page when changing filters
+    setPage(1);
   }, []);
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value);
-      setPage(1); // Reset to first page when searching
+      setPage(1);
     },
     []
   );
+
+  const handleGenderSelect = useCallback((gender: Gender) => {
+    setSelectedGender(gender);
+    setPage(1);
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setSearchQuery("");
+    setSelectedSpecialty("1");
+    setSelectedGender(null);
+    setPage(1);
+  }, []);
 
   // Render methods
   const renderSpecialties = () => (
@@ -166,8 +186,6 @@ const SearchDoctor = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      {/* Top Navigation Bar */}
-
       {/* Top Navigation Bar */}
       <motion.div
         initial={{ y: -10, opacity: 0 }}
@@ -315,31 +333,24 @@ const SearchDoctor = () => {
               onClick={() => setShowFilters(false)}
               className="text-slate-500 hover:text-slate-700 px-2 py-1 rounded transition-colors text-sm"
             >
-              {window.innerWidth >= 640 ? "Hide filters" : "Close"}
+              {typeof window !== "undefined" && window.innerWidth >= 640
+                ? "Hide filters"
+                : "Close"}
             </button>
           </motion.div>
         )}
       </motion.div>
+
       {/* Main Content */}
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 flex items-start gap-8">
         {/* Sidebar Filters */}
         {showFilters && (
-          <motion.aside
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="w-64 flex-shrink-0 space-y-8 pr-6"
-            aria-label="Filter options"
-          >
-            {showFilters && (
-              <Sidebar
-                selectedGender={selectedGender}
-                setSelectedGender={setSelectedGender}
-                isOpen={showFilters}
-                onClose={() => setShowFilters(false)}
-              />
-            )}
-          </motion.aside>
+          <Sidebar
+            selectedGender={selectedGender}
+            setSelectedGender={handleGenderSelect}
+            isOpen={showFilters}
+            onClose={() => setShowFilters(false)}
+          />
         )}
 
         {/* Main Content Area */}
@@ -358,6 +369,15 @@ const SearchDoctor = () => {
               Showing {paginatedDoctors.length} of {filteredDoctors.length}{" "}
               doctors
               {searchQuery && ` for "${searchQuery}"`}
+              {selectedSpecialty !== "1" && (
+                <>
+                  {" "}
+                  in{" "}
+                  <span className="font-medium">
+                    {SPECIALTIES.find((s) => s.id === selectedSpecialty)?.name}
+                  </span>
+                </>
+              )}
             </p>
           </div>
 
@@ -370,7 +390,7 @@ const SearchDoctor = () => {
             aria-label="Doctors list"
           >
             {paginatedDoctors.length > 0 ? (
-              paginatedDoctors.map((doctor, idx) => (
+              paginatedDoctors.map((doctor: Doctor, idx: number) => (
                 <DoctorCard key={doctor.id} doctor={doctor} index={idx} />
               ))
             ) : (
@@ -379,12 +399,7 @@ const SearchDoctor = () => {
                   No doctors found matching your criteria.
                 </p>
                 <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedSpecialty("1");
-                    setSelectedGender(null);
-                    setPage(1);
-                  }}
+                  onClick={clearAllFilters}
                   className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
                   Clear all filters

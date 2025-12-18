@@ -1,7 +1,3 @@
-// import { Doctor, Specialty } from "./types";
-
-// import { Doctor, Specialty } from "../types/appointment";
-
 export interface Doctor {
   id: string;
   name: string;
@@ -12,6 +8,7 @@ export interface Doctor {
   timeEnd: string;
   price: number;
   image: string;
+  gender: "male" | "female"; // Add this
 }
 
 export interface Specialty {
@@ -41,6 +38,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "8:00pm",
     price: 350,
     image: "https://picsum.photos/id/1012/200/200",
+    gender: "male", // Added
   },
   {
     id: "2",
@@ -52,6 +50,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "6:00pm",
     price: 450,
     image: "https://picsum.photos/id/1027/200/200",
+    gender: "female", // Added
   },
   {
     id: "3",
@@ -63,6 +62,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "4:00pm",
     price: 400,
     image: "https://picsum.photos/id/1005/200/200",
+    gender: "male", // Added
   },
   {
     id: "4",
@@ -74,6 +74,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "5:00pm",
     price: 200,
     image: "https://picsum.photos/id/338/200/200",
+    gender: "female", // Added
   },
   {
     id: "5",
@@ -85,6 +86,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "7:00pm",
     price: 150,
     image: "https://picsum.photos/id/64/200/200",
+    gender: "male", // Added
   },
   {
     id: "6",
@@ -96,6 +98,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "5:30pm",
     price: 300,
     image: "https://picsum.photos/id/342/200/200",
+    gender: "female", // Added
   },
   {
     id: "7",
@@ -107,6 +110,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "4:30pm",
     price: 380,
     image: "https://picsum.photos/id/237/200/200",
+    gender: "male", // Added
   },
   {
     id: "8",
@@ -118,6 +122,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "3:00pm",
     price: 250,
     image: "https://picsum.photos/id/399/200/200",
+    gender: "female", // Added
   },
   {
     id: "9",
@@ -129,6 +134,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "6:30pm",
     price: 320,
     image: "https://picsum.photos/id/177/200/200",
+    gender: "male", // Added
   },
   {
     id: "10",
@@ -140,6 +146,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "2:00pm",
     price: 420,
     image: "https://picsum.photos/id/433/200/200",
+    gender: "female", // Added
   },
   {
     id: "11",
@@ -151,6 +158,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "5:00pm",
     price: 260,
     image: "https://picsum.photos/id/1025/200/200",
+    gender: "male", // Added
   },
   {
     id: "12",
@@ -162,6 +170,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "4:00pm",
     price: 480,
     image: "https://picsum.photos/id/823/200/200",
+    gender: "female", // Added
   },
   {
     id: "13",
@@ -173,6 +182,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "6:00pm",
     price: 180,
     image: "https://picsum.photos/id/91/200/200",
+    gender: "male", // Added
   },
   {
     id: "14",
@@ -184,6 +194,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "5:30pm",
     price: 340,
     image: "https://picsum.photos/id/823/200/200",
+    gender: "female", // Added
   },
   {
     id: "15",
@@ -195,6 +206,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "3:00pm",
     price: 390,
     image: "https://picsum.photos/id/65/200/200",
+    gender: "male", // Added
   },
   {
     id: "16",
@@ -206,6 +218,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "6:00pm",
     price: 310,
     image: "https://picsum.photos/id/550/200/200",
+    gender: "female", // Added
   },
   {
     id: "17",
@@ -217,6 +230,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "5:00pm",
     price: 190,
     image: "https://picsum.photos/id/100/200/200",
+    gender: "male", // Added
   },
   {
     id: "18",
@@ -228,6 +242,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "2:30pm",
     price: 270,
     image: "https://picsum.photos/id/823/200/200",
+    gender: "female", // Added
   },
   {
     id: "19",
@@ -239,6 +254,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "4:00pm",
     price: 240,
     image: "https://picsum.photos/id/77/200/200",
+    gender: "male", // Added
   },
   {
     id: "20",
@@ -250,6 +266,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "7:00pm",
     price: 360,
     image: "https://picsum.photos/id/823/200/200",
+    gender: "female", // Added
   },
   {
     id: "21",
@@ -261,6 +278,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "5:00pm",
     price: 440,
     image: "https://picsum.photos/id/888/200/200",
+    gender: "male", // Added
   },
   {
     id: "22",
@@ -272,6 +290,7 @@ export const DOCTORS: Doctor[] = [
     timeEnd: "4:00pm",
     price: 210,
     image: "https://picsum.photos/id/823/200/200",
+    gender: "female", // Added
   },
 ];
 
@@ -294,3 +313,5 @@ export const ICON_MAP: Record<string, any> = {
   eye: Eye,
   bone: Bone,
 };
+
+export type { Doctor };

@@ -8,6 +8,7 @@ import type {
   SignInResponse,
   SignUpResponse,
   OTPVerificationResponse,
+  ChangePasswordData,
 } from "../types/auth";
 import { api } from "./api";
 
@@ -36,7 +37,7 @@ export const authService = {
     data: VerifyOTPData
   ): Promise<ApiResponse<OTPVerificationResponse>> => {
     const response = await api.post<ApiResponse<OTPVerificationResponse>>(
-      "/auth/otp/verify",
+      "/auth/verify-otp",
       data
     );
     return response.data;
@@ -47,7 +48,7 @@ export const authService = {
     data: ResendOTPData
   ): Promise<ApiResponse<{ otp: number }>> => {
     const response = await api.post<ApiResponse<{ otp: number }>>(
-      "/auth/otp/resend",
+      "/auth/resend-otp",
       data
     );
     return response.data;
@@ -71,10 +72,22 @@ export const authService = {
     }
   },
 
+  changePassword: async (
+    data: ChangePasswordData
+  ): Promise<ApiResponse<void>> => {
+    const response = await api.put<ApiResponse<void>>(
+      "/profile/change-password",
+      data
+    );
+    return response.data;
+  },
+
   // Logout
   logout: async (): Promise<void> => {
-    await api.post("/auth/logout");
+    await api.post("/profile/logout");
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
+    localStorage.removeItem("tempPhoneNumber");
+    localStorage.removeItem("tempUserData");
   },
 };

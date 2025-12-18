@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://round8-cure-php-team-two.huma-volve.com/api/",
+  baseURL: "https://round8-backend-team-one.huma-volve.com/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -40,4 +40,4 @@ api.interceptors.response.use(
     }
     return Promise.reject(error);
   }
-)
+);

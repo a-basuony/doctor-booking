@@ -1,25 +1,23 @@
 import { useState } from "react";
 import { Box, Container, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import PersonalInformation from "../components/profile/PersonalInformation";
 import PasswordManagement from "../components/profile/PasswordManagement";
-import { ROUTES } from "../constants/routes";
-// import { useAuthContext } from "../hooks/useAuth";
+import { useAuthContext, useLogout } from "../hooks/useAuth";
 
 const Profile = () => {
-  // const { user } = useAuthContext();
-  const navigate = useNavigate();
+  const { user: apiUser, isAuthenticated } = useAuthContext();
+  const { mutate: logout, isPending } = useLogout();
   const [activeTab, setActiveTab] = useState(0);
 
-  // Mock user data - replace with actual user data from context/state
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user: any = {
-    name: "Seif Mohamed",
-    location: "129,El-Nasr Street, Cairo",
-    email: "seif@example.com",
-    phone: "+201234567890",
-    bir_of_date: "1990-01-01",
-    avatar: "/path/to/avatar.jpg", // Replace with actual avatar path
+  console.log("Auth user:", apiUser, "Authenticated:", isAuthenticated);
+
+  const user = apiUser || {
+    name: "Guest User",
+    location: "",
+    email: "",
+    phone: "",
+    birthdate: "1990-01-01",
+    avatar: "/path/to/avatar.jpg",
   };
 
   const tabs = [
@@ -30,7 +28,7 @@ const Profile = () => {
   const handleLogout = () => {
     // Add logout logic here
     console.log("Logging out...");
-    navigate(ROUTES.SIGN_IN);
+    logout();
   };
 
   return (
@@ -128,7 +126,7 @@ const Profile = () => {
           </Typography>
 
           {/* Location */}
-          {user?.location && (
+          {/* {user?.location && (
             <Box
               sx={{
                 display: "flex",
@@ -154,7 +152,7 @@ const Profile = () => {
                 {user.location}
               </Typography>
             </Box>
-          )}
+          )} */}
 
           {/* Custom Tabs */}
           <Box
@@ -218,6 +216,7 @@ const Profile = () => {
             color="error"
             fullWidth
             onClick={handleLogout}
+            disabled={isPending}
             sx={{
               mt: { xs: 2, md: 3 },
               py: { xs: 1, sm: 1.5 },

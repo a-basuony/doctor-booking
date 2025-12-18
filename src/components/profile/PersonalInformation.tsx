@@ -2,49 +2,86 @@ import { Box, TextField, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { useEffect, useMemo } from "react";
 import { personalInfoSchema } from "../../utils/validation";
 import type { User } from "../../types/auth";
+import { useUpdateProfile } from "../../hooks/useProfile";
+import {
+  convertToBackendDateFormat,
+  convertToFrontendDateFormat,
+} from "../../utils/utils.";
+import toast from "react-hot-toast";
 
 type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
 const PersonalInformation = ({ user }: { user: User | null }) => {
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
+
+  // Calculate initial data from user
+  const initialData = useMemo(() => {
+    if (!user) return null;
+    return {
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      dateOfBirth: user.birthdate
+        ? convertToFrontendDateFormat(user.birthdate)
+        : "",
+    };
+  }, [user]);
+
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
       name: "",
       email: "",
       phone: "",
-      dateOfBirth: "1990-01-01",
+      dateOfBirth: "",
     },
   });
 
   // Update form values when user data changes
   useEffect(() => {
-    if (user) {
-      reset({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        dateOfBirth: user.bir_of_date || "1990-01-01",
-      });
+    if (initialData) {
+      reset(initialData);
     }
-  }, [user, reset]);
+  }, [initialData, reset]);
 
   if (!user) {
     return <div>loadding...</div>;
   }
 
   const onSubmit = async (data: PersonalInfoFormData) => {
+    // Check if data has changed
+    if (initialData) {
+      const hasChanges =
+        data.name !== initialData.name ||
+        data.email !== initialData.email ||
+        data.phone !== initialData.phone ||
+        data.dateOfBirth !== initialData.dateOfBirth;
+
+      if (!hasChanges) {
+        toast.error("No changes detected. Please modify the data before saving.");
+        return;
+      }
+    }
+
     console.log("Personal information data:", data);
-    // Add API call to update personal information here
-    toast.success("Personal information updated successfully!");
+    // Format data for API
+    const formattedData = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      birthdate: data.dateOfBirth
+        ? convertToBackendDateFormat(data.dateOfBirth)
+        : undefined,
+    };
+    updateProfile(formattedData);
   };
 
   return (
@@ -117,13 +154,13 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
           <Button
             type="submit"
             variant="contained"
-            disabled={isSubmitting}
+            disabled={isPending}
             sx={{
               textTransform: "capitalize",
               borderRadius: "10px",
             }}
           >
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isPending ? "Saving..." : "Save Changes"}
           </Button>
         </Box>
       </Box>

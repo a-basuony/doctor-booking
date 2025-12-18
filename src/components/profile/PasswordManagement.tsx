@@ -2,18 +2,19 @@ import { Box, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import toast from "react-hot-toast";
 import { passwordSchema } from "../../utils/validation";
 import PasswordInput from "../common/PasswordInput";
+import { useChangePassword } from "../../hooks/useAuth";
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 const PasswordManagement = () => {
+  const { mutate: changePassword, isPending } = useChangePassword();
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
   });
@@ -21,7 +22,13 @@ const PasswordManagement = () => {
   const onSubmit = async (data: PasswordFormData) => {
     console.log("Password change data:", data);
     // Add API call to update password here
-    toast.success("Password updated successfully!");
+    const formattedData = {
+      current_password: data.currentPassword,
+      new_password: data.newPassword,
+      new_password_confirmation: data.confirmPassword,
+    };
+    const result = changePassword(formattedData);
+    console.log(result);
     reset();
   };
 
@@ -91,13 +98,13 @@ const PasswordManagement = () => {
           <Button
             type="submit"
             variant="contained"
-            disabled={isSubmitting}
+            disabled={isPending}
             sx={{
               textTransform: "capitalize",
               borderRadius: "10px",
             }}
           >
-            {isSubmitting ? "Updating..." : "Update Password"}
+            {isPending ? "Updating..." : "Update Password"}
           </Button>
         </Box>
       </Box>

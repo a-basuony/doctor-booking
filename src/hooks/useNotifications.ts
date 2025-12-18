@@ -11,18 +11,26 @@ import type { INotification, INotificationsResponse } from '../types';
 
 
 export const useNotifications = () => {
+   const hasToken = !!localStorage.getItem("authToken");
+
    return useQuery<INotification[], Error>({
-      queryKey: ['notifications', 'all'], 
+      queryKey: ['notifications', 'all'],
       queryFn: getNotifications,
       staleTime: 5 * 60 * 1000,
+      enabled: hasToken, // Only fetch when user is authenticated
+      retry: false, // Don't retry on failure
    });
 };
 
 export const useUnreadNotifications = () => {
+   const hasToken = !!localStorage.getItem("authToken");
+
    return useQuery<INotificationsResponse, Error>({
       queryKey: ['notifications', 'unread'],
       queryFn: getUnreadNotifications,
       staleTime: 5 * 60 * 1000,
+      enabled: hasToken, // Only fetch when user is authenticated
+      retry: false, // Don't retry on failure
    });
 };
 

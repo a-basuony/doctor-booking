@@ -1,24 +1,82 @@
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 interface SidebarProps {
   selectedGender: "male" | "female" | null;
   setSelectedGender: (gender: "male" | "female" | null) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export const Sidebar = ({
   selectedGender,
   setSelectedGender,
+  isOpen,
+  onClose,
 }: SidebarProps) => {
   const [isSortOpen, setIsSortOpen] = useState(true);
-  return (
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobile, isOpen]);
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const sidebarContent = (
     <motion.aside
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ delay: 0.1 }}
-      className=" md:block w-50 flex-shrink space-y-8"
+      initial={isMobile ? { x: -100, opacity: 0 } : { x: -20, opacity: 0 }}
+      animate={isMobile ? { x: 0, opacity: 1 } : { x: 0, opacity: 1 }}
+      exit={isMobile ? { x: -100, opacity: 0 } : { x: -20, opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className={`
+        flex-shrink-0 space-y-8 bg-white
+        ${
+          isMobile
+            ? "fixed inset-y-0 left-0 w-80 max-w-full z-50 overflow-y-auto shadow-2xl p-6"
+            : "w-64 pr-6"
+        }
+      `}
+      aria-label="Filter options"
     >
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="flex items-center justify-between mb-8 pb-4 border-b">
+          <h2 className="text-xl font-bold text-slate-900">Filters</h2>
+          <button
+            onClick={onClose}
+            className="cursor-pointer p-2 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+            aria-label="Close filters"
+          >
+            <X className="w-5 h-5 text-slate-600" />
+          </button>
+        </div>
+      )}
+
       {/* Available Date */}
       <div className="space-y-3">
         <h3 className="font-semibold text-slate-800">Available Date</h3>
@@ -26,7 +84,7 @@ export const Sidebar = ({
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 text-primary-600 accent-primary-600 focus:ring-primary-500 transition-all"
+              className="w-4 h-4 rounded accent-primary-500 border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
             />
             <span className="text-slate-600 group-hover:text-primary-600 transition-colors">
               Today
@@ -35,7 +93,7 @@ export const Sidebar = ({
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 accent-primary-600 text-primary-600 focus:ring-primary-500 transition-all"
+              className=" accent-primary-500 w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
             />
             <span className="text-slate-600 group-hover:text-primary-600 transition-colors">
               Tomorrow
@@ -47,18 +105,23 @@ export const Sidebar = ({
       {/* Gender */}
       <div className="space-y-3">
         <h3 className="font-semibold text-slate-800">Gender</h3>
-        <div className="flex items-center justify-start  p-1 gap-2">
+        <div className="flex items-center gap-2">
           {(["male", "female"] as const).map((g) => (
             <button
               key={g}
               onClick={() => setSelectedGender(g)}
-              className={`px-4   capitalize cursor-pointer text-sm rounded-lg font-medium py-1.5  ${
-                selectedGender === g
-                  ? "bg-primary-600 text-white"
-                  : " bg-white border border-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+              className={` cursor-pointer
+                px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200
+                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1
+                ${
+                  selectedGender === g
+                    ? "bg-primary-600 text-white shadow-sm"
+                    : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                }
+              `}
+              aria-pressed={selectedGender === g}
             >
-              {g}
+              {g.charAt(0).toUpperCase() + g.slice(1)}
             </button>
           ))}
         </div>
@@ -71,7 +134,7 @@ export const Sidebar = ({
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 accent-primary-600 text-primary-600 focus:ring-primary-500 transition-all"
+              className="w-4 h-4 accent-primary-500 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
               defaultChecked
             />
             <span className="text-slate-600 group-hover:text-primary-600 transition-colors">
@@ -81,7 +144,7 @@ export const Sidebar = ({
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-300 accent-primary-600 text-primary-600 focus:ring-primary-500 transition-all"
+              className="w-4 h-4  accent-primary-500 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
             />
             <span className="text-slate-600 group-hover:text-primary-600 transition-colors">
               Home Visit
@@ -91,18 +154,19 @@ export const Sidebar = ({
       </div>
 
       {/* Sort */}
-      <div className="space-y-3">
-        <div
-          className="flex items-center justify-between"
-          onClick={() => setIsSortOpen((prev) => !prev)}
+      <div className="space-y-3 bg-transparent">
+        <button
+          onClick={() => setIsSortOpen(!isSortOpen)}
+          className=" bg-transparent cursor-pointer flex items-center justify-between w-full py-2 focus:outline-none "
+          aria-expanded={isSortOpen}
         >
           <h3 className="font-semibold text-slate-800">Sort</h3>
           <ChevronDown
-            className={`w-4 h-4 text-slate-400 transition-transform duration-300 cursor-pointer
-        ${isSortOpen ? "rotate-180" : "rotate-0"}
-      `}
+            className={`w-4 h-4 text-slate-400 transition-transform duration-300
+              ${isSortOpen ? "rotate-180" : ""}
+            `}
           />
-        </div>
+        </button>
 
         <AnimatePresence>
           {isSortOpen && (
@@ -115,47 +179,23 @@ export const Sidebar = ({
             >
               <div className="space-y-2">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className=" flex items-center justify-center ">
+                  <div className="relative flex items-center justify-center">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 rounded border-slate-300 accent-primary-600 text-primary-600 focus:ring-primary-500 transition-all"
-                      // className="peer appearance-none w-5 h-5 border border-primary-600 rounded bg-primary-600 checked:bg-primary-600 checked:border-primary-600"
+                      className="w-4 h-4 accent-primary-500 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
                       defaultChecked
                     />
-                    <svg
-                      className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
                   </div>
                   <span className="text-sm text-slate-600 group-hover:text-primary-600 transition-colors">
                     Most recommended
                   </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative flex items-center justify-center ">
+                  <div className="relative flex items-center justify-center">
                     <input
                       type="checkbox"
-                      // className="peer appearance-none w-5 h-5 border border-slate-300 rounded bg-white checked:bg-primary-600 checked:border-primary-600 transition-all"
-                      className="w-4 h-4 rounded border-slate-300 accent-primary-600 text-primary-600 focus:ring-primary-500 transition-all"
+                      className="w-4 h-4 accent-primary-500 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
                     />
-                    <svg
-                      className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
                   </div>
                   <span className="text-sm text-slate-600 group-hover:text-primary-600 transition-colors">
                     Price: Low to high
@@ -165,20 +205,8 @@ export const Sidebar = ({
                   <div className="relative flex items-center justify-center">
                     <input
                       type="checkbox"
-                      // className="peer appearance-none w-5 h-5 border border-slate-300 rounded bg-white checked:bg-primary-600 checked:border-primary-600 transition-all"
-                      className="w-4 h-4 rounded border-slate-300 accent-primary-600 text-primary-600 focus:ring-primary-500 transition-all"
+                      className="w-4 h-4 accent-primary-500 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 transition-all"
                     />
-                    <svg
-                      className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
                   </div>
                   <span className="text-sm text-slate-600 group-hover:text-primary-600 transition-colors">
                     Price: High to low
@@ -189,6 +217,60 @@ export const Sidebar = ({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Mobile Footer */}
+      {isMobile && (
+        <div className="sticky bottom-0 pt-6 mt-8 border-t bg-white">
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setSelectedGender(null);
+                // Add reset logic for other filters here
+              }}
+              className="cursor-pointer flex-1 px-4 py-3 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+            >
+              Reset All
+            </button>
+            <button
+              onClick={onClose}
+              className="cursor-pointer flex-1 px-4 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
     </motion.aside>
   );
+
+  // For mobile, render as overlay with portal
+  if (isMobile && isOpen) {
+    return createPortal(
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50"
+          onClick={handleOverlayClick}
+          aria-hidden="true"
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black bg-opacity-50" />
+
+          {/* Sidebar */}
+          {sidebarContent}
+        </motion.div>
+      </AnimatePresence>,
+      document.body
+    );
+  }
+
+  // For desktop or mobile when closed
+  if (!isMobile || isOpen) {
+    return sidebarContent;
+  }
+
+  return null;
 };

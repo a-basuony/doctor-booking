@@ -4,22 +4,20 @@ import { Box, Button, Typography, TextField, Link } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
-// import { useVerifyOTP, useResendOTP } from "../../hooks/useAuth";
-// import type { VerifyOTPData } from "../../types/auth";
+import { useVerifyOTP, useResendOTP } from "../../hooks/useAuth";
+import type { VerifyOTPData } from "../../types/auth";
 import { otpSchema } from "../../utils/validation";
 
 type OTPFormData = z.infer<typeof otpSchema>;
 
 const OTPVerification = () => {
   const navigate = useNavigate();
-  // const location = useLocation();
-  // const { mutate: verifyOTP, isPending: isSending } = useVerifyOTP();
-  // const { mutate: resendOTP, isPending: isResending } = useResendOTP();
-  const isSending = false; // Mock loading state
-  const isResending = false; // Mock loading state
+  const location = useLocation();
+  const { mutate: verifyOTP, isPending: isSending } = useVerifyOTP();
+  const { mutate: resendOTP, isPending: isResending } = useResendOTP();
 
   const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
   const [countdown, setCountdown] = useState(60);
@@ -43,11 +41,11 @@ const OTPVerification = () => {
     setCanResend(countdown === 0);
   }, [countdown]);
 
-  // useEffect(() => {
-  //   if (!location.state?.userId) {
-  //     navigate(ROUTES.SIGN_UP);
-  //   }
-  // }, [location.state?.userId, navigate]);
+  useEffect(() => {
+    if (!location.state?.phone) {
+      navigate(ROUTES.SIGN_UP);
+    }
+  }, [location.state?.phone, navigate]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -84,35 +82,33 @@ const OTPVerification = () => {
   };
 
   const onSubmit = async (data: OTPFormData) => {
-    console.log(data);
-    navigate(ROUTES.HOME);
-    // console.log("OTP data:", data);
-    // //todo: your OTP verification logic
-    // const formattedData: VerifyOTPData = {
-    //   user_id: location.state?.userId,
-    //   otp: data.otp,
-    // };
-    // verifyOTP(formattedData);
+    console.log("OTP data:", data);
+    //todo: your OTP verification logic
+    const formattedData: VerifyOTPData = {
+      phone: location.state?.phone,
+      otp: data.otp,
+    };
+    verifyOTP(formattedData);
   };
 
   const handleResend = () => {
     if (!canResend) return;
 
-    // resendOTP(
-    //   { phone: location.state.phone, user_id: location.state.userId },
-    //   {
-    //     onSuccess: () => {
-    //       // Reset OTP inputs
-    //       setOtp(["", "", "", ""]);
-    //       setValue("otp", "");
-    //       // Reset countdown
-    //       setCountdown(60);
-    //       setCanResend(false);
-    //       // Focus first input
-    //       inputRefs.current[0]?.focus();
-    //     },
-    //   }
-    // );
+    resendOTP(
+      { phone: location.state?.phone },
+      {
+        onSuccess: () => {
+          // Reset OTP inputs
+          setOtp(["", "", "", ""]);
+          setValue("otp", "");
+          // Reset countdown
+          setCountdown(60);
+          setCanResend(false);
+          // Focus first input
+          inputRefs.current[0]?.focus();
+        },
+      }
+    );
   };
 
   return (

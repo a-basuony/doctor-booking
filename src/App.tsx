@@ -24,6 +24,8 @@ import Profile from "./pages/Profile";
 import SearchDoctor from "./pages/SearchDoctor";
 import BookAppointment from "./pages/BookAppointment";
 import FavoriteDoctors from "./pages/FavoriteDoctors";
+import PhoneVerification from "./pages/auth/PhoneVerification";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // Tailwind-matching theme
 const theme = createTheme({
@@ -119,6 +121,11 @@ function App() {
         <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
         <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
         <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
+        <Route
+          path={ROUTES.PHONE_VERIFICATION}
+          element={<PhoneVerification />}
+        />
+        <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
       </Routes>
     </ThemeProvider>
   );

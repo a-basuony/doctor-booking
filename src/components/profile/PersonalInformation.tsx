@@ -34,7 +34,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
@@ -57,30 +57,30 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
   }
 
   const onSubmit = async (data: PersonalInfoFormData) => {
-    // Check if data has changed
-    if (initialData) {
-      const hasChanges =
-        data.name !== initialData.name ||
-        data.email !== initialData.email ||
-        data.phone !== initialData.phone ||
-        data.dateOfBirth !== initialData.dateOfBirth;
-
-      if (!hasChanges) {
-        toast.error("No changes detected. Please modify the data before saving.");
-        return;
-      }
+    // Check if data has changed using isDirty from React Hook Form
+    if (!isDirty) {
+      toast.error("No changes detected. Please modify the data before saving.");
+      return;
     }
 
     console.log("Personal information data:", data);
+
     // Format data for API
+    const convertedDate = data.dateOfBirth
+      ? convertToBackendDateFormat(data.dateOfBirth)
+      : undefined;
+
+    console.log("Date before conversion:", data.dateOfBirth);
+    console.log("Date after conversion:", convertedDate);
+
     const formattedData = {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      birthdate: data.dateOfBirth
-        ? convertToBackendDateFormat(data.dateOfBirth)
-        : undefined,
+      birthdate: convertedDate,
     };
+
+    console.log("Formatted data being sent:", formattedData);
     updateProfile(formattedData);
   };
 

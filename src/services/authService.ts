@@ -8,6 +8,9 @@ import type {
   SignUpResponse,
   OTPVerificationResponse,
   ChangePasswordData,
+  ResetPasswordData,
+  GoogleLoginData,
+  GoogleLoginResponse,
 } from "../types/auth";
 import { api } from "./api";
 
@@ -53,12 +56,42 @@ export const authService = {
     return response.data;
   },
 
-
   changePassword: async (
     data: ChangePasswordData
   ): Promise<ApiResponse<void>> => {
     const response = await api.put<ApiResponse<void>>(
       "/profile/change-password",
+      data
+    );
+    return response.data;
+  },
+  forgetPassword: async (phone: {
+    phone: string;
+  }): Promise<ApiResponse<void>> => {
+    const response = await api.post<ApiResponse<void>>(
+      "/auth/forget-password",
+      phone
+    );
+    return response.data;
+  },
+
+  // Reset password
+  resetPassword: async (
+    data: ResetPasswordData
+  ): Promise<ApiResponse<void>> => {
+    const response = await api.put<ApiResponse<void>>(
+      "/auth/reset-password",
+      data
+    );
+    return response.data;
+  },
+
+  // Google login
+  googleLogin: async (
+    data: GoogleLoginData
+  ): Promise<ApiResponse<GoogleLoginResponse>> => {
+    const response = await api.post<ApiResponse<GoogleLoginResponse>>(
+      "/auth/google-login",
       data
     );
     return response.data;

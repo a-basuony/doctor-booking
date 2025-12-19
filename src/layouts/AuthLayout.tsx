@@ -1,8 +1,7 @@
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import type { ReactNode } from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../constants/routes";
+import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "../hooks/useAuth";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -10,17 +9,19 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
-  const navigate = useNavigate();
-  const [isSigningInWithGoogle, setIsSigningInWithGoogle] = useState(false);
+  const { mutate: googleLogin, isPending: isSigningInWithGoogle } =
+    useGoogleLogin();
 
-  const handleGoogleSignIn = async () => {
-    setIsSigningInWithGoogle(true);
-    //todo: Google sign-in logic
-    setTimeout(() => {
-      setIsSigningInWithGoogle(false);
-      // Navigate to Home
-      navigate(ROUTES.HOME);
-    }, 1000);
+  const handleGoogleSuccess = (credentialResponse: any) => {
+    console.log("Google OAuth success:", credentialResponse);
+    // Send the ID token to your backend
+    if (credentialResponse.credential) {
+      googleLogin({ id_token: credentialResponse.credential });
+    }
+  };
+
+  const handleGoogleError = () => {
+    console.error("Google OAuth error");
   };
   return (
     <Box
@@ -114,34 +115,25 @@ const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
                 </span>
               </p>
 
-              <Button
-                type="button"
-                fullWidth
-                variant="outlined"
-                size="small"
-                disabled={isSigningInWithGoogle}
-                onClick={handleGoogleSignIn}
+              <Box
                 sx={{
                   mt: 3,
                   mb: 2,
-                  py: 1.5,
-                  textTransform: "capitalize",
-                  borderRadius: "10px",
+                  display: "flex",
+                  justifyContent: "center",
+                  border: "none",
                 }}
               >
-                <Box
-                  component="img"
-                  src={"/images/google.png"}
-                  alt="Google logo"
-                  sx={{
-                    objectFit: "contain",
-                    marginRight: "8px",
-                  }}
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  text="signin_with"
+                  shape="rectangular"
+                  width="100%"
                 />
-                {isSigningInWithGoogle
-                  ? "Signing in..."
-                  : "Sign in With Google"}
-              </Button>
+              </Box>
             </>
           )}
         </Box>

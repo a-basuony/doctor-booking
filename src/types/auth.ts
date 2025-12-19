@@ -54,3 +54,22 @@ export interface ChangePasswordData {
   new_password: string;
   new_password_confirmation: string;
 }
+
+export interface ForgetPasswordData {
+  phone: string;
+}
+
+export interface ResetPasswordData {
+  phone: string;
+  otp: string;
+  new_password: string;
+  new_password_confirmation: string;
+}
+
+export interface GoogleLoginData {
+  id_token: string;
+}
+
+export interface GoogleLoginResponse {
+  token: string;
+}

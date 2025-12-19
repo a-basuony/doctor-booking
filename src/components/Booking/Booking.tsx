@@ -27,13 +27,6 @@ const Booking = () => {
   const { data: appointments, isLoading, error } = useMyBookings();
   const cancelBooking = useCancelBooking();
 
-  const availableDates: DateOption[] = [
-    { value: "", label: "All" },
-    { value: "2024-07-21", label: "Monday, July 21" },
-    { value: "2024-07-06", label: "Sunday, July 6" },
-    { value: "2024-07-31", label: "Wednesday, July 31" },
-  ];
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -42,6 +35,19 @@ const Booking = () => {
       day: "numeric",
     });
   };
+
+  // Dynamic date options based on actual bookings
+  const availableDates: DateOption[] = [
+    { value: "", label: "All" },
+    ...Array.from(
+      new Set(appointments?.map((apt) => apt.appointment_date) || [])
+    )
+      .sort()
+      .map((date) => ({
+        value: date,
+        label: formatDate(date),
+      })),
+  ];
 
   const filters: string[] = [
     "All",
@@ -55,7 +61,9 @@ const Booking = () => {
     appointments?.filter((apt) => {
       const matchesFilter =
         selectedFilter === "All" ||
-        apt.status.toLowerCase() === selectedFilter.toLowerCase();
+        apt.status.toLowerCase() === selectedFilter.toLowerCase() ||
+        (selectedFilter === "Cancelled" &&
+          apt.status.toLowerCase() === "canceled");
       const matchesDate =
         !selectedDate || apt.appointment_date === selectedDate;
       return matchesFilter && matchesDate;

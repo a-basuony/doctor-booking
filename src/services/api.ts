@@ -1,11 +1,15 @@
 import axios from "axios";
 
+
 export const api = axios.create({
   baseURL: "https://round8-backend-team-one.huma-volve.com/api",
   headers: {
     "Content-Type": "application/json",
+    "Accept": "application/json",
   },
 });
+
+
 
 // Request interceptor to add auth token
 api.interceptors.request.use(

@@ -1,15 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "react-hot-toast";
-
-// get appointments/my-bookings
-  const BOOKING_CONFIG = {
-  BASE_URL: 'https://round8-backend-team-one.huma-volve.com',
-  headers: {
-    accept: 'application/json',
-    Authorization: `Bearer ${import.meta.env.VITE_PUBLIC_API_KEY}`,
-  },
-};
+import { api } from "../services/api";
 
 // Define types based on API response
 export interface BookingDoctor {
@@ -45,15 +36,12 @@ export interface BookingResponse {
 interface ApiResponse {
   data: BookingResponse[];
 }
-
+//GET list Booking
 export const useMyBookings = () => {
   return useQuery<BookingResponse[]>({
     queryKey: ['myBooking'],
     queryFn: async () => {
-      const response = await axios.get<ApiResponse>(
-        `${BOOKING_CONFIG.BASE_URL}/api/bookings`,
-        { headers: BOOKING_CONFIG.headers }
-      );
+      const response = await api.get<ApiResponse>('/bookings');
       return response.data.data;
     },
     staleTime: 1000 * 60 * 5,
@@ -62,49 +50,39 @@ export const useMyBookings = () => {
   });
 };
 
+// Cancel booking
+
 export const useCancelBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      console.log('Attempting to cancel booking:', id);
-      const url = `${BOOKING_CONFIG.BASE_URL}/api/bookings/${id}/cancel`;
-      console.log('URL:', url);
-      const response = await axios.post(
-        url,
-        {},
-        { headers: BOOKING_CONFIG.headers }
-      );
-      console.log('Cancel response:', response);
-      return response;
+      const response = await api.post(`/bookings/${id}/cancel`, {
+        cancellation_reason: "Cancelled by user"
+      });
+      return response.data;
     },
-    onSuccess: (data) => {
-      console.log('Cancel success:', data);
+    onSuccess: () => {
+      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['myBooking'] });
       toast.success("Appointment canceled successfully");
     },
     onError: (error: any) => {
-      console.error("Cancel error full object:", error);
-      if (axios.isAxiosError(error)) {
-        console.error("Response data:", error.response?.data);
-        console.error("Response status:", error.response?.status);
-      }
-      toast.error(`Failed to cancel: ${error.message}`);
+      const message = error.response?.data?.message || error.message || "Failed to cancel appointment";
+      toast.error(message);
     },
   });
 };
+
+// Reschedule booking
 
 export const useRescheduleBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, date, time }: { id: number; date: string; time: string }) => {
-      const response = await axios.put(
-        `${BOOKING_CONFIG.BASE_URL}/api/bookings/${id}`,
-        {
-          appointment_date: date,
-          appointment_time: time,
-        },
-        { headers: BOOKING_CONFIG.headers }
-      );
+      const response = await api.put(`/bookings/${id}`, {
+        appointment_date: date,
+        appointment_time: time,
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -112,8 +90,8 @@ export const useRescheduleBooking = () => {
       toast.success("Appointment rescheduled successfully");
     },
     onError: (error: any) => {
-      console.error("Reschedule error:", error);
-      toast.error(error.response?.data?.message || "Failed to reschedule appointment");
+      const message = error.response?.data?.message || error.message || "Failed to reschedule appointment";
+      toast.error(message);
     },
   });
 };

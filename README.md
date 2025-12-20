@@ -5,6 +5,14 @@
 A **modern React + TypeScript** frontend for a IDoctor Booking system.  
 The app is built using industry-standard tools to ensure high performance, clean architecture, and scalability.
 
+
+---
+
+## 📌 Demo
+
+[https://doctor-booking-team2.vercel.app/](https://doctor-booking-team2.vercel.app/)
+
+
 ---
 
 ## 🧩 Tech Stack

@@ -62,3 +62,22 @@ export interface MessagesResponse {
 export interface SendMessageResponse {
   data: Message;
 }
+
+export interface Chat {
+  id: number;
+  fullName: string;
+  avatar: string;
+  messages: {
+    id: number;
+    sender: "me" | "other";
+    text: string;
+    time: string;
+    isRead: boolean;
+    image?: string | null;
+  }[];
+  lastSeen?: string;
+  isUnread?: boolean;
+  isFavorite?: boolean;
+  isArchived?: boolean;
+  unreadCount: number;
+}

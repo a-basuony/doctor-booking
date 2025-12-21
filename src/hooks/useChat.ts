@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import type { ConversationsResponse, StartConversationResponse, MessagesResponse, SendMessageResponse } from "../types/chat";
 
-const CHAT_CONFIG = {
+export const CHAT_CONFIG = {
   BASE_URL: 'https://round8-backend-team-one.huma-volve.com',
   headers: {
     accept: 'application/json',
@@ -222,6 +222,52 @@ export const useMarkAsRead = () => {
         };
       });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+};
+
+export const useToggleFavorite = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (conversationId: number) => {
+      const response = await axios.patch(
+        `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/favorite`,
+        {},
+        { headers: CHAT_CONFIG.headers }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success("Conversation updated");
+    },
+    onError: (error: any) => {
+      console.error("Favorite error:", error);
+      toast.error(error.response?.data?.message || "Failed to update favorite status");
+    },
+  });
+};
+
+export const useToggleArchive = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (conversationId: number) => {
+      const response = await axios.patch(
+        `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/archive`,
+        {},
+        { headers: CHAT_CONFIG.headers }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success("Conversation archived");
+    },
+    onError: (error: any) => {
+      console.error("Archive error:", error);
+      toast.error(error.response?.data?.message || "Failed to archive conversation");
     },
   });
 };

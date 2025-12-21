@@ -6,8 +6,9 @@ import {
   useConversations,
   useMessages,
   useSendMessage,
-  useDeleteMessage,
   useMarkAsRead,
+  useToggleFavorite,
+  useToggleArchive,
 } from "../hooks/useChat";
 import { Loader2 } from "lucide-react";
 
@@ -40,11 +41,23 @@ const ChatPage = () => {
     !!activeChatId
   );
   const sendMessage = useSendMessage();
-  const deleteMessage = useDeleteMessage();
   const markAsRead = useMarkAsRead();
+  const toggleFavorite = useToggleFavorite();
+  const toggleArchive = useToggleArchive();
+
+  const handleToggleFavorite = () => {
+    if (activeChatId) toggleFavorite.mutate(activeChatId);
+  };
+
+  const handleToggleArchive = () => {
+    if (activeChatId) toggleArchive.mutate(activeChatId);
+  };
 
   const chats = conversationsData?.data || [];
-  const messages = messagesData?.data || [];
+  const messages = [...(messagesData?.data || [])].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
 
   // Selection Mode State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -70,19 +83,12 @@ const ChatPage = () => {
 
     sendMessage.mutate({
       conversationId: activeChatId,
-      body: "Sent a file",
+      body: file.name, // Use actual file name
       file,
     });
   };
 
-  const handleDeleteMessage = async (messageId: number) => {
-    if (!activeChatId) return;
-
-    deleteMessage.mutate({
-      conversationId: activeChatId,
-      messageId,
-    });
-  };
+  // No longer using handleDeleteMessage as per UI requirements
 
   // --- Bulk Deletion Logic ---
   const toggleSelectionMode = () => {
@@ -129,6 +135,7 @@ const ChatPage = () => {
         lastSeen: "Online",
         isUnread: activeConversation.unread_count > 0,
         isFavorite: activeConversation.is_favorite,
+        isArchived: activeConversation.is_archived,
       }
     : null;
 
@@ -189,8 +196,11 @@ const ChatPage = () => {
                 chat={activeChatAdapter as any}
                 onSendMessage={handleSendMessage}
                 onSendAttachment={handleSendAttachment}
-                onDeleteMessage={handleDeleteMessage}
                 onBack={() => setActiveChatId(null)}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleArchive={handleToggleArchive}
+                isFavorite={activeChatAdapter.isFavorite}
+                isArchived={activeConversation?.is_archived}
               />
             ) : (
               <ChatEmptyState />

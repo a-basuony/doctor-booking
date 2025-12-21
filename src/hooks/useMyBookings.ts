@@ -41,7 +41,7 @@ export const useMyBookings = () => {
   return useQuery<BookingResponse[]>({
     queryKey: ['myBooking'],
     queryFn: async () => {
-      const response = await api.get<ApiResponse>('/bookings');
+      const response = await api.get<ApiResponse>('/api/bookings');
       return response.data.data;
     },
     staleTime: 1000 * 60 * 5,
@@ -56,7 +56,7 @@ export const useCancelBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await api.post(`/bookings/${id}/cancel`, {
+      const response = await api.post(`/api/bookings/${id}/cancel`, {
         cancellation_reason: "Cancelled by user"
       });
       return response.data;
@@ -79,7 +79,7 @@ export const useRescheduleBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, date, time }: { id: number; date: string; time: string }) => {
-      const response = await api.put(`/bookings/${id}`, {
+      const response = await api.put(`/api/bookings/${id}`, {
         appointment_date: date,
         appointment_time: time,
       });

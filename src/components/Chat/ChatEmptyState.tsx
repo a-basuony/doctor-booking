@@ -2,7 +2,7 @@ import React from "react";
 
 const ChatEmptyState: React.FC = () => {
   return (
-    <div className="w-full h-[100vh] flex flex-col items-center justify-center text-center p-6">
+    <div className="w-full h-full flex flex-col items-center justify-center text-center p-6">
       <h2 className="text-3xl font-serif text-gray-900 mb-2">
         Start your chat
       </h2>

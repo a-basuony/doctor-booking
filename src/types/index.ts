@@ -25,11 +25,6 @@ export interface IDoctor {
   };
   reviews: IReviews[]
 }
-export interface Appointment {
-  doctor: IDoctor;
-  date: string;
-  time: string;
-}
 
 
 

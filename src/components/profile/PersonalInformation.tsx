@@ -3,14 +3,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useMemo } from "react";
-import { personalInfoSchema } from "../../utils/validation";
 import type { User } from "../../types/auth";
 import { useUpdateProfile } from "../../hooks/useProfile";
-import {
-  convertToBackendDateFormat,
-  convertToFrontendDateFormat,
-} from "../../utils/utils.";
 import toast from "react-hot-toast";
+import BirthdateSelect from "../BirthdateSelect";
+
+const personalInfoSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  day: z.number().min(1).max(31).optional(),
+  month: z.number().min(1).max(12).optional(),
+  year: z.number().min(1900).max(new Date().getFullYear()).optional(),
+});
 
 type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
@@ -24,9 +29,9 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
       name: user.name || "",
       email: user.email || "",
       phone: user.phone || "",
-      dateOfBirth: user.birthdate
-        ? convertToFrontendDateFormat(user.birthdate)
-        : "",
+      day: user.extra_data?.birthdate?.Day,
+      month: user.extra_data?.birthdate?.Month,
+      year: user.extra_data?.birthdate?.Year,
     };
   }, [user]);
 
@@ -34,6 +39,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isDirty },
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
@@ -41,7 +47,9 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
       name: "",
       email: "",
       phone: "",
-      dateOfBirth: "",
+      day: undefined,
+      month: undefined,
+      year: undefined,
     },
   });
 
@@ -51,6 +59,8 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
       reset(initialData);
     }
   }, [initialData, reset]);
+
+  console.log("use is ", user);
 
   if (!user) {
     return <div>loadding...</div>;
@@ -66,18 +76,13 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
     console.log("Personal information data:", data);
 
     // Format data for API
-    const convertedDate = data.dateOfBirth
-      ? convertToBackendDateFormat(data.dateOfBirth)
-      : undefined;
-
-    console.log("Date before conversion:", data.dateOfBirth);
-    console.log("Date after conversion:", convertedDate);
-
     const formattedData = {
       name: data.name,
       email: data.email,
       phone: data.phone,
-      birthdate: convertedDate,
+      birthDay: data.day,
+      birthMonth: data.month,
+      birthYear: data.year,
     };
 
     console.log("Formatted data being sent:", formattedData);
@@ -127,18 +132,6 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
           />
 
           <TextField
-            {...register("dateOfBirth")}
-            fullWidth
-            label="Date of Birth"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            error={!!errors.dateOfBirth}
-            helperText={errors.dateOfBirth?.message}
-            size="small"
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
-          />
-
-          <TextField
             {...register("phone")}
             fullWidth
             label="Phone Number"
@@ -148,6 +141,17 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
             helperText={errors.phone?.message}
             size="small"
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+          />
+        </Box>
+
+        <Box sx={{ mt: 3 }}>
+          <BirthdateSelect
+            control={control}
+            errors={{
+              day: errors.day,
+              month: errors.month,
+              year: errors.year,
+            }}
           />
         </Box>
 

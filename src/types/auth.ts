@@ -1,8 +1,25 @@
+export interface Birthdate {
+  Day: number;
+  Month: number;
+  Year: number;
+}
+
 export interface User {
   name: string;
   email: string;
   phone: string;
-  birthdate?: string;
+  extra_data: {
+    birthdate?: Birthdate;
+  };
+}
+
+export interface UpdateProfileData {
+  name: string;
+  email: string;
+  phone: string;
+  birthDay?: number;
+  birthMonth?: number;
+  birthYear?: number;
 }
 
 export interface SignUpData {

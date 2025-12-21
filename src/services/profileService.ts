@@ -1,4 +1,4 @@
-import type { ApiResponse, User } from "../types/auth";
+import type { ApiResponse, User, UpdateProfileData } from "../types/auth";
 import { api } from "./api";
 
 export const profileService = {
@@ -9,7 +9,9 @@ export const profileService = {
   },
 
   // Update profile
-  updateProfile: async (data: User): Promise<ApiResponse<User>> => {
+  updateProfile: async (
+    data: UpdateProfileData
+  ): Promise<ApiResponse<User>> => {
     const response = await api.put<ApiResponse<User>>("/profile/edit", data);
     return response.data;
   },

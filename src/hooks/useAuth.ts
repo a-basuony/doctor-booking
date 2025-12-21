@@ -12,6 +12,8 @@ import type {
   VerifyOTPData,
   ResendOTPData,
   ChangePasswordData,
+  ResetPasswordData,
+  GoogleLoginData,
 } from "../types/auth";
 import { TOAST_DURATION } from "../constants";
 import { getErrorMessage } from "../utils/utils.";
@@ -131,6 +133,68 @@ export const useChangePassword = () => {
     onError: (error) => {
       const message = getErrorMessage(error);
       toast.error(message);
+    },
+  });
+};
+
+export const useForgetPassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: { phone: string }) => authService.forgetPassword(data),
+    onSuccess: (response, data) => {
+      console.log(response);
+      navigate(ROUTES.VERIFY_OTP, {
+        state: { phone: data.phone, isPasswordReset: true },
+      });
+      toast.success("OTP sent successfully!");
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message);
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: ResetPasswordData) => authService.resetPassword(data),
+    onSuccess: (response) => {
+      console.log(response);
+      toast.success("Password reset successfully!");
+      navigate(ROUTES.SIGN_IN);
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message);
+    },
+  });
+};
+
+// Google Login mutation
+export const useGoogleLogin = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: GoogleLoginData) => authService.googleLogin(data),
+    onSuccess: (response) => {
+      console.log("Google login response:", response);
+
+      // Save the token
+      localStorage.setItem("authToken", response.data.token);
+
+      // Invalidate user query to trigger fresh fetch
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+
+      toast.success(response.message || "Signed in successfully!");
+      navigate(ROUTES.HOME);
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message, { duration: TOAST_DURATION });
     },
   });
 };

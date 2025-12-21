@@ -2,35 +2,40 @@ import { Box, Button, Typography, Link } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import AuthLayout from "../../layouts/AuthLayout";
-import { ROUTES } from "../../constants/routes";
-import { signInSchema } from "../../utils/validation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import PasswordInput from "../../components/common/PasswordInput";
-import { useSignIn } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import AuthLayout from "../../layouts/AuthLayout";
+import { ROUTES } from "../../constants/routes";
+import { phoneVerificationSchema } from "../../utils/validation";
+import { useForgetPassword } from "../../hooks/useAuth";
+import type { ForgetPasswordData } from "../../types/auth";
 
-type SignInFormData = z.infer<typeof signInSchema>;
+type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
 
-const SignIn = () => {
-  const navigate = useNavigate();
-  const { mutate: signIn, isPending } = useSignIn();
+const PhoneVerification = () => {
+  const { mutate: forgetPassword, isPending } = useForgetPassword();
+
   const {
     control,
-    register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
+  } = useForm<PhoneVerificationFormData>({
+    resolver: zodResolver(phoneVerificationSchema),
+    defaultValues: {
+      phone: "",
+    },
   });
 
-  const onSubmit = (data: SignInFormData) => {
-    signIn(data);
+  const onSubmit = (data: PhoneVerificationFormData) => {
+    const formattedData: ForgetPasswordData = {
+      phone: data.phone,
+    };
+
+    forgetPassword(formattedData);
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout noGoogle>
       <Box>
         <Typography
           variant="h4"
@@ -38,10 +43,10 @@ const SignIn = () => {
           gutterBottom
           sx={{ fontWeight: 600, color: "secondary.main" }}
         >
-          Sign in
+          Forgot Password
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Please enter your phone number and password{" "}
+          Enter your phone number to receive a verification code
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -49,7 +54,7 @@ const SignIn = () => {
             name="phone"
             control={control}
             render={({ field: { onChange, value } }) => (
-              <Box sx={{ mt: 2, mb: 1 }}>
+              <Box sx={{ mb: 1 }}>
                 <PhoneInput
                   defaultCountry="EG"
                   value={value}
@@ -74,23 +79,6 @@ const SignIn = () => {
               </Box>
             )}
           />
-          <PasswordInput
-            {...register("password")}
-            fullWidth
-            label="Password"
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            margin="normal"
-            autoComplete="current-password"
-            size="small"
-            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
-          />
-          <p
-            className="text-sm text-end text-gray-500 hover:text-black cursor-pointer duration-300 transition-colors m-0 "
-            onClick={() => navigate(ROUTES.PHONE_VERIFICATION)}
-          >
-            Forget Password ?
-          </p>
 
           <Button
             type="submit"
@@ -99,28 +87,28 @@ const SignIn = () => {
             size="small"
             disabled={isPending}
             sx={{
-              mt: 2,
+              mt: 3,
               mb: 2,
               py: 1.5,
               textTransform: "capitalize",
               borderRadius: "10px",
             }}
           >
-            {isPending ? "Signing In..." : "Sign In"}
+            {isPending ? "Sending Code..." : "Send Verification Code"}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              Don't have an account?{" "}
+              Remember your password?{" "}
               <Link
-                href={ROUTES.SIGN_UP}
+                href={ROUTES.SIGN_IN}
                 sx={{
                   color: "primary.main",
                   textDecoration: "none",
                   fontWeight: 600,
                 }}
               >
-                Sign Up
+                Sign In
               </Link>
             </Typography>
           </Box>
@@ -130,4 +118,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default PhoneVerification;

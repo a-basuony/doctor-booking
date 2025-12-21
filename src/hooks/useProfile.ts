@@ -9,7 +9,7 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateProfileData) => profileService.updateProfile(data),
+    mutationFn: (data: UpdateProfileData | FormData) => profileService.updateProfile(data),
     onSuccess: (response) => {
       console.log("Update profile response:", response);
 

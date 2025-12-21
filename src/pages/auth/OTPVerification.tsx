@@ -132,7 +132,9 @@ const OTPVerification = () => {
           gutterBottom
           sx={{ fontWeight: 600, color: "secondary.main" }}
         >
-          {isPasswordReset ? "Password Reset Verification" : "Code Verification"}
+          {isPasswordReset
+            ? "Password Reset Verification"
+            : "Code Verification"}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {isPasswordReset
@@ -231,19 +233,6 @@ const OTPVerification = () => {
                 </Typography>
               )}
             </Typography>
-          </Box>
-
-          <Box sx={{ textAlign: "center", mt: 2 }}>
-            <Link
-              href={ROUTES.SIGN_IN}
-              sx={{
-                color: "text.secondary",
-                textDecoration: "none",
-                fontSize: "14px",
-              }}
-            >
-              Back to Sign In
-            </Link>
           </Box>
         </Box>
       </Box>

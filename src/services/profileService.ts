@@ -10,9 +10,18 @@ export const profileService = {
 
   // Update profile
   updateProfile: async (
-    data: UpdateProfileData
+    data: UpdateProfileData | FormData
   ): Promise<ApiResponse<User>> => {
-    const response = await api.put<ApiResponse<User>>("/profile/edit", data);
+    // Check if data is FormData (contains image)
+    const isFormData = data instanceof FormData;
+
+    const response = await api.put<ApiResponse<User>>("/profile/edit", data, {
+      headers: isFormData
+        ? {
+            "Content-Type": "multipart/form-data",
+          }
+        : undefined,
+    });
     return response.data;
   },
 };

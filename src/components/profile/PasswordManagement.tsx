@@ -14,6 +14,7 @@ const PasswordManagement = () => {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
@@ -21,15 +22,45 @@ const PasswordManagement = () => {
 
   const onSubmit = async (data: PasswordFormData) => {
     console.log("Password change data:", data);
-    // Add API call to update password here
     const formattedData = {
       current_password: data.currentPassword,
       new_password: data.newPassword,
       new_password_confirmation: data.confirmPassword,
     };
-    const result = changePassword(formattedData);
-    console.log(result);
-    reset();
+
+    changePassword(formattedData, {
+      onSuccess: () => {
+        reset();
+      },
+      onError: (error: any) => {
+        // Handle validation errors from backend
+        if (error.response?.data?.errors) {
+          const backendErrors = error.response.data.errors;
+
+          // Map backend field names to form field names
+          if (backendErrors.current_password) {
+            setError("currentPassword", {
+              type: "manual",
+              message:
+                backendErrors.current_password[0] ||
+                "Current password is incorrect",
+            });
+          }
+          if (backendErrors.new_password) {
+            setError("newPassword", {
+              type: "manual",
+              message: backendErrors.new_password[0],
+            });
+          }
+          if (backendErrors.new_password_confirmation) {
+            setError("confirmPassword", {
+              type: "manual",
+              message: backendErrors.new_password_confirmation[0],
+            });
+          }
+        }
+      },
+    });
   };
 
   return (

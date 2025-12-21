@@ -8,6 +8,8 @@ export interface User {
   name: string;
   email: string;
   phone: string;
+  address?: string;
+  image?: string;
   extra_data: {
     birthdate?: Birthdate;
   };
@@ -20,6 +22,8 @@ export interface UpdateProfileData {
   birthDay?: number;
   birthMonth?: number;
   birthYear?: number;
+  address?: string;
+  image?: File | string;
 }
 
 export interface SignUpData {

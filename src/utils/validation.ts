@@ -1,28 +1,29 @@
 import z from "zod";
+
+// Password validation helper
+const passwordValidation = z
+  .string()
+  .min(8, "Must be at least 8 characters")
+  .refine((val) => /[a-z]/.test(val), "Must contain a lowercase letter")
+  .refine((val) => /[A-Z]/.test(val), "Must contain an uppercase letter")
+  .refine((val) => /\d/.test(val), "Must contain a number")
+  .refine(
+    (val) => /[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/]/.test(val),
+    "Must contain a special character"
+  );
+
 // Auth pages
 export const signInSchema = z.object({
   phone: z.string().min(11, "Phone number must be at least 11 digits"),
-  password: z
-    .string()
-    .min(8, "New password must be at least 8 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    ),
+  password: passwordValidation,
 });
 
 export const signUpSchema = z
   .object({
-    name: z.string().min(3, "Name must be at least 3 characters"),
+    name: z.string().min(8, "Name must be at least 8 characters"),
     email: z.string().email("Invalid email address"),
     phone: z.string().min(11, "Phone number must be at least 11 digits"),
-    password: z
-      .string()
-      .min(8, "New password must be at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      ),
+    password: passwordValidation,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -30,30 +31,21 @@ export const signUpSchema = z
     path: ["confirmPassword"],
   });
 //Profile Page
+
 export const personalInfoSchema = z.object({
-  name: z.string().min(2, "First name must be at least 2 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  dateOfBirth: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}$/,
-      "Date must be in yyyy-MM-dd format"
-    )
-    .optional()
-    .or(z.literal("")),
+  address: z.string().optional(),
+  day: z.number().min(1).max(31).optional(),
+  month: z.number().min(1).max(12).optional(),
+  year: z.number().min(1900).max(new Date().getFullYear()).optional(),
 });
 
 export const passwordSchema = z
   .object({
     currentPassword: z.string().min(8, "Current password is required"),
-    newPassword: z
-      .string()
-      .min(8, "New password must be at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      ),
+    newPassword: passwordValidation,
     confirmPassword: z.string().min(8, "Please confirm your new password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -75,13 +67,7 @@ export const phoneVerificationSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(8, "New password must be at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      ),
+    newPassword: passwordValidation,
     confirmPassword: z.string().min(8, "Please confirm your new password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

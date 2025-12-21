@@ -7,19 +7,21 @@ import type { User } from "../../types/auth";
 import { useUpdateProfile } from "../../hooks/useProfile";
 import toast from "react-hot-toast";
 import BirthdateSelect from "../BirthdateSelect";
-
-const personalInfoSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  day: z.number().min(1).max(31).optional(),
-  month: z.number().min(1).max(12).optional(),
-  year: z.number().min(1900).max(new Date().getFullYear()).optional(),
-});
+import { personalInfoSchema } from "../../utils/validation";
 
 type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
-const PersonalInformation = ({ user }: { user: User | null }) => {
+interface PersonalInformationProps {
+  user: User | null;
+  imageFile?: File | null;
+  onImageUploadSuccess?: () => void;
+}
+
+const PersonalInformation = ({
+  user,
+  imageFile,
+  onImageUploadSuccess,
+}: PersonalInformationProps) => {
   const { mutate: updateProfile, isPending } = useUpdateProfile();
 
   // Calculate initial data from user
@@ -29,6 +31,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
       name: user.name || "",
       email: user.email || "",
       phone: user.phone || "",
+      address: user.address || "",
       day: user.extra_data?.birthdate?.Day,
       month: user.extra_data?.birthdate?.Month,
       year: user.extra_data?.birthdate?.Year,
@@ -47,6 +50,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
       name: "",
       email: "",
       phone: "",
+      address: "",
       day: undefined,
       month: undefined,
       year: undefined,
@@ -60,7 +64,7 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
     }
   }, [initialData, reset]);
 
-  console.log("use is ", user);
+  // console.log("use is ", user);
 
   if (!user) {
     return <div>loadding...</div>;
@@ -68,25 +72,49 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
 
   const onSubmit = async (data: PersonalInfoFormData) => {
     // Check if data has changed using isDirty from React Hook Form
-    if (!isDirty) {
+    if (!isDirty && !imageFile) {
       toast.error("No changes detected. Please modify the data before saving.");
       return;
     }
 
     console.log("Personal information data:", data);
 
-    // Format data for API
-    const formattedData = {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      birthDay: data.day,
-      birthMonth: data.month,
-      birthYear: data.year,
-    };
+    // Format data for API - use FormData if image is present
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
+      if (data.address) formData.append("address", data.address);
+      if (data.day) formData.append("birthDay", data.day.toString());
+      if (data.month) formData.append("birthMonth", data.month.toString());
+      if (data.year) formData.append("birthYear", data.year.toString());
+      formData.append("image", imageFile);
 
-    console.log("Formatted data being sent:", formattedData);
-    updateProfile(formattedData);
+      console.log("Formatted FormData being sent");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      updateProfile(formData as any, {
+        onSuccess: () => {
+          if (onImageUploadSuccess) {
+            onImageUploadSuccess();
+          }
+        },
+      });
+    } else {
+      // Regular JSON data
+      const formattedData = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        birthDay: data.day,
+        birthMonth: data.month,
+        birthYear: data.year,
+      };
+
+      console.log("Formatted data being sent:", formattedData);
+      updateProfile(formattedData);
+    }
   };
 
   return (
@@ -139,6 +167,17 @@ const PersonalInformation = ({ user }: { user: User | null }) => {
             InputLabelProps={{ shrink: true }}
             error={!!errors.phone}
             helperText={errors.phone?.message}
+            size="small"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
+          />
+
+          <TextField
+            {...register("address")}
+            fullWidth
+            label="Address"
+            InputLabelProps={{ shrink: true }}
+            error={!!errors.address}
+            helperText={errors.address?.message}
             size="small"
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />

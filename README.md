@@ -113,15 +113,44 @@ src/
 
 ## 🚀 Getting Started
 
+### 1. Clone and Install Dependencies
+
 ```bash
 git clone https://github.com/a-basuony/doctor-booking
 cd doctor-booking
 npm install
+```
+
+### 2. Environment Setup
+
+**IMPORTANT:** You must create a `.env` file before running the app.
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Open `.env` and fill in the required values:
+   ```env
+   VITE_PUBLIC_API_KEY=your_api_key_here
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
+   VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+   ```
+
+3. **Getting the values:**
+   - `VITE_PUBLIC_API_KEY`: Contact your backend team for the API key
+   - `VITE_GOOGLE_CLIENT_ID` & `VITE_GOOGLE_CLIENT_SECRET`: Follow the instructions in `.env.example` to set up Google OAuth
+
+### 3. Run the Development Server
+
+```bash
 npm run dev
 ```
 
 Then open:
-[http://localhost:5173](http://localhost:5173) in your browser.
+[http://localhost:3000](http://localhost:3000) in your browser.
+
+**Note:** If you get authentication errors, make sure your `.env` file is properly configured with all required values.
 
 ---
 

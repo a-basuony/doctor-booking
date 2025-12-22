@@ -13,6 +13,30 @@ import type {
   GoogleLoginResponse,
 } from "../types/auth";
 import { api } from "./api";
+import axios from "axios";
+
+// Create a direct API instance that bypasses the proxy for Google OAuth
+const directApi = axios.create({
+  baseURL: "https://round8-backend-team-one.huma-volve.com/api",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+// Add the same interceptor for public API key
+directApi.interceptors.request.use(
+  (config) => {
+    const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY;
+    if (publicApiKey) {
+      config.headers.Authorization = `Bearer ${publicApiKey}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Authentication service functions
 export const authService = {
@@ -86,11 +110,11 @@ export const authService = {
     return response.data;
   },
 
-  // Google login
+  // Google login - use direct API to bypass proxy
   googleLogin: async (
     data: GoogleLoginData
   ): Promise<ApiResponse<GoogleLoginResponse>> => {
-    const response = await api.post<ApiResponse<GoogleLoginResponse>>(
+    const response = await directApi.post<ApiResponse<GoogleLoginResponse>>(
       "/auth/google-login",
       data
     );

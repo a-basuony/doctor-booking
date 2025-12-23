@@ -97,10 +97,9 @@ function App() {
 
         {/* Search & Appointments */}
         <Route path="/SearchDoctors" element={<SearchDoctor />} />
-        <Route
-          path="/book-appointment/:doctorId"
-          element={<BookAppointment />}
-        />
+        <Route path="/SearchDoctors/:doctorId" element={<BookAppointment />} />
+
+        {/* Favorites */}
         <Route path="/favorites" element={<FavoriteDoctors />} />
 
         {/* Extra Routes */}

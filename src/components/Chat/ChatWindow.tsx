@@ -230,7 +230,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             if (msg.type === "video") {
               const videoSrc = getAbsoluteUrl(msg.text);
               return (
-                <div className="relative group rounded-lg overflow-hidden bg-black max-w-[300px]">
+                <div className="relative group rounded-lg overflow-hidden h-auto max-w-[300px]">
                   <video
                     src={videoSrc}
                     controls
@@ -244,15 +244,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             if (msg.type === "audio") {
               const audioSrc = getAbsoluteUrl(msg.text);
               return (
-                <audio
-                  src={audioSrc}
-                  controls
-                  className="w-full max-w-[250px]"
-                  style={{
-                    height: "40px",
-                    backgroundColor: "transparent",
-                  }}
-                />
+                <div className="relative">
+                  <audio
+                    src={audioSrc}
+                    controls
+                    className="audio-player"
+                    style={{
+                      height: "36px",
+                      width: "220px",
+                      backgroundColor: "transparent",
+                    }}
+                  />
+                  <style>{`
+                    .audio-player {
+                      background: transparent !important;
+                    }
+                    .audio-player::-webkit-media-controls-panel {
+                      background-color: transparent !important;
+                      border: none !important;
+                    }
+                    .audio-player::-webkit-media-controls-enclosure {
+                      background-color: transparent !important;
+                    }
+                  `}</style>
+                </div>
               );
             }
             return <p className="break-words">{msg.text}</p>;
@@ -271,18 +286,50 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               } group relative`}
             >
               {msg.type === "audio" ? (
-                // Audio messages without background bubble
-                <div className="flex flex-col gap-1">
-                  {renderMedia()}
+                // Audio messages without background bubble - clean design
+                <div className={`flex flex-col gap-2 ${isMe ? "items-end" : "items-start"}`}>
+                  <div className="flex items-center gap-3">
+                    {!isMe && (
+                      <img
+                        src={chat.avatar}
+                        alt={chat.fullName}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    )}
+                    {renderMedia()}
+                    {isMe && (
+                      <img
+                        src={chat.avatar}
+                        alt="You"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    )}
+                  </div>
                   <span
-                    className={`text-[10px] font-medium ${
-                      isMe
-                        ? "text-right text-gray-400"
-                        : "text-left text-gray-500"
+                    className={`text-[11px] font-medium text-gray-700 ${
+                      isMe ? "mr-11" : "ml-11"
                     }`}
                   >
                     {msg.time}
                   </span>
+                </div>
+              ) : msg.type === "image" || msg.type === "video" ? (
+                // Media messages with minimal background
+                <div
+                  className={`max-w-[75%] rounded-2xl overflow-hidden relative
+                    ${
+                      isMe
+                        ? "rounded-tr-none"
+                        : "rounded-tl-none"
+                    }
+                  `}
+                >
+                  {renderMedia()}
+                  <div
+                    className={`flex items-center justify-end mt-1 px-3 py-1`}
+                  >
+                    <span className="text-[10px] font-medium text-gray-700">{msg.time}</span>
+                  </div>
                 </div>
               ) : (
                 // Regular messages with background bubble
@@ -314,8 +361,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-100 bg-white">
-        <div className="flex items-center gap-3 bg-gray-50 rounded-full px-4 py-3">
+      <div className="p-4 border-t border-gray-200 bg-white">
+        <div className="flex items-center gap-3 bg-gray-50 rounded-3xl px-5 py-3 border border-gray-200 hover:border-gray-300 transition-colors">
           {isRecording ? (
             <div className="flex-1 flex items-center gap-4 px-2">
               <div className="flex items-center gap-2">
@@ -331,20 +378,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               <button
                 onClick={() => {
                   if (mediaRecorderRef.current) {
-                    mediaRecorderRef.current.onstop = null; // Prevent sending
+                    mediaRecorderRef.current.onstop = null;
                     mediaRecorderRef.current.stop();
                     setIsRecording(false);
                     if (timerRef.current) clearInterval(timerRef.current);
                   }
                 }}
-                className="text-gray-400 hover:text-red-500 text-sm font-medium transition-colors"
+                className="text-gray-500 hover:text-red-500 text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
             </div>
           ) : (
             <>
-              <button className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button className="text-gray-500 hover:text-gray-700 transition-colors p-1">
                 <IoMdHappy className="w-6 h-6" />
               </button>
 
@@ -353,20 +400,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-400"
+                className="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400 text-[15px]"
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
               />
 
               <button
                 onClick={handleAttachmentClick}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1"
               >
                 <ImAttachment className="w-5 h-5" />
               </button>
 
               <button
                 onClick={startRecording}
-                className="text-gray-400 hover:text-blue-600 transition-colors"
+                className="text-gray-500 hover:text-blue-600 transition-colors p-1"
               >
                 <Mic className="w-5 h-5" />
               </button>
@@ -375,17 +422,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
           <button
             onClick={isRecording ? stopRecording : handleSend}
-            className={`p-2 rounded-full transition-all ${
+            disabled={!isRecording && !messageText.trim()}
+            className={`p-2.5 rounded-full transition-all ${
               isRecording || messageText.trim()
-                ? "text-blue-600 bg-blue-100 hover:bg-blue-200"
-                : "text-gray-400"
+                ? "text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
+                : "text-gray-400 bg-gray-200 cursor-not-allowed"
             }`}
           >
-            {isRecording ? (
-              <Send className="w-5 h-5" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
+            <Send className="w-5 h-5" />
           </button>
         </div>
       </div>

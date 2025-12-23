@@ -30,6 +30,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 // Route Guards
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
+import ScrollToTop from "./components/ScrollToTop ";
 
 // Tailwind-matching theme
 const theme = createTheme({
@@ -93,6 +94,8 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Toaster position="top-right" reverseOrder={false} />
+
+      <ScrollToTop />
 
       <Routes>
         {/* Protected Routes - Require Authentication */}

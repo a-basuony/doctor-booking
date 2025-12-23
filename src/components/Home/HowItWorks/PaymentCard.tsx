@@ -1,12 +1,16 @@
 import { FaApplePay, FaCcVisa, FaPaypal } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   onPay: () => void;
 };
 
 export default function PaymentCard({ onPay }: Props) {
+  const navigate = useNavigate();
   return (
-    <div className="border border-gray-400 rounded-3xl shadow-sm bg-white overflow-hidden m-5">
+    
+    <div  onClick={() => navigate("/payment")}
+     className="border border-gray-400 rounded-3xl shadow-sm bg-white overflow-hidden m-5">
       <div className="h-64 px-8 py-6 flex flex-col gap-4">
         {[FaApplePay, FaCcVisa, FaPaypal].map((Icon, i) => (
           <button

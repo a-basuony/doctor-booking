@@ -1,34 +1,39 @@
 import axios from "axios";
 
-export const API_BASE_URL = "https://round8-backend-team-one.huma-volve.com";
+// Base URL Configuration
+const isDevelopment = import.meta.env.MODE === "development";
+export const API_BASE_URL = isDevelopment
+  ? "/api"
+  : "https://round8-backend-team-one.huma-volve.com/api";
 
+// Create Axios instance
 export const api = axios.create({
-  baseURL: import.meta.env.DEV ? "/api" : `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token dynamically
 api.interceptors.request.use(
   (config) => {
-    // First check for user auth token from localStorage
+    // Get token from localStorage
     const authToken = localStorage.getItem("authToken");
+
     if (authToken) {
       config.headers.Authorization = `Bearer ${authToken}`;
     } else {
-      // Fallback to public API key if no user token
+      // If no user token, use public API key if available
       const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY;
       if (publicApiKey) {
         config.headers.Authorization = `Bearer ${publicApiKey}`;
       }
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle errors

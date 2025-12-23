@@ -23,9 +23,9 @@ export default function DateCard({
   onConfirm,
 }: Props) {
   return (
-    <div className="border border-gray-400 rounded-3xl shadow-sm bg-white overflow-hidden m-5">
+    <div className="border border-gray-400 rounded-3xl shadow-sm bg-white overflow-hidden m-5 ">
       <div className="h-64 flex items-center justify-center px-6">
-        <div className="w-full max-w-xl border border-gray-400 rounded-xl p-2">
+        <div className="w-full max-w-xl border border-gray-400 rounded-xl p-2 border-b-transparent">
           <div className="flex justify-between items-center mb-3 ">
             <button onClick={onPrev}><FiChevronLeft /></button>
             <span className="text-sm font-medium">

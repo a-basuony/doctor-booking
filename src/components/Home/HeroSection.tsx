@@ -2,6 +2,9 @@ import { FaLocationDot } from "react-icons/fa6";
 import { BsStars } from "react-icons/bs";
 import { TbPointerFilled } from "react-icons/tb";
 import { GiNotebook } from "react-icons/gi";
+import { useNavigate } from "react-router-dom";
+
+
 
 
 type HeroSectionProps = {
@@ -13,6 +16,8 @@ export default function HeroSection({
   title = "Find and book top doctors near you",
   
 }: HeroSectionProps) {
+    const navigate = useNavigate();
+
   return (
     <section className="w-full  py-20 md:py-24 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative">
@@ -62,11 +67,13 @@ export default function HeroSection({
 
          {/* CTA Buttons */}
 <div className="flex flex-row flex-wrap items-center justify-center gap-4">
-  <button className="px-6 sm:px-10 py-3 sm:py-4 bg-blue-800 text-white rounded-lg shadow-md font-sans text-[14px] sm:text-[16px] font-normal">
-    Get started
+  <button  onClick={() => navigate("/SearchDoctors")}
+  className="px-6 sm:px-10 py-3 sm:py-4 bg-blue-800 text-white rounded-lg shadow-md font-sans text-[14px] sm:text-[16px] font-normal cursor-pointer">
+     Get started
   </button>
   
-  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-white text-blue-600 rounded-lg border border-blue-600 transition-colors flex items-center justify-center gap-2 font-sans text-[14px] sm:text-[15px] font-normal">
+  <button onClick={() => navigate("/SearchDoctors")}
+  className="px-4 sm:px-8 py-3 sm:py-4 bg-white text-blue-600 rounded-lg border border-blue-600 transition-colors flex items-center justify-center gap-2 font-sans text-[14px] sm:text-[15px] font-normal cursor-pointer">
     <GiNotebook className="w-5 sm:w-6 h-5 sm:h-6" />
     <span>Book Appointment</span>
   </button>

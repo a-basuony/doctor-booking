@@ -97,6 +97,12 @@ function App() {
 
       <ScrollToTop />
 
+      {/* Search & Appointments */}
+      {/* <Route path="/SearchDoctors" element={<SearchDoctor />} />
+      <Route path="/SearchDoctors/:doctorId" element={<BookAppointment />} /> */}
+
+      {/* Favorites */}
+      <Route path="/favorites" element={<FavoriteDoctors />} />
       <Routes>
         {/* Protected Routes - Require Authentication */}
         <Route
@@ -126,7 +132,7 @@ function App() {
           }
         />
         <Route
-          path="/book-appointment/:doctorId"
+          path="/SearchDoctors/:doctorId"
           element={
             <ProtectedRoute>
               <BookAppointment />

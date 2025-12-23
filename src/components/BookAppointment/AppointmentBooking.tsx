@@ -1,13 +1,11 @@
 import "react-datepicker/dist/react-datepicker.css";
 
-import React, { useState } from "react";
-import {
-  Calendar,
-} from "lucide-react";
-// import { DateSlot, TimeSlot } from "../../types/appointment";
+import React, { useState, useEffect } from "react";
+import { Calendar } from "lucide-react";
 import { FadeIn } from "./FadeIn";
 import BasicDateCalendar from "./CalendarDropdown";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 export interface DateSlot {
   day: string; // e.g., "Mon"
@@ -31,11 +29,32 @@ const TIME_SLOTS: TimeSlot[] = [
   { id: "8", time: "10:00 PM" },
 ];
 
-export const AppointmentBooking: React.FC = () => {
-  // Generate dummy dates starting from Nov 12, 2024 to match UI
+interface AppointmentBookingProps {
+  doctorId?: string;
+  sessionPrice?: number;
+  doctorName?: string;
+  onBookAppointment: (bookingData: {
+    appointmentDate: Date;
+    appointmentTime: string;
+    paymentMethod?: string;
+    notes?: string;
+  }) => void;
+}
+
+export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
+  doctorId,
+  sessionPrice = 150,
+  doctorName = "doctor",
+  onBookAppointment,
+}) => {
+  const navigate = useNavigate();
+  const [isBooking, setIsBooking] = useState(false);
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+
+  // Generate dates starting from selected calendar date
   const generateDates = (): DateSlot[] => {
     const dates: DateSlot[] = [];
-    const startDate = new Date(2024, 10, 12); // Nov 12, 2024
+    const startDate = new Date(calendarDate);
 
     for (let i = 0; i < 14; i++) {
       const d = new Date(startDate);
@@ -50,10 +69,27 @@ export const AppointmentBooking: React.FC = () => {
   };
 
   const dates = generateDates();
-  const [selectedDate, setSelectedDate] = useState<number>(15); // Default to Mon 15
+  const [selectedDate, setSelectedDate] = useState<number>(
+    dates[0]?.date || 15
+  );
   const [selectedTime, setSelectedTime] = useState<string>("11:00 AM");
 
   const selectedDateObj = dates.find((d) => d.date === selectedDate);
+
+  // Update dates when calendarDate changes
+  useEffect(() => {
+    const newDates = generateDates();
+    const firstDate = newDates[0]?.date;
+    if (firstDate && firstDate !== selectedDate) {
+      setSelectedDate(firstDate);
+    }
+  }, [calendarDate]);
+
+  // Format month name
+  const getMonthName = (date: Date) => {
+    return date.toLocaleDateString("en-US", { month: "long" });
+  };
+
   const formattedDateString = selectedDateObj
     ? `${
         selectedDateObj.day === "Thu"
@@ -61,23 +97,54 @@ export const AppointmentBooking: React.FC = () => {
           : selectedDateObj.day === "Tue"
           ? "Tuesday"
           : selectedDateObj.day + "day"
-      }, November ${selectedDate} - ${selectedTime}`
+      }, ${getMonthName(
+        selectedDateObj.fullDate
+      )} ${selectedDate} - ${selectedTime}`
     : "";
+
+  // Handle booking
+  const handleBooking = async () => {
+    if (!selectedDateObj) {
+      toast.error("Please select a date");
+      return;
+    }
+
+    if (!selectedTime) {
+      toast.error("Please select a time");
+      return;
+    }
+
+    if (!doctorId) {
+      toast.error("Doctor information is missing");
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      await onBookAppointment({
+        appointmentDate: selectedDateObj.fullDate,
+        appointmentTime: selectedTime,
+        paymentMethod: "stripe",
+        notes: `Appointment with ${doctorName}`,
+      });
+      navigate("/BookingPage");
+    } catch (error) {
+      console.error("Booking error:", error);
+      toast.error("Failed to book appointment. Please try again.");
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
       <FadeIn>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-gray-500 text-sm font-semibold sm:text-lg sm:font-medium ">
+          <h2 className="text-gray-500 text-sm font-semibold sm:text-lg sm:font-medium">
             Choose date and time
           </h2>
           <div className="flex items-center gap-2 text-gray-800 font-semibold cursor-pointer">
-            <BasicDateCalendar />
-            {/* <Calendar size={18} />
-            <span className="text-gray-500 text-sm font-semibold sm:text-lg sm:font-medium">
-              November, 2024
-            </span>
-            <ChevronDown size={18} /> */}
+            <BasicDateCalendar onDateChange={setCalendarDate} />
           </div>
         </div>
 
@@ -136,23 +203,35 @@ export const AppointmentBooking: React.FC = () => {
           })}
         </div>
 
-        {/* Footer Action */}
+        {/* Price and Action */}
         <div className="flex flex-col md:flex-row justify-between items-center border-t border-gray-100 pt-6">
-          <div className="flex items-center gap-2 text-slate-700 mb-4 md:mb-0">
-            <div className="bg-blue-50 p-2 rounded-full text-blue-600">
-              <Calendar size={18} />
+          <div className="flex items-center gap-6 mb-4 md:mb-0">
+            <div className="flex items-center gap-2 text-slate-700">
+              <div className="bg-blue-50 p-2 rounded-full text-blue-600">
+                <Calendar size={18} />
+              </div>
+              <span className="font-medium">{formattedDateString}</span>
             </div>
-            <span className="font-medium">{formattedDateString}</span>
+
+            <div className="text-lg font-bold text-slate-800">
+              ${sessionPrice}
+              <span className="text-sm font-normal text-gray-500 ml-1">
+                /session
+              </span>
+            </div>
           </div>
 
-          <Link
-            to="/payment"
-            className=" no-underline text-center  w-96 md:w-auto px-10 py-3 sm:py-4 cursor-pointer bg-transparent rounded-xl border border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition-colors"
+          <button
+            onClick={handleBooking}
+            disabled={isBooking || !selectedDateObj || !selectedTime}
+            className={`no-underline text-center w-96 md:w-auto px-10 py-3 sm:py-4 cursor-pointer rounded-xl border font-semibold transition-colors ${
+              isBooking || !selectedDateObj || !selectedTime
+                ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+                : "bg-transparent border-blue-600 text-blue-600 hover:bg-blue-50"
+            }`}
           >
-            {/* <button className="w-full md:w-auto px-10 py-4 cursor-pointer bg-transparent rounded-xl border border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 transition-colors"> */}
-            Book
-            {/* </button> */}
-          </Link>
+            {isBooking ? "Booking..." : "Book"}
+          </button>
         </div>
       </FadeIn>
     </div>

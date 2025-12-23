@@ -1,10 +1,7 @@
 import axios from "axios";
 
 // Base URL Configuration
-const isDevelopment = import.meta.env.MODE === "development";
-export const API_BASE_URL = isDevelopment
-  ? "/api"
-  : "https://round8-backend-team-one.huma-volve.com/api";
+export const API_BASE_URL = "https://round8-backend-team-one.huma-volve.com/api";
 
 // Create Axios instance
 export const api = axios.create({

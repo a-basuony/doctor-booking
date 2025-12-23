@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Box, Container, Typography, Button, Avatar } from "@mui/material";
 import PersonalInformation from "../components/profile/PersonalInformation";
 import PasswordManagement from "../components/profile/PasswordManagement";
 import { useAuthContext, useLogout } from "../hooks/useAuth";
@@ -91,21 +91,6 @@ const Profile = () => {
           className="!bg-neutral-50"
         >
           {/* Avatar */}
-          {/* <Avatar
-            src={user.avatar}
-            alt={user.name}
-            sx={{
-              width: 120,
-              height: 120,
-              margin: "auto",
-              mb: 2,
-              border: "4px solid",
-              borderColor: "primary.main",
-            }}
-          >
-            {user.name.charAt(0)}
-          </Avatar> */}
-
           <Box
             sx={{
               position: "relative",
@@ -117,22 +102,50 @@ const Profile = () => {
             }}
           >
             <span className="profile-border" />
-            <Box
-              component="img"
-              src={imagePreview || user?.image || "/images/profile.jpg"}
-              alt="profile page"
-              sx={{
-                objectFit: "cover",
-                width: { xs: "94px", sm: "113px" },
-                height: { xs: "94px", sm: "113px" },
-                borderRadius: "50%",
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 20,
-              }}
-            />
+            {imagePreview || user?.image ? (
+              <Box
+                component="img"
+                src={imagePreview || user?.image}
+                alt="profile page"
+                sx={{
+                  objectFit: "cover",
+                  width: { xs: "94px", sm: "113px" },
+                  height: { xs: "94px", sm: "113px" },
+                  borderRadius: "50%",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 20,
+                }}
+              />
+            ) : (
+              <Avatar
+                sx={{
+                  width: { xs: "94px", sm: "113px" },
+                  height: { xs: "94px", sm: "113px" },
+                  bgcolor: "primary.main",
+                  color: "white",
+                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                  fontWeight: 600,
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 20,
+                }}
+              >
+                {user?.name
+                  ? user.name
+                      .trim()
+                      .split(" ")
+                      .map((word) => word[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()
+                  : "??"}
+              </Avatar>
+            )}
             <input
               accept="image/*"
               style={{ display: "none" }}

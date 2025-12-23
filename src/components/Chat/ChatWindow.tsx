@@ -6,11 +6,9 @@ import {
   MoreVertical,
   Send,
   ArrowLeft,
-  CheckCircle2,
   Star,
   Archive,
   Mic,
-  Play,
 } from "lucide-react";
 import type { Chat } from "../../types/chat";
 import { IoMdHappy } from "react-icons/io";

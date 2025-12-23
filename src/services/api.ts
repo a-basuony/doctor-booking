@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Base URL Configuration
-export const API_BASE_URL = "https://round8-backend-team-one.huma-volve.com/api";
+export const API_BASE_URL =
+  "https://round8-backend-team-one.huma-volve.com/api";
 
 // Create Axios instance
 export const api = axios.create({

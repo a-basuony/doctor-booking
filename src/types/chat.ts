@@ -6,13 +6,14 @@ export interface User {
 
 export interface Message {
   id: number;
-  body: string;
-  is_read: boolean;
-  type: string;
-  created_at: string;
+  conversation_id: number;
   sender_id: number;
-  sender?: User;
-  file_url?: string | null;
+  sender_name: string;
+  sender_avatar: string | null;
+  body: string;
+  type: "text" | "image" | "audio" | "video";
+  is_mine: boolean;
+  created_at: string;
 }
 
 export interface Conversation {
@@ -61,4 +62,24 @@ export interface MessagesResponse {
 
 export interface SendMessageResponse {
   data: Message;
+}
+
+export interface Chat {
+  id: number;
+  fullName: string;
+  avatar: string;
+  messages: {
+    id: number;
+    sender: "me" | "other";
+    text: string;
+    time: string;
+    isRead: boolean;
+    image?: string | null;
+    type?: "text" | "image" | "audio" | "video";
+  }[];
+  lastSeen?: string;
+  isUnread?: boolean;
+  isFavorite?: boolean;
+  isArchived?: boolean;
+  unreadCount: number;
 }

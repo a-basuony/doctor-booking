@@ -10,7 +10,6 @@ import type { HowItWorksProps } from './types';
 export default function HowItWorks({ title = "How it works" }: HowItWorksProps) {
   const navigate = useNavigate();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [currentMonth, setCurrentMonth] = useState(6);
@@ -45,8 +44,6 @@ export default function HowItWorks({ title = "How it works" }: HowItWorksProps) 
       {/* Desktop */}
       <div className="hidden md:grid grid-cols-3 ">
         <SearchCard
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
           placeholder={PLACEHOLDERS[placeholderIndex]}
         />
 
@@ -68,8 +65,6 @@ export default function HowItWorks({ title = "How it works" }: HowItWorksProps) 
       <div className="md:hidden">
         <Slider {...sliderSettings}>
           <SearchCard
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
             placeholder={PLACEHOLDERS[placeholderIndex]}
           />
 

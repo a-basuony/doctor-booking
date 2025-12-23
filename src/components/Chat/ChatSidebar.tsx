@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Search, Trash2, CheckSquare, X } from "lucide-react";
 import type { Conversation } from "../../types/chat";
 import { IoIosArrowBack } from "react-icons/io";
@@ -16,6 +16,8 @@ interface ChatSidebarProps {
   onToggleSelectionMode: () => void;
   onToggleChatSelection: (id: number) => void;
   onDeleteSelected: () => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -29,23 +31,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onToggleSelectionMode,
   onToggleChatSelection,
   onDeleteSelected,
+  searchTerm,
+  setSearchTerm,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredConversations = conversations.filter((conv) => {
-    // Note: The parent component should ideally handle fetching based on API filters (unread, favorite, archived).
-    // But for client-side search/filtering on the current page:
-
-    // 1. Filter by search
-    if (
-      searchTerm &&
-      !conv.other_user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-      return false;
-
-    return true;
-  });
-
   const getHeaderTitle = () => {
     switch (filterMode) {
       case "unread":
@@ -172,7 +160,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       {/* List */}
       <div className="overflow-y-auto flex-1">
-        {filteredConversations.map((conv) => {
+        {conversations.map((conv) => {
           const isSelected = selectedChatIds.includes(conv.id);
 
           return (
@@ -232,11 +220,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 </h3>
                 {!isSelectionMode && (
                   <div className="flex items-center justify-between mt-0.5 w-full">
-                    <p className="text-sm text-gray-500 truncate pr-2">
+                    <p className="text-sm text-gray-500 truncate pr-2 italic">
                       {conv.last_message
-                        ? typeof conv.last_message === "string"
-                          ? conv.last_message
-                          : conv.last_message.body
+                        ? conv.last_message.type === "text"
+                          ? conv.last_message.body
+                          : `[${
+                              conv.last_message.type.charAt(0).toUpperCase() +
+                              conv.last_message.type.slice(1)
+                            }]`
                         : "Start a conversation"}
                     </p>
                     <span className="text-xs text-blue-500 flex-shrink-0">

@@ -1,23 +1,51 @@
 import { useState } from "react";
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Box, Container, Typography, Button, Avatar } from "@mui/material";
 import PersonalInformation from "../components/profile/PersonalInformation";
 import PasswordManagement from "../components/profile/PasswordManagement";
 import { useAuthContext, useLogout } from "../hooks/useAuth";
+import toast from "react-hot-toast";
 
 const Profile = () => {
   const { user: apiUser, isAuthenticated } = useAuthContext();
   const { mutate: logout, isPending } = useLogout();
   const [activeTab, setActiveTab] = useState(0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   console.log("Auth user:", apiUser, "Authenticated:", isAuthenticated);
 
+  // Handle image file selection
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+      setImageFile(file);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      toast.success("Image selected. Click 'Save Changes' to upload.");
+    }
+  };
+
   const user = apiUser || {
-    name: "Guest User",
-    location: "",
+    name: "",
+    address: "",
     email: "",
     phone: "",
-    birthdate: "1990-01-01",
-    avatar: "/path/to/avatar.jpg",
+    image: undefined,
+    extra_data: {},
   };
 
   const tabs = [
@@ -30,6 +58,14 @@ const Profile = () => {
     console.log("Logging out...");
     logout();
   };
+
+  // Reset image state after successful upload
+  const handleImageUploadSuccess = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  console.log(imageFile);
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
@@ -55,21 +91,6 @@ const Profile = () => {
           className="!bg-neutral-50"
         >
           {/* Avatar */}
-          {/* <Avatar
-            src={user.avatar}
-            alt={user.name}
-            sx={{
-              width: 120,
-              height: 120,
-              margin: "auto",
-              mb: 2,
-              border: "4px solid",
-              borderColor: "primary.main",
-            }}
-          >
-            {user.name.charAt(0)}
-          </Avatar> */}
-
           <Box
             sx={{
               position: "relative",
@@ -81,36 +102,73 @@ const Profile = () => {
             }}
           >
             <span className="profile-border" />
-            <Box
-              component="img"
-              src={"/images/profile.jpg"}
-              alt="profile page"
-              sx={{
-                objectFit: "cover",
-                width: { xs: "94px", sm: "113px" },
-                height: { xs: "94px", sm: "113px" },
-                borderRadius: "50%",
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 20,
-              }}
+            {imagePreview || user?.image ? (
+              <Box
+                component="img"
+                src={imagePreview || user?.image}
+                alt="profile page"
+                sx={{
+                  objectFit: "cover",
+                  width: { xs: "94px", sm: "113px" },
+                  height: { xs: "94px", sm: "113px" },
+                  borderRadius: "50%",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 20,
+                }}
+              />
+            ) : (
+              <Avatar
+                sx={{
+                  width: { xs: "94px", sm: "113px" },
+                  height: { xs: "94px", sm: "113px" },
+                  bgcolor: "primary.main",
+                  color: "white",
+                  fontSize: { xs: "2rem", sm: "2.5rem" },
+                  fontWeight: 600,
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 20,
+                }}
+              >
+                {user?.name
+                  ? user.name
+                      .trim()
+                      .split(" ")
+                      .map((word) => word[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()
+                  : "??"}
+              </Avatar>
+            )}
+            <input
+              accept="image/*"
+              style={{ display: "none" }}
+              id="profile-image-upload"
+              type="file"
+              onChange={handleImageChange}
             />
-            <Box
-              component="img"
-              src={"/images/camera.png"}
-              alt="camera"
-              sx={{
-                position: "absolute",
-                bottom: { xs: "8px", sm: "16px" },
-                right: 0,
-                zIndex: 30,
-                cursor: "pointer",
-                width: { xs: "20px", sm: "24px" },
-                height: { xs: "20px", sm: "24px" },
-              }}
-            />
+            <label htmlFor="profile-image-upload">
+              <Box
+                component="img"
+                src={"/images/camera.png"}
+                alt="camera"
+                sx={{
+                  position: "absolute",
+                  bottom: { xs: "8px", sm: "16px" },
+                  right: 0,
+                  zIndex: 30,
+                  cursor: "pointer",
+                  width: { xs: "20px", sm: "24px" },
+                  height: { xs: "20px", sm: "24px" },
+                }}
+              />
+            </label>
           </Box>
 
           {/* Name */}
@@ -126,7 +184,7 @@ const Profile = () => {
           </Typography>
 
           {/* Location */}
-          {/* {user?.location && (
+          {user?.address && (
             <Box
               sx={{
                 display: "flex",
@@ -149,10 +207,10 @@ const Profile = () => {
                 color="text.secondary"
                 sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
               >
-                {user.location}
+                {user.address}
               </Typography>
             </Box>
-          )} */}
+          )}
 
           {/* Custom Tabs */}
           <Box
@@ -247,7 +305,13 @@ const Profile = () => {
             borderRadius: 2,
           }}
         >
-          {activeTab === 0 && <PersonalInformation user={user} />}
+          {activeTab === 0 && (
+            <PersonalInformation
+              user={user}
+              imageFile={imageFile}
+              onImageUploadSuccess={handleImageUploadSuccess}
+            />
+          )}
           {activeTab === 1 && <PasswordManagement />}
         </Box>
       </Box>

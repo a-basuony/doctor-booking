@@ -27,6 +27,11 @@ import FavoriteDoctors from "./pages/FavoriteDoctors";
 import PhoneVerification from "./pages/auth/PhoneVerification";
 import ResetPassword from "./pages/auth/ResetPassword";
 
+// Route Guards
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/PublicRoute";
+import ScrollToTop from "./components/ScrollToTop ";
+
 // Tailwind-matching theme
 const theme = createTheme({
   palette: {
@@ -90,41 +95,170 @@ function App() {
       <CssBaseline />
       <Toaster position="top-right" reverseOrder={false} />
 
+      <ScrollToTop />
+
+      {/* Search & Appointments */}
+      {/* <Route path="/SearchDoctors" element={<SearchDoctor />} />
+      <Route path="/SearchDoctors/:doctorId" element={<BookAppointment />} /> */}
+
+      {/* Favorites */}
+      <Route path="/favorites" element={<FavoriteDoctors />} />
       <Routes>
-        {/* Main Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/BookingPage" element={<BookingPage />} />
+        {/* Protected Routes - Require Authentication */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/BookingPage"
+          element={
+            <ProtectedRoute>
+              <BookingPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Search & Appointments */}
-        <Route path="/SearchDoctors" element={<SearchDoctor />} />
-        <Route path="/SearchDoctors/:doctorId" element={<BookAppointment />} />
+        {/* Search & Appointments - Protected */}
+        <Route
+          path="/SearchDoctors"
+          element={
+            <ProtectedRoute>
+              <SearchDoctor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/SearchDoctors/:doctorId"
+          element={
+            <ProtectedRoute>
+              <BookAppointment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <FavoriteDoctors />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Favorites */}
-        <Route path="/favorites" element={<FavoriteDoctors />} />
+        {/* Extra Routes - Protected */}
+        <Route
+          path="/doctor-details"
+          element={
+            <ProtectedRoute>
+              <DoctorDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/map"
+          element={
+            <ProtectedRoute>
+              <DoctorMapPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <ProtectedRoute>
+              <ContactUsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/FQAPage"
+          element={
+            <ProtectedRoute>
+              <FQAPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Extra Routes */}
-        <Route path="/doctor-details" element={<DoctorDetailsPage />} />
-        <Route path="/map" element={<DoctorMapPage />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/contact" element={<ContactUsPage />} />
-        <Route path="/FQAPage" element={<FQAPage />} />
-        <Route path="/chat" element={<ChatPage />} />
+        {/* Terms & Privacy - Protected */}
+        <Route
+          path={ROUTES.PRIVACY_POLICY}
+          element={
+            <ProtectedRoute>
+              <PrivacyPolicyPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Terms & Privacy */}
-        <Route path={ROUTES.PRIVACY_POLICY} element={<PrivacyPolicyPage />} />
+        {/* Profile - Protected */}
+        <Route
+          path={ROUTES.PROFILE}
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Profile */}
-        <Route path={ROUTES.PROFILE} element={<Profile />} />
-
-        {/* Auth Routes */}
-        <Route path={ROUTES.SIGN_IN} element={<SignIn />} />
-        <Route path={ROUTES.SIGN_UP} element={<SignUp />} />
-        <Route path={ROUTES.VERIFY_OTP} element={<OTPVerification />} />
+        {/* Auth Routes - Public Only (redirect to home if authenticated) */}
+        <Route
+          path={ROUTES.SIGN_IN}
+          element={
+            <PublicRoute>
+              <SignIn />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path={ROUTES.SIGN_UP}
+          element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path={ROUTES.VERIFY_OTP}
+          element={
+            <PublicRoute>
+              <OTPVerification />
+            </PublicRoute>
+          }
+        />
         <Route
           path={ROUTES.PHONE_VERIFICATION}
-          element={<PhoneVerification />}
+          element={
+            <PublicRoute>
+              <PhoneVerification />
+            </PublicRoute>
+          }
         />
-        <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
+        <Route
+          path={ROUTES.RESET_PASSWORD}
+          element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          }
+        />
       </Routes>
     </ThemeProvider>
   );

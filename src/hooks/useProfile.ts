@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { User } from "../types/auth";
+import type { UpdateProfileData } from "../types/auth";
 import { profileService } from "../services/profileService";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../utils/utils.";
@@ -9,11 +9,16 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: User) => profileService.updateProfile(data),
+    mutationFn: (data: UpdateProfileData | FormData) => profileService.updateProfile(data),
     onSuccess: (response) => {
-      console.log(response);
-      // Invalidate and refetch user data to get fresh data from server
+      console.log("Update profile response:", response);
+
+      // Update the cache with the new user data from the response
+      queryClient.setQueryData(["currentUser"], response.data);
+
+      // Also invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+
       toast.success("Personal information updated successfully!");
     },
     onError: (error) => {

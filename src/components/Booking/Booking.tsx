@@ -77,16 +77,8 @@ const Booking = () => {
     navigate("/SearchDoctors");
   };
 
-  const handleSupport = (): void => {
-    navigate("/contact");
-  };
-
   const handleViewDetails = (): void => {
     navigate("/doctor-details");
-  };
-
-  const handleBookAgain = (id: number): void => {
-    navigate(`/book-appointment/${id}`);
   };
 
   const handleCancel = (id: number): void => {
@@ -97,6 +89,7 @@ const Booking = () => {
     switch (status.toLowerCase()) {
       case "pending":
       case "upcoming":
+      case "confirmed":
         return "text-blue-600";
       case "completed":
         return "text-green-600";
@@ -274,6 +267,24 @@ const Booking = () => {
                     </>
                   )}
 
+                  {appointment.status === "confirmed" && (
+                    <>
+                      <button
+                        onClick={() => handleCancel(appointment.id)}
+                        disabled={cancelBooking.isPending}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {cancelBooking.isPending ? "Cancelling..." : "Cancel"}
+                      </button>
+                      <button
+                        onClick={() => handleViewDetails()}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        View Details
+                      </button>
+                    </>
+                  )}
+
                   {appointment.status === "completed" && (
                     <>
                       <button
@@ -295,16 +306,16 @@ const Booking = () => {
                     appointment.status === "cancelled") && (
                     <>
                       <button
-                        onClick={() => handleBookAgain(appointment.id)}
+                        onClick={() => handleFeedback()}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        Book again
+                        Feedback
                       </button>
                       <button
-                        onClick={() => handleSupport()}
+                        onClick={() => handleReschedule(appointment.id)}
                         className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
-                        Support
+                        Reschedule
                       </button>
                     </>
                   )}

@@ -5,31 +5,57 @@ import {
   Video,
   MoreVertical,
   Send,
-  Trash2,
   ArrowLeft,
+  Star,
+  Archive,
+  Mic,
 } from "lucide-react";
 import type { Chat } from "../../types/chat";
 import { IoMdHappy } from "react-icons/io";
 import { ImAttachment } from "react-icons/im";
+import { API_BASE_URL } from "../../services/api";
+
+const getAbsoluteUrl = (path: string | null | undefined) => {
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  // Ensure we don't have double slashes
+  const cleanBase = API_BASE_URL.endsWith("/")
+    ? API_BASE_URL.slice(0, -1)
+    : API_BASE_URL;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${cleanBase}${cleanPath}`;
+};
 
 interface ChatWindowProps {
   chat: Chat;
   onSendMessage: (text: string) => void;
-  onDeleteMessage: (msgId: number) => void;
-  onSendAttachment?: (file: File) => void; // Added prop
+  onSendAttachment?: (file: File) => void;
   onBack: () => void;
+  onToggleFavorite?: () => void;
+  onToggleArchive?: () => void;
+  isFavorite?: boolean;
+  isArchived?: boolean;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   chat,
   onSendMessage,
-  onDeleteMessage,
   onSendAttachment,
   onBack,
+  onToggleFavorite,
+  onToggleArchive,
+  isFavorite,
+  isArchived,
 }) => {
   const [messageText, setMessageText] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<number | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,25 +80,78 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (file && onSendAttachment) {
       onSendAttachment(file);
     }
-    // Reset input
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const audioFile = new File([audioBlob], "voice_message.webm", {
+          type: "audio/webm",
+        });
+        if (onSendAttachment) {
+          onSendAttachment(audioFile);
+        }
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingDuration(0);
+      timerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Please allow microphone access to record audio messages.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec.toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="flex flex-col h-full bg-white flex-1 min-w-0 relative">
+      {/* Hidden input for upload */}
       <input
         type="file"
         ref={fileInputRef}
         className="hidden"
-        accept="image/*" // Restrict to images for now
+        accept="image/*,video/*,audio/*"
         onChange={handleFileChange}
       />
+
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100 h-[72px] flex-shrink-0">
         <div className="flex items-center gap-3">
-          {/* Back Button (Mobile Only) */}
           <button
             onClick={onBack}
             className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"
@@ -93,6 +172,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
 
         <div className="flex items-center gap-4 text-gray-400">
+          <button
+            onClick={onToggleFavorite}
+            className={`p-1 rounded-full transition-colors ${
+              isFavorite
+                ? "text-yellow-400 fill-yellow-400"
+                : "hover:text-yellow-400 hover:bg-yellow-50"
+            }`}
+            title={isFavorite ? "Unfavorite" : "Favorite"}
+          >
+            <Star className="w-5 h-5 cursor-pointer" />
+          </button>
+          <button
+            onClick={onToggleArchive}
+            className={`p-1 rounded-full transition-colors ${
+              isArchived
+                ? "text-blue-600"
+                : "hover:text-blue-600 hover:bg-blue-50"
+            }`}
+            title={isArchived ? "Unarchive" : "Archive"}
+          >
+            <Archive className="w-5 h-5 cursor-pointer" />
+          </button>
+          <div className="w-px h-6 bg-gray-100 mx-1"></div>
           <Search className="w-5 h-5 cursor-pointer hover:text-gray-600" />
           <Phone className="w-5 h-5 cursor-pointer hover:text-gray-600" />
           <Video className="w-5 h-5 cursor-pointer hover:text-gray-600" />
@@ -100,9 +202,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       </div>
 
-      {/* Messages Body */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 bg-white space-y-6">
-        {/* Unread Divider Example */}
         {chat.unreadCount > 0 && (
           <div className="flex items-center justify-center my-6">
             <div className="bg-gray-50 px-4 py-1 rounded-full text-xs text-gray-500 font-medium">
@@ -113,90 +214,219 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
         {(chat.messages || []).map((msg) => {
           const isMe = msg.sender === "me";
+
+          const renderMedia = () => {
+            if (msg.type === "image" && (msg.image || msg.text)) {
+              const imgSrc = getAbsoluteUrl(msg.image || msg.text);
+              return (
+                <img
+                  src={imgSrc}
+                  alt="shared"
+                  className="rounded-lg max-w-full h-auto object-cover"
+                  style={{ maxHeight: "300px" }}
+                />
+              );
+            }
+            if (msg.type === "video") {
+              const videoSrc = getAbsoluteUrl(msg.text);
+              return (
+                <div className="relative group rounded-lg overflow-hidden h-auto max-w-[300px]">
+                  <video
+                    src={videoSrc}
+                    controls
+                    className="w-full h-auto"
+                    style={{ maxHeight: "300px" }}
+                    poster={getAbsoluteUrl(msg.image)} // Use thumbnail if available
+                  />
+                </div>
+              );
+            }
+            if (msg.type === "audio") {
+              const audioSrc = getAbsoluteUrl(msg.text);
+              return (
+                <div className="relative">
+                  <audio
+                    src={audioSrc}
+                    controls
+                    className="audio-player"
+                    style={{
+                      height: "36px",
+                      width: "220px",
+                      backgroundColor: "transparent",
+                    }}
+                  />
+                  <style>{`
+                    .audio-player {
+                      background: transparent !important;
+                    }
+                    .audio-player::-webkit-media-controls-panel {
+                      background-color: transparent !important;
+                      border: none !important;
+                    }
+                    .audio-player::-webkit-media-controls-enclosure {
+                      background-color: transparent !important;
+                    }
+                  `}</style>
+                </div>
+              );
+            }
+            return <p className="break-words">{msg.text}</p>;
+          };
+
+          // Debug: Log message type for audio messages
+          if (msg.type === "audio") {
+            console.log("Audio message detected:", msg);
+          }
+
           return (
             <div
               key={msg.id}
               className={`flex ${
-                isMe ? "justify-start" : "justify-end"
+                isMe ? "justify-end" : "justify-start"
               } group relative`}
             >
-              {/* Delete Button (Left side for user messages, Right side for others) */}
-              {!isMe && (
-                <button
-                  onClick={() => onDeleteMessage(msg.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-red-400 hover:text-red-600 self-center mr-2"
-                  title="Delete message"
+              {msg.type === "audio" ? (
+                // Audio messages without background bubble - clean design
+                <div className={`flex flex-col gap-2 ${isMe ? "items-end" : "items-start"}`}>
+                  <div className="flex items-center gap-3">
+                    {!isMe && (
+                      <img
+                        src={chat.avatar}
+                        alt={chat.fullName}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    )}
+                    {renderMedia()}
+                    {isMe && (
+                      <img
+                        src={chat.avatar}
+                        alt="You"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <span
+                    className={`text-[11px] font-medium text-gray-700 ${
+                      isMe ? "mr-11" : "ml-11"
+                    }`}
+                  >
+                    {msg.time}
+                  </span>
+                </div>
+              ) : msg.type === "image" || msg.type === "video" ? (
+                // Media messages with minimal background
+                <div
+                  className={`max-w-[75%] rounded-2xl overflow-hidden relative
+                    ${
+                      isMe
+                        ? "rounded-tr-none"
+                        : "rounded-tl-none"
+                    }
+                  `}
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+                  {renderMedia()}
+                  <div
+                    className={`flex items-center justify-end mt-1 px-3 py-1`}
+                  >
+                    <span className="text-[10px] font-medium text-gray-700">{msg.time}</span>
+                  </div>
+                </div>
+              ) : (
+                // Regular messages with background bubble
+                <div
+                  className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-[14px] leading-relaxed relative
+                    ${
+                      isMe
+                        ? "bg-[#1A56DB] text-white rounded-tr-none"
+                        : "bg-[#F3F4F6] text-[#4B5563] rounded-tl-none border border-gray-100"
+                    }
+                  `}
+                >
+                  {renderMedia()}
 
-              <div
-                className={`max-w-[70%] sm:max-w-[60%] px-4 py-3 rounded-2xl text-[15px] leading-relaxed relative
-                  ${
-                    isMe
-                      ? "bg-[#145db8] text-white rounded-tl-none"
-                      : "bg-white text-gray-800 rounded-tr-none border border-gray-200 shadow-sm"
-                  }
-                `}
-              >
-                <p>{msg.text}</p>
-                {msg.image && (
-                  <img
-                    src={msg.image}
-                    alt="attachment"
-                    className="mt-2 rounded-lg max-w-full h-auto object-cover"
-                    style={{ maxHeight: "200px" }}
-                  />
-                )}
-                <span
-                  className={`text-[10px] block text-right mt-1 ${
-                    isMe ? "text-blue-100" : "text-gray-400"
-                  }`}
-                >
-                  {msg.time}
-                </span>
-              </div>
-
-              {isMe && (
-                <button
-                  onClick={() => onDeleteMessage(msg.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-red-400 hover:text-red-600 self-center ml-2"
-                  title="Delete message"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  <div
+                    className={`flex items-center justify-end mt-1 ${
+                      isMe ? "text-blue-100" : "text-gray-400"
+                    }`}
+                  >
+                    <span className="text-[10px] font-medium">{msg.time}</span>
+                  </div>
+                </div>
               )}
             </div>
           );
         })}
+
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t border-gray-100 mt-auto bg-white z-10">
-        <div className="flex items-center gap-3 bg-gray-50 rounded-full px-4 py-3">
-          <button className="text-gray-400 hover:text-gray-600">
-            <IoMdHappy className="w-6 h-6" />
-          </button>
-          <input
-            type="text"
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-400"
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
+      {/* Input */}
+      <div className="p-4 border-t border-gray-200 bg-white">
+        <div className="flex items-center gap-3 bg-gray-50 rounded-3xl px-5 py-3 border border-gray-200 hover:border-gray-300 transition-colors">
+          {isRecording ? (
+            <div className="flex-1 flex items-center gap-4 px-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
+                <span className="text-red-500 font-medium text-sm">
+                  Recording...
+                </span>
+              </div>
+              <span className="text-gray-600 font-mono text-sm">
+                {formatDuration(recordingDuration)}
+              </span>
+              <div className="flex-1"></div>
+              <button
+                onClick={() => {
+                  if (mediaRecorderRef.current) {
+                    mediaRecorderRef.current.onstop = null;
+                    mediaRecorderRef.current.stop();
+                    setIsRecording(false);
+                    if (timerRef.current) clearInterval(timerRef.current);
+                  }
+                }}
+                className="text-gray-500 hover:text-red-500 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <>
+              <button className="text-gray-500 hover:text-gray-700 transition-colors p-1">
+                <IoMdHappy className="w-6 h-6" />
+              </button>
+
+              <input
+                type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400 text-[15px]"
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              />
+
+              <button
+                onClick={handleAttachmentClick}
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1"
+              >
+                <ImAttachment className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={startRecording}
+                className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+              >
+                <Mic className="w-5 h-5" />
+              </button>
+            </>
+          )}
+
           <button
-            onClick={handleAttachmentClick}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <ImAttachment className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleSend}
-            className={`p-2 rounded-full transition-colors ${
-              messageText.trim() ? "text-blue-600 bg-blue-50" : "text-gray-400"
+            onClick={isRecording ? stopRecording : handleSend}
+            disabled={!isRecording && !messageText.trim()}
+            className={`p-2.5 rounded-full transition-all ${
+              isRecording || messageText.trim()
+                ? "text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
+                : "text-gray-400 bg-gray-200 cursor-not-allowed"
             }`}
           >
             <Send className="w-5 h-5" />

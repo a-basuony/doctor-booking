@@ -1,16 +1,20 @@
-import { memo,useMemo } from "react";
+import { memo, useMemo } from "react";
 import { TbMenu3 } from "react-icons/tb";
 import { X } from "lucide-react";
 import { CiSearch } from "react-icons/ci";
 import { useNavbarLogic } from "../hooks/useNavbar";
 import type { Doctor } from "../hooks/useNavbar";
 import Notification from "../components/Notifications";
-
-
-
+import { Link } from "react-router-dom";
 
 const MenuItem = memo(
-  ({ item, onClick }: { item: { name: string; link: string }; onClick: () => void }) => (
+  ({
+    item,
+    onClick,
+  }: {
+    item: { name: string; link: string };
+    onClick: () => void;
+  }) => (
     <span
       onClick={onClick}
       className="px-6 py-2 text-[15px] text-gray-800 cursor-pointer border-2 border-white bg-slate-100 rounded-xl font-sans"
@@ -22,7 +26,6 @@ const MenuItem = memo(
 
 const IMAGE_BASE_URL =
   "https://round8-backend-team-one.huma-volve.com/storage/";
-
 
 export default function Navbar() {
   const {
@@ -51,9 +54,15 @@ export default function Navbar() {
           <img src="/images/heart-logo.png" alt="logo" className="w-10 h-10" />
           <div className="flex items-center gap-2">
             {openMenu ? (
-              <X className="w-10 h-10 cursor-pointer p-1.5 rounded-xl text-gray-500 border-2 border-white bg-slate-100" onClick={toggleMenu} />
+              <X
+                className="w-10 h-10 cursor-pointer p-1.5 rounded-xl text-gray-500 border-2 border-white bg-slate-100"
+                onClick={toggleMenu}
+              />
             ) : (
-              <TbMenu3 className="w-10 h-10 cursor-pointer p-1.5 rounded-xl" onClick={toggleMenu} />
+              <TbMenu3
+                className="w-10 h-10 cursor-pointer p-1.5 rounded-xl"
+                onClick={toggleMenu}
+              />
             )}
             <img
               src="/images/Ellipse_1539.jpeg"
@@ -67,7 +76,7 @@ export default function Navbar() {
         {openMenu && (
           <div className="absolute top-full left-0 mt-3 w-full bg-white rounded-2xl shadow-lg p-4 z-50">
             <div className="flex flex-col gap-3">
-              {menuItems.map(item => (
+              {menuItems.map((item) => (
                 <MenuItem
                   key={item.name}
                   item={item}
@@ -81,7 +90,9 @@ export default function Navbar() {
 
       {/* Desktop */}
       <div className="hidden md:flex items-center justify-between w-full">
-        <img src="/images/heart-logo.png" alt="logo" className="w-10 h-10" />
+        <Link to="/">
+          <img src="/images/heart-logo.png" alt="logo" className="w-10 h-10" />
+        </Link>
 
         {/* Search */}
         <div className="flex-1 max-w-xl mx-4 relative">
@@ -109,22 +120,27 @@ export default function Navbar() {
                   onClick={() => goToDoctorById(doctor.id)}
                   className="px-4 py-3 hover:bg-gray-100 duration-500 cursor-pointer flex flex-col md:flex-row gap-2 md:gap-4 items-center pb-5 rounded-lg shadow-md mb-5"
                 >
-                 <img
-  src={
-    doctor.profile_photo
-      ? `${IMAGE_BASE_URL}${doctor.profile_photo}`
-      : "/images/profile.jpg"
-  }
-  alt={doctor.name}
-  className="w-16 h-16 rounded-full object-cover flex-shrink-0"
-/>
-
+                  <img
+                    src={
+                      doctor.profile_photo
+                        ? `${IMAGE_BASE_URL}${doctor.profile_photo}`
+                        : "/images/profile.jpg"
+                    }
+                    alt={doctor.name}
+                    className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                  />
 
                   <div className="flex-1 flex flex-col gap-1 font-georgia font-normal">
-                    <span className="text-gray-800 text-xl pl-5">{doctor.name}</span>
+                    <span className="text-gray-800 text-xl pl-5">
+                      {doctor.name}
+                    </span>
                     <div className="flex-1 flex flex-col gap-1 pl-5">
-                      <span className="text-gray-500 text-sm">{doctor.specialty?.name}</span>
-                      <span className="text-gray-500 text-sm">{doctor.clinic_address}</span>
+                      <span className="text-gray-500 text-sm">
+                        {doctor.specialty?.name}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        {doctor.clinic_address}
+                      </span>
                       <span className="text-gray-500 text-sm">
                         Experience:{" "}
                         <span className="text-lg text-sky-600 underline">
@@ -134,9 +150,13 @@ export default function Navbar() {
                       <span className="text-gray-500 text-sm">
                         Session Price:{" "}
                         <span className="text-green-600 text-lg">$</span>
-                        <span className="text-green-600 text-lg">{doctor.session_price}</span>
+                        <span className="text-green-600 text-lg">
+                          {doctor.session_price}
+                        </span>
                       </span>
-                      <p className="text-gray-600 text-sm line-clamp-2">{doctor.bio}</p>
+                      <p className="text-gray-600 text-sm line-clamp-2">
+                        {doctor.bio}
+                      </p>
                     </div>
                   </div>
                 </li>
@@ -149,16 +169,26 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {openMenu ? (
             <div className="flex items-center gap-3">
-              {menuItems.map(item => (
-                <MenuItem key={item.name} item={item} onClick={() => handleNavigate(item.link)} />
+              {menuItems.map((item) => (
+                <MenuItem
+                  key={item.name}
+                  item={item}
+                  onClick={() => handleNavigate(item.link)}
+                />
               ))}
-              <X className="w-10 h-10 cursor-pointer p-1.5 border-2 border-white bg-slate-100 rounded-xl text-gray-500" onClick={toggleMenu} />
+              <X
+                className="w-10 h-10 cursor-pointer p-1.5 border-2 border-white bg-slate-100 rounded-xl text-gray-500"
+                onClick={toggleMenu}
+              />
             </div>
           ) : (
-            <TbMenu3 className="w-10 h-10 cursor-pointer p-1.5 rounded-xl" onClick={toggleMenu} />
+            <TbMenu3
+              className="w-10 h-10 cursor-pointer p-1.5 rounded-xl"
+              onClick={toggleMenu}
+            />
           )}
 
-<Notification />
+          <Notification />
 
           <img
             src="/images/Ellipse_1539.jpeg"

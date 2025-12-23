@@ -36,14 +36,15 @@ export interface BookingResponse {
 interface ApiResponse {
   data: BookingResponse[];
 }
-//GET list Booking
+
 export const useMyBookings = () => {
   return useQuery<BookingResponse[]>({
-    queryKey: ['myBooking'],
+    queryKey: ["myBooking"],
     queryFn: async () => {
-      const response = await api.get<ApiResponse>('/api/bookings');
+      const response = await api.get<ApiResponse>("/bookings");
       return response.data.data;
     },
+    enabled: !!localStorage.getItem("authToken"),
     staleTime: 1000 * 60 * 5,
     retry: 2,
     refetchOnWindowFocus: false,
@@ -56,18 +57,21 @@ export const useCancelBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await api.post(`/api/bookings/${id}/cancel`, {
-        cancellation_reason: "Cancelled by user"
+      const response = await api.post(`/bookings/${id}/cancel`, {
+        cancellation_reason: "Cancelled by user",
       });
       return response.data;
     },
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['myBooking'] });
+      queryClient.invalidateQueries({ queryKey: ["myBooking"] });
       toast.success("Appointment canceled successfully");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || "Failed to cancel appointment";
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to cancel appointment";
       toast.error(message);
     },
   });
@@ -78,22 +82,31 @@ export const useCancelBooking = () => {
 export const useRescheduleBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, date, time }: { id: number; date: string; time: string }) => {
-      const response = await api.put(`/api/bookings/${id}`, {
+    mutationFn: async ({
+      id,
+      date,
+      time,
+    }: {
+      id: number;
+      date: string;
+      time: string;
+    }) => {
+      const response = await api.put(`/bookings/${id}`, {
         appointment_date: date,
         appointment_time: time,
       });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myBooking'] });
+      queryClient.invalidateQueries({ queryKey: ["myBooking"] });
       toast.success("Appointment rescheduled successfully");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || "Failed to reschedule appointment";
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to reschedule appointment";
       toast.error(message);
     },
   });
 };
-
-

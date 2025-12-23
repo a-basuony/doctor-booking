@@ -1,7 +1,9 @@
 import axios from "axios";
 
+export const API_BASE_URL = "https://round8-backend-team-one.huma-volve.com";
+
 export const api = axios.create({
-  baseURL: import.meta.env.DEV ? "/api" : "https://round8-backend-team-one.huma-volve.com/api",
+  baseURL: import.meta.env.DEV ? "/api" : `${API_BASE_URL}/api`,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

@@ -1,37 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { api } from "../services/api";
 import { toast } from "react-hot-toast";
 import type { ConversationsResponse, StartConversationResponse, MessagesResponse, SendMessageResponse } from "../types/chat";
-
-export const CHAT_CONFIG = {
-  BASE_URL: 'https://round8-backend-team-one.huma-volve.com',
-  headers: {
-    accept: 'application/json',
-    Authorization: `Bearer ${import.meta.env.VITE_PUBLIC_API_KEY}`,
-  },
-};
-
-// Mock data for testing until API is fixed
-const MOCK_MESSAGES = [
-  {
-    id: 1,
-    body: "Hello! How can I help you today?",
-    is_read: true,
-    type: "text",
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    sender_id: 1,
-    sender: { id: 1, name: "Dr. Ahmed", avatar: null }
-  },
-  {
-    id: 2,
-    body: "I have a question about my appointment",
-    is_read: true,
-    type: "text",
-    created_at: new Date(Date.now() - 1800000).toISOString(),
-    sender_id: 25,
-    sender: { id: 25, name: "mohamed hussein", avatar: null }
-  }
-];
 
 export const useConversations = (params?: { search?: string; type?: 'unread' | 'favorites' | 'archived'; page?: number }) => {
   return useQuery<ConversationsResponse>({
@@ -43,14 +13,10 @@ export const useConversations = (params?: { search?: string; type?: 'unread' | '
       if (params?.page) queryParams.append('page', params.page.toString());
 
       const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-      
-      const response = await axios.get<ConversationsResponse>(
-        `${CHAT_CONFIG.BASE_URL}/api/conversations${queryString}`,
-        { headers: CHAT_CONFIG.headers }
-      );
+      const response = await api.get<ConversationsResponse>(`/conversations${queryString}`);
       return response.data;
     },
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30,
   });
 };
 
@@ -59,35 +25,8 @@ export const useMessages = (conversationId: number | null, enabled: boolean = tr
     queryKey: ['messages', conversationId],
     queryFn: async () => {
       if (!conversationId) throw new Error("No conversation selected");
-      
-      try {
-        const response = await axios.get<MessagesResponse>(
-          `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}`,
-          { headers: CHAT_CONFIG.headers }
-        );
-        return response.data;
-      } catch (error) {
-        console.warn("API returned error, using mock data:", error);
-        // Return mock data if API fails
-        return {
-          data: MOCK_MESSAGES,
-          links: {
-            first: "",
-            last: "",
-            prev: null,
-            next: null
-          },
-          meta: {
-            current_page: 1,
-            from: 1,
-            last_page: 1,
-            path: "",
-            per_page: 15,
-            to: 2,
-            total: 2
-          }
-        };
-      }
+      const response = await api.get<MessagesResponse>(`/conversations/${conversationId}`);
+      return response.data;
     },
     enabled: enabled && conversationId !== null,
     staleTime: 1000 * 10,
@@ -98,36 +37,37 @@ export const useSendMessage = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ conversationId, body, file }: { conversationId: number; body: string; file?: File }) => {
-      if (file) {
-        // Send file
+    mutationFn: async ({ conversationId, body, attachment }: { conversationId: number; body: string; attachment?: File }) => {
+      if (attachment) {
         const formData = new FormData();
         formData.append('body', body);
-        formData.append('file', file);
-        formData.append('type', 'file');
+        formData.append('attachment', attachment);
         
-        const response = await axios.post<SendMessageResponse>(
-          `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/messages`,
+        // Detect correct type based on MIME
+        let type: 'image' | 'audio' | 'video' | 'text' = 'text';
+        if (attachment.type.startsWith('image/')) type = 'image';
+        else if (attachment.type.startsWith('audio/')) type = 'audio';
+        else if (attachment.type.startsWith('video/')) type = 'video';
+        
+        formData.append('type', type);
+        
+        const response = await api.post<SendMessageResponse>(
+          `/conversations/${conversationId}/messages`,
           formData,
           { 
-            headers: {
-              ...CHAT_CONFIG.headers,
-              'Content-Type': 'multipart/form-data'
-            }
+            headers: { 'Content-Type': 'multipart/form-data' }
           }
         );
         return response.data;
       } else {
-        // Send text
-        const response = await axios.post<SendMessageResponse>(
-          `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/messages`,
-          { body, type: 'text' },
-          { headers: CHAT_CONFIG.headers }
+        const response = await api.post<SendMessageResponse>(
+          `/conversations/${conversationId}/messages`,
+          { body, type: 'text' }
         );
         return response.data;
       }
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
@@ -143,29 +83,13 @@ export const useDeleteMessage = () => {
   
   return useMutation({
     mutationFn: async ({ conversationId, messageId }: { conversationId: number; messageId: number }) => {
-      try {
-        const response = await axios.delete(
-          `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/messages/${messageId}`,
-          { headers: CHAT_CONFIG.headers }
-        );
-        return response.data;
-      } catch (error: any) {
-        // If endpoint doesn't exist (404), we'll handle it optimistically in onMutate
-        if (error.response?.status === 404) {
-          console.warn("Delete endpoint not available, performing local delete only");
-          return null;
-        }
-        throw error;
-      }
+      const response = await api.delete(`/conversations/${conversationId}/messages/${messageId}`);
+      return response.data;
     },
     onMutate: async ({ conversationId, messageId }) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['messages', conversationId] });
-      
-      // Snapshot previous value
       const previousMessages = queryClient.getQueryData(['messages', conversationId]);
       
-      // Optimistically update - remove the message immediately
       queryClient.setQueryData(['messages', conversationId], (old: any) => {
         if (!old?.data) return old;
         return {
@@ -182,42 +106,28 @@ export const useDeleteMessage = () => {
       toast.success("Message deleted");
     },
     onError: (error: any, variables, context) => {
-      // Rollback on error
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', variables.conversationId], context.previousMessages);
       }
-      console.error("Delete message error:", error);
       toast.error(error.response?.data?.message || "Failed to delete message");
     },
   });
 };
+
 export const useMarkAsRead = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (conversationId: number) => {
-      try {
-        const response = await axios.post(
-          `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/mark-read`,
-          {},
-          { headers: CHAT_CONFIG.headers }
-        );
-        return response.data;
-      } catch (error) {
-        console.warn("Mark as read endpoint issue, continuing...", error);
-        return null;
-      }
+      const response = await api.post(`/conversations/${conversationId}/mark-read`, {});
+      return response.data;
     },
     onSuccess: (_, conversationId) => {
-      // Update the conversation's unread count locally
       queryClient.setQueryData(['conversations'], (old: any) => {
         if (!old?.data) return old;
         return {
           ...old,
           data: old.data.map((conv: any) => 
-            conv.id === conversationId 
-              ? { ...conv, unread_count: 0 }
-              : conv
+            conv.id === conversationId ? { ...conv, unread_count: 0 } : conv
           )
         };
       });
@@ -228,46 +138,26 @@ export const useMarkAsRead = () => {
 
 export const useToggleFavorite = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (conversationId: number) => {
-      const response = await axios.patch(
-        `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/favorite`,
-        {},
-        { headers: CHAT_CONFIG.headers }
-      );
+      const response = await api.patch(`/conversations/${conversationId}/favorite`, {});
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success("Conversation updated");
-    },
-    onError: (error: any) => {
-      console.error("Favorite error:", error);
-      toast.error(error.response?.data?.message || "Failed to update favorite status");
     },
   });
 };
 
 export const useToggleArchive = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (conversationId: number) => {
-      const response = await axios.patch(
-        `${CHAT_CONFIG.BASE_URL}/api/conversations/${conversationId}/archive`,
-        {},
-        { headers: CHAT_CONFIG.headers }
-      );
+      const response = await api.patch(`/conversations/${conversationId}/archive`, {});
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success("Conversation archived");
-    },
-    onError: (error: any) => {
-      console.error("Archive error:", error);
-      toast.error(error.response?.data?.message || "Failed to archive conversation");
     },
   });
 };
@@ -275,20 +165,19 @@ export const useToggleArchive = () => {
 export const useStartConversation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await axios.post<StartConversationResponse>(
-        `${CHAT_CONFIG.BASE_URL}/api/conversations/start`,
-        { user_id: userId },
-        { headers: CHAT_CONFIG.headers }
+    mutationFn: async (doctorId: number) => {
+      const response = await api.post<StartConversationResponse>(
+        `/conversations/start`,
+        { doctor_id: doctorId }
       );
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Start conversation error:", error);
-      toast.error("Failed to start conversation");
+      toast.error(error.response?.data?.message || "Failed to start conversation");
     },
   });
 };

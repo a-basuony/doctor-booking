@@ -17,6 +17,7 @@ const ChatPage = () => {
   const [filterMode, setFilterMode] = useState<
     "all" | "unread" | "favorite" | "archived"
   >("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Convert UI filter mode to API filter type if applicable
   const apiFilterType =
@@ -34,6 +35,7 @@ const ChatPage = () => {
     error: chatsError,
   } = useConversations({
     type: apiFilterType as any,
+    search: searchTerm,
   });
 
   const { data: messagesData, isLoading: isLoadingMessages } = useMessages(
@@ -54,10 +56,7 @@ const ChatPage = () => {
   };
 
   const chats = conversationsData?.data || [];
-  const messages = [...(messagesData?.data || [])].sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
+  const activeConversation = chats.find((c) => c.id === activeChatId);
 
   // Selection Mode State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -83,12 +82,10 @@ const ChatPage = () => {
 
     sendMessage.mutate({
       conversationId: activeChatId,
-      body: file.name, // Use actual file name
-      file,
+      body: file.name,
+      attachment: file,
     });
   };
-
-  // No longer using handleDeleteMessage as per UI requirements
 
   // --- Bulk Deletion Logic ---
   const toggleSelectionMode = () => {
@@ -109,8 +106,12 @@ const ChatPage = () => {
     console.log("Delete chats:", selectedChatIds);
   };
 
-  // Helper to adapt data for ChatWindow
-  const activeConversation = chats.find((c) => c.id === activeChatId);
+  // Extract messages correctly from the response
+  const messages = [...(messagesData?.data || [])].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
   const activeChatAdapter = activeConversation
     ? {
         id: activeConversation.id,
@@ -120,22 +121,21 @@ const ChatPage = () => {
           `https://ui-avatars.com/api/?name=${activeConversation.other_user.name}`,
         messages: messages.map((msg) => ({
           id: msg.id,
-          sender:
-            msg.sender_id === activeConversation.other_user.id
-              ? ("other" as const)
-              : ("me" as const),
+          sender: msg.is_mine ? ("me" as const) : ("other" as const),
           text: msg.body,
           time: new Date(msg.created_at).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           }),
-          isRead: msg.is_read,
-          image: msg.file_url,
+          isRead: true,
+          image: msg.type === "image" ? msg.body : null,
+          type: msg.type,
         })),
         lastSeen: "Online",
         isUnread: activeConversation.unread_count > 0,
         isFavorite: activeConversation.is_favorite,
         isArchived: activeConversation.is_archived,
+        unreadCount: activeConversation.unread_count,
       }
     : null;
 
@@ -157,7 +157,7 @@ const ChatPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <main className="flex-1 max-w-[1440px] mx-auto w-full p-4 sm:p-6 lg:p-8 h-[calc(100vh-80px)]">
+      <main className="flex-grow flex flex-col max-w-[1440px] mx-auto w-full p-4 sm:p-6 lg:p-8 h-[calc(100vh-64px)] overflow-hidden">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex h-full overflow-hidden">
           {/* Sidebar */}
           <div
@@ -177,6 +177,8 @@ const ChatPage = () => {
               onToggleSelectionMode={toggleSelectionMode}
               onToggleChatSelection={toggleChatSelection}
               onDeleteSelected={deleteSelectedChats}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
             />
           </div>
 

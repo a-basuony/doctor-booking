@@ -6,6 +6,8 @@ import { useNavbarLogic } from "../hooks/useNavbar";
 import type { Doctor } from "../hooks/useNavbar";
 import Notification from "../components/Notifications";
 import { Link } from "react-router-dom";
+import UserAvatar from "../components/UserAvatar";
+import { useAuthContext } from "../hooks/useAuth";
 
 const MenuItem = memo(
   ({
@@ -39,6 +41,8 @@ export default function Navbar() {
     goToDoctorById,
   } = useNavbarLogic();
 
+  const { user } = useAuthContext();
+
   const menuItems = [
     { name: "Home", link: "/" },
     { name: "Bookings", link: "/BookingPage" },
@@ -64,10 +68,10 @@ export default function Navbar() {
                 onClick={toggleMenu}
               />
             )}
-            <img
-              src="/images/Ellipse_1539.jpeg"
-              alt="User profile"
-              className="w-10 h-10 rounded-full cursor-pointer"
+            <UserAvatar
+              name={user?.name || "User"}
+              image={user?.image}
+              size={40}
               onClick={() => handleNavigate("/profile")}
             />
           </div>
@@ -190,10 +194,10 @@ export default function Navbar() {
 
           <Notification />
 
-          <img
-            src="/images/Ellipse_1539.jpeg"
-            alt="User profile"
-            className="w-10 h-10 rounded-full cursor-pointer"
+          <UserAvatar
+            name={user?.name || "User"}
+            image={user?.image}
+            size={40}
             onClick={() => handleNavigate("/profile")}
           />
         </div>

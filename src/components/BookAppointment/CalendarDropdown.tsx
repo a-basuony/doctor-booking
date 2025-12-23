@@ -12,7 +12,13 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 import { Calendar, ChevronDown } from "lucide-react";
 
-export default function BasicDateCalendar() {
+interface BasicDateCalendarProps {
+  onDateChange?: (date: Date) => void;
+}
+
+export default function BasicDateCalendar({
+  onDateChange,
+}: BasicDateCalendarProps) {
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
 
@@ -26,22 +32,25 @@ export default function BasicDateCalendar() {
 
   const handleConfirm = () => {
     console.log("Selected date:", selectedDate.format("YYYY-MM-DD"));
+    if (onDateChange) {
+      onDateChange(selectedDate.toDate());
+    }
     setOpen(false);
   };
+
+  // Format month and year for display
+  const displayMonthYear = selectedDate.format("MMMM, YYYY");
 
   return (
     <>
       {/* Button to trigger the date picker modal */}
-
       <div
-        // variant="contained"
         onClick={handleClickOpen}
         className="flex items-center gap-2 text-gray-800 font-semibold cursor-pointer"
       >
-        {/* <BasicDateCalendar /> */}
         <Calendar size={18} />
         <span className="text-gray-500 text-sm font-semibold sm:text-lg sm:font-medium">
-          November, 2024
+          {displayMonthYear}
         </span>
         <ChevronDown size={18} />
       </div>

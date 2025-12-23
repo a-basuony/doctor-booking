@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Search, Trash2, CheckSquare, X } from "lucide-react";
 import type { Conversation } from "../../types/chat";
 import { IoIosArrowBack } from "react-icons/io";

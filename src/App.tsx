@@ -126,7 +126,7 @@ function App() {
           }
         />
         <Route
-          path="/book-appointment/:doctorId"
+          path="/SearchDoctors/:doctorId"
           element={
             <ProtectedRoute>
               <BookAppointment />

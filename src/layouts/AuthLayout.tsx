@@ -9,8 +9,7 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout = ({ children, noGoogle }: AuthLayoutProps) => {
-  const { mutate: googleLogin, isPending: isSigningInWithGoogle } =
-    useGoogleLogin();
+  const { mutate: googleLogin } = useGoogleLogin();
 
   const handleGoogleSuccess = (credentialResponse: any) => {
     console.log("Google OAuth success:", credentialResponse);

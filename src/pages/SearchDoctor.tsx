@@ -297,11 +297,6 @@ const SearchDoctor = () => {
     []
   );
 
-  const handleGenderSelect = useCallback((gender: Gender) => {
-    setSelectedGender(gender);
-    setPage(1);
-  }, []);
-
   // Update clearAllFilters to also clear sort
   const clearAllFilters = useCallback(() => {
     setSearchQuery("");

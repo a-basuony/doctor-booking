@@ -36,6 +36,8 @@ interface AppointmentBookingProps {
   onBookAppointment: (bookingData: {
     appointmentDate: Date;
     appointmentTime: string;
+    startTime: string;
+    endTime: string;
     paymentMethod?: string;
     notes?: string;
   }) => void;
@@ -102,6 +104,27 @@ export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
       )} ${selectedDate} - ${selectedTime}`
     : "";
 
+  // Convert 12-hour format to 24-hour format
+  const convertTo24Hour = (time12h: string): string => {
+    const [time, modifier] = time12h.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    if (hours === "12") {
+      hours = modifier === "AM" ? "00" : "12";
+    } else {
+      hours = modifier === "PM" ? String(parseInt(hours, 10) + 12) : hours.padStart(2, "0");
+    }
+
+    return `${hours}:${minutes}`;
+  };
+
+  // Calculate end time (1 hour after start time)
+  const calculateEndTime = (startTime: string): string => {
+    const [hours, minutes] = startTime.split(":");
+    const endHour = (parseInt(hours, 10) + 1).toString().padStart(2, "0");
+    return `${endHour}:${minutes}`;
+  };
+
   // Handle booking
   const handleBooking = async () => {
     if (!selectedDateObj) {
@@ -121,9 +144,14 @@ export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
 
     setIsBooking(true);
     try {
+      const startTime24h = convertTo24Hour(selectedTime);
+      const endTime24h = calculateEndTime(startTime24h);
+
       await onBookAppointment({
         appointmentDate: selectedDateObj.fullDate,
         appointmentTime: selectedTime,
+        startTime: startTime24h,
+        endTime: endTime24h,
         paymentMethod: "stripe",
         notes: `Appointment with ${doctorName}`,
       });

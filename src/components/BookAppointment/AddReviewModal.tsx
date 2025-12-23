@@ -15,7 +15,7 @@ interface AddReviewModalProps {
 export const AddReviewModal: React.FC<AddReviewModalProps> = ({
   isOpen,
   onClose,
-  doctorId,
+  doctorId: _doctorId,
   bookingId,
   doctorName = "the doctor",
   onReviewSubmitted,

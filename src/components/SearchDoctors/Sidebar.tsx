@@ -149,7 +149,7 @@ export const Sidebar = ({
             <button
               key={g}
               onClick={() =>
-                setSelectedGender((prev) => (prev === g ? null : g))
+                setSelectedGender(selectedGender === g ? null : g)
               }
               className={` cursor-pointer
                 px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200

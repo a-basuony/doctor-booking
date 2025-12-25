@@ -121,15 +121,15 @@ function App() {
           path="/SearchDoctors"
           element={
             <ProtectedRoute>
-              <SearchDoctor />
-            </ProtectedRoute>
+            <SearchDoctor />
+           </ProtectedRoute>
           }
         />
         <Route
           path="/SearchDoctors/:doctorId"
           element={
             <ProtectedRoute>
-              <BookAppointment />
+            <BookAppointment />
             </ProtectedRoute>
           }
         />
@@ -144,11 +144,11 @@ function App() {
 
         {/* Extra Routes - Protected */}
         <Route
-          path="/doctor-details"
+          path="/doctor-details/:doctorId"
           element={
             <ProtectedRoute>
-              <DoctorDetailsPage />
-            </ProtectedRoute>
+            <DoctorDetailsPage />
+          </ProtectedRoute>
           }
         />
         <Route

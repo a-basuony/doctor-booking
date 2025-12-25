@@ -1,238 +1,266 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDoctorDetails } from '../hooks/useDoctorDetails';
-import { usePaymentMethods } from '../hooks/usePaymentMethods';
-import { usePayment } from '../hooks/usePayment';
-import { AddCardModal } from '../components/payment/AddCardModal';
-import { AppointmentSuccessModal } from '../components/payment/AppointmentSuccessModal';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDoctorDetails } from "../hooks/useDoctorDetails";
+import { usePaymentMethods } from "../hooks/usePaymentMethods";
+import { usePayment } from "../hooks/usePayment";
+import { AddCardModal } from "../components/payment/AddCardModal";
+import { AppointmentSuccessModal } from "../components/payment/AppointmentSuccessModal";
 import toast, { Toaster } from "react-hot-toast";
 
-
 const formatCurrentDateTime = () => {
-   const now = new Date();
-   const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-   const date = now.toLocaleDateString('en-US', dateOptions);
+  const now = new Date();
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  const date = now.toLocaleDateString("en-US", dateOptions);
 
-   const timeOptions: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-   const time = now.toLocaleTimeString('en-US', timeOptions);
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  };
+  const time = now.toLocaleTimeString("en-US", timeOptions);
 
-   return { date, time };
+  return { date, time };
 };
 
 export const PaymentPage = () => {
-   const doctorId = '1' 
-   const navigate = useNavigate();
+  const doctorId = "1";
+  const navigate = useNavigate();
 
-   const { doctor, loading: doctorLoading } = useDoctorDetails(doctorId);
-   const { paymentMethods, addPaymentMethod, isAdding } = usePaymentMethods();
-   const {
-      createPaymentIntent,
-      processPayment,
-      isCreating,
-      isProcessing
-   } = usePayment();
+  const { doctor, loading: doctorLoading } = useDoctorDetails(doctorId);
+  const { paymentMethods, addPaymentMethod, isAdding } = usePaymentMethods();
+  const { createPaymentIntent, processPayment, isCreating, isProcessing } =
+    usePayment();
 
-   const [paymentType, setPaymentType] = useState<'credit' | 'paypal' | 'apple'>('credit');
-   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-   const [showCardModal, setShowCardModal] = useState(false);
-   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [paymentType, setPaymentType] = useState<"credit" | "paypal" | "apple">(
+    "credit"
+  );
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-   const { date: currentDate, time: currentTime } = formatCurrentDateTime();
+  const { date: currentDate, time: currentTime } = formatCurrentDateTime();
 
-   const appointment = {
-      id: '1',
-      date: currentDate,
-      time: currentTime,
-      doctorName: doctor?.name || "IDoctor Name Placeholder"
-   };
+  const appointment = {
+    id: "1",
+    date: currentDate,
+    time: currentTime,
+    doctorName: doctor?.name || "IDoctor Name Placeholder",
+  };
 
-   const handleAddCard = async (cardData: any) => {
-      try {
-         const newCard = await addPaymentMethod(cardData);
-         setSelectedCardId(newCard.id);
-         setShowCardModal(false);
-         toast.success("Payment card added successfully!");
-      } catch (error) {
-         toast.error("Failed to add payment card.");
-         throw new Error("Failed to finalize adding card.");
-      }
-   };
+  const handleAddCard = async (cardData: any) => {
+    try {
+      const newCard = await addPaymentMethod(cardData);
+      setSelectedCardId(newCard.id);
+      setShowCardModal(false);
+      toast.success("Payment card added successfully!");
+    } catch (error: any) {
+      toast.error("Failed to add payment card.");
+      throw new Error("Failed to finalize adding card.");
+    }
+  };
 
-   const handlePayment = async () => {
-      if (!doctor) {
-         toast.error('IDoctor details are missing. Cannot proceed.');
-         return;
-      }
+  const handlePayment = async () => {
+    if (!doctor) {
+      toast.error("IDoctor details are missing. Cannot proceed.");
+      return;
+    }
 
-      if (paymentType === 'credit' && !selectedCardId) {
-         toast.error('Please select a payment card or another method.');
-         return;
-      }
+    if (paymentType === "credit" && !selectedCardId) {
+      toast.error("Please select a payment card or another method.");
+      return;
+    }
 
-      const paymentPromise = (async () => {
-         const paymentIntent = await createPaymentIntent({
-            amount: doctor.price,
-            appointmentId: appointment.id
-         });
-
-         await processPayment({
-            paymentIntentId: paymentIntent.id,
-            paymentMethodId: selectedCardId || 'pm_paypal',
-            appointmentId: appointment.id
-         });
-
-         setShowSuccessModal(true);
-      })();
-
-      toast.promise(paymentPromise, {
-         loading: 'Processing payment...',
-         success: 'Payment successful! Redirecting...',
-         error: 'Payment failed. Please try again.',
+    const paymentPromise = (async () => {
+      const paymentIntent = await createPaymentIntent({
+        amount: doctor.price,
+        appointmentId: appointment.id,
       });
-   };
 
-   const handleSuccessDone = () => {
-      setTimeout(() => {
-         navigate('/');
-      }, 2000);
-      setShowSuccessModal(false);
-   };
+      await processPayment({
+        paymentIntentId: paymentIntent.id,
+        paymentMethodId: selectedCardId || "pm_paypal",
+        appointmentId: appointment.id,
+      });
 
-   if (doctorLoading || !doctor) {
-      return <div className="flex items-center justify-center h-screen">Loading doctor details...</div>;
-   }
+      setShowSuccessModal(true);
+    })();
 
-   const isButtonDisabled = isProcessing || isCreating || (paymentType === 'credit' && !selectedCardId);
+    toast.promise(paymentPromise, {
+      loading: "Processing payment...",
+      success: "Payment successful! Redirecting...",
+      error: "Payment failed. Please try again.",
+    });
+  };
 
-   return (
-      <div className="min-h-screen bg-neutral-50 pb-6">
-         <Toaster position="top-center" reverseOrder={false} />
+  const handleSuccessDone = () => {
+    setTimeout(() => {
+      navigate("/");
+    }, 2000);
+    setShowSuccessModal(false);
+  };
 
-         <div className="max-w-5xl mx-auto">
-            {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-10">
-               <div className="px-4 py-4 flex items-center gap-3">
-                  <button onClick={() => navigate(-1)} className="p-2 hover:bg-neutral-100 rounded-lg">
-                     ← Back
-                  </button>
-                  <h1 className="text-lg font-semibold">Payment</h1>
-               </div>
-            </div>
-
-            {/* IDoctor Info */}
-            <div className="p-4 space-y-4">
-               <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                  <div className="flex gap-3">
-                     <img
-                        src={doctor.image}
-                        alt={doctor.name}
-                        className="w-16 h-16 rounded-xl object-cover"
-                     />
-                     <div className="flex-1">
-                        <h2 className="font-semibold">{doctor.name}</h2>
-                        <p className="text-sm text-secondary-600">{doctor.specialty}</p>
-                        <p className="text-xs text-secondary-500 mt-1">{doctor.location.address}</p>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="bg-primary-50 rounded-xl p-4 flex items-center justify-between border border-primary-100">
-                  <span className="font-medium text-sm">
-                     {appointment.date} - {appointment.time}
-                  </span>
-                  <button className="text-primary-600 text-sm font-medium">
-                     Reschedule
-                  </button>
-               </div>
-
-               <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                  <h3 className="font-semibold mb-3">Payment Method</h3>
-                  <div className="space-y-3 mb-4">
-                     {['credit', 'paypal', 'apple'].map((type) => (
-                        <button
-                           key={type}
-                           onClick={() => setPaymentType(type as any)}
-                           className={`w-full flex items-center justify-between p-4 rounded-xl border-2 ${paymentType === type ? 'border-success-500 bg-secondary-50' : 'border-secondary-200'
-                              }`}
-                        >
-                           <span className="font-medium capitalize">{type}</span>
-                           {paymentType === type && <span>✓</span>}
-                        </button>
-                     ))}
-                  </div>
-                  {paymentType === 'credit' && (
-                     <>
-                        {paymentMethods.length > 0 && (
-                           <div className="mb-3 space-y-2">
-                              {paymentMethods.map((card) => (
-                                 <button
-                                    key={card.id}
-                                    onClick={() => setSelectedCardId(card.id)}
-                                    className={`w-full p-4 rounded-xl border-2 flex items-center justify-between ${selectedCardId === card.id ? 'border-primary-500 bg-primary-50' : 'border-secondary-200'
-                                       }`}
-                                 >
-                                    <div className="flex items-center gap-3">
-                                       <div className="w-12 h-8 bg-primary-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                                          {card.brand}
-                                       </div>
-                                       <div className="text-left">
-                                          <p className="font-medium">•••• {card.last4}</p>
-                                          <p className="text-xs text-secondary-500">
-                                             {String(card.expiryMonth).padStart(2, '0')}/{card.expiryYear}
-                                          </p>
-                                       </div>
-                                    </div>
-                                 </button>
-                              ))}
-                           </div>
-                        )}
-                        <button
-                           onClick={() => setShowCardModal(true)}
-                           className="w-full py-3 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 font-medium"
-                        >
-                           + Add new card
-                        </button>
-                     </>
-                  )}
-               </div>
-
-               <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                  <div className="flex items-center justify-between mb-6 py-4 border-t">
-                     <span className="text-secondary-600">Total Price</span>
-                     <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-red-500">{doctor.price}$</span>
-                        <span className="text-sm text-secondary-500">/hour</span>
-                     </div>
-                  </div>
-
-                  <button
-                     onClick={handlePayment}
-                     disabled={isButtonDisabled}
-                     className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white py-4 rounded-xl font-semibold text-lg"
-                  >
-                     {isCreating ? 'Preparing...' : isProcessing ? 'Processing...' : 'Pay'}
-                  </button>
-               </div>
-            </div>
-         </div>
-
-         {/* Add Card Modal */}
-         {showCardModal && (
-            <AddCardModal
-               onSuccess={handleAddCard}
-               onCancel={() => setShowCardModal(false)}
-               isLoading={isAdding}
-            />
-         )}
-
-         {showSuccessModal && (
-            <AppointmentSuccessModal
-               doctorName={doctor.name}
-               date={appointment.date}
-               time={appointment.time}
-               onDone={handleSuccessDone}
-            />
-         )}
+  if (doctorLoading || !doctor) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading doctor details...
       </div>
-   );
+    );
+  }
+
+  const isButtonDisabled =
+    isProcessing || isCreating || (paymentType === "credit" && !selectedCardId);
+
+  return (
+    <div className="min-h-screen bg-neutral-50 pb-6">
+      <Toaster position="top-center" reverseOrder={false} />
+
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="bg-white border-b sticky top-0 z-10">
+          <div className="px-4 py-4 flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-neutral-100 rounded-lg"
+            >
+              ← Back
+            </button>
+            <h1 className="text-lg font-semibold">Payment</h1>
+          </div>
+        </div>
+
+        {/* IDoctor Info */}
+        <div className="p-4 space-y-4">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border">
+            <div className="flex gap-3">
+              <img
+                src={doctor.image}
+                alt={doctor.name}
+                className="w-16 h-16 rounded-xl object-cover"
+              />
+              <div className="flex-1">
+                <h2 className="font-semibold">{doctor.name}</h2>
+                <p className="text-sm text-secondary-600">{doctor.specialty}</p>
+                <p className="text-xs text-secondary-500 mt-1">
+                  {doctor.location.address}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-primary-50 rounded-xl p-4 flex items-center justify-between border border-primary-100">
+            <span className="font-medium text-sm">
+              {appointment.date} - {appointment.time}
+            </span>
+            <button className="text-primary-600 text-sm font-medium">
+              Reschedule
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 shadow-sm border">
+            <h3 className="font-semibold mb-3">Payment Method</h3>
+            <div className="space-y-3 mb-4">
+              {["credit", "paypal", "apple"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setPaymentType(type as any)}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 ${
+                    paymentType === type
+                      ? "border-success-500 bg-secondary-50"
+                      : "border-secondary-200"
+                  }`}
+                >
+                  <span className="font-medium capitalize">{type}</span>
+                  {paymentType === type && <span>✓</span>}
+                </button>
+              ))}
+            </div>
+            {paymentType === "credit" && (
+              <>
+                {paymentMethods.length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {paymentMethods.map((card) => (
+                      <button
+                        key={card.id}
+                        onClick={() => setSelectedCardId(card.id)}
+                        className={`w-full p-4 rounded-xl border-2 flex items-center justify-between ${
+                          selectedCardId === card.id
+                            ? "border-primary-500 bg-primary-50"
+                            : "border-secondary-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-8 bg-primary-600 rounded flex items-center justify-center text-white text-xs font-bold">
+                            {card.brand}
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium">•••• {card.last4}</p>
+                            <p className="text-xs text-secondary-500">
+                              {String(card.expiryMonth).padStart(2, "0")}/
+                              {card.expiryYear}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  onClick={() => setShowCardModal(true)}
+                  className="w-full py-3 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 font-medium"
+                >
+                  + Add new card
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 shadow-sm border">
+            <div className="flex items-center justify-between mb-6 py-4 border-t">
+              <span className="text-secondary-600">Total Price</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold text-red-500">
+                  {doctor.price}$
+                </span>
+                <span className="text-sm text-secondary-500">/hour</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handlePayment}
+              disabled={isButtonDisabled}
+              className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white py-4 rounded-xl font-semibold text-lg"
+            >
+              {isCreating
+                ? "Preparing..."
+                : isProcessing
+                ? "Processing..."
+                : "Pay"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Add Card Modal */}
+      {showCardModal && (
+        <AddCardModal
+          onSuccess={handleAddCard}
+          onCancel={() => setShowCardModal(false)}
+          isLoading={isAdding}
+        />
+      )}
+
+      {showSuccessModal && (
+        <AppointmentSuccessModal
+          doctorName={doctor.name}
+          date={appointment.date}
+          time={appointment.time}
+          onDone={handleSuccessDone}
+        />
+      )}
+    </div>
+  );
 };

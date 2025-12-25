@@ -21,13 +21,8 @@ api.interceptors.request.use(
 
     if (authToken) {
       config.headers.Authorization = `Bearer ${authToken}`;
-    } else {
-      // If no user token, use public API key if available
-      const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY;
-      if (publicApiKey) {
-        config.headers.Authorization = `Bearer ${publicApiKey}`;
-      }
-    }
+    } 
+    
 
     return config;
   },

@@ -15,7 +15,7 @@ interface AddReviewModalProps {
 export const AddReviewModal: React.FC<AddReviewModalProps> = ({
   isOpen,
   onClose,
-  doctorId: _doctorId,
+  doctorId,
   bookingId,
   doctorName = "the doctor",
   onReviewSubmitted,
@@ -39,7 +39,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
     setIsSubmitting(true);
     try {
       const reviewData = {
-        booking_id: bookingId,
+        doctor_id: doctorId,
         rating: rating.toString(),
         comment: reviewText,
       };
@@ -49,7 +49,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
       const response = await api.post<{
         success: boolean;
         message: string;
-        data?: any;
+        data?: Record<string, unknown>;
       }>("/reviews", reviewData);
 
       if (response.data.success) {
@@ -64,12 +64,10 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
       } else {
         toast.error(response.data.message || "Failed to submit review");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error submitting review:", err);
-      toast.error(
-        err.response?.data?.message ||
-          "Unable to submit review. Please try again."
-      );
+      const errorMessage = err instanceof Error ? err.message : "Unable to submit review. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

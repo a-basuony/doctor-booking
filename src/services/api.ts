@@ -16,27 +16,87 @@ export const api = axios.create({
 // Request interceptor to add auth token dynamically
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage
+    // Get auth token from localStorage
     const authToken = localStorage.getItem("authToken");
-
+    
     if (authToken) {
       config.headers.Authorization = `Bearer ${authToken}`;
+      console.log('🔐 Request with auth token:', config.url);
+    } else {
+      // If no auth token, try public API key
+      const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY;
+      if (publicApiKey) {
+        config.headers.Authorization = `Bearer ${publicApiKey}`;
+        console.log('🔑 Request with public key:', config.url);
+      } else {
+        console.warn('⚠️ No auth token or public key available for:', config.url);
+      }
     }
-
+    
     return config;
   },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor to handle errors
-api.interceptors.response.use(
-  (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - clear auth data
-      localStorage.removeItem("authToken");
-      window.location.href = "/sign-in";
-    }
+    console.error('❌ Request error:', error);
     return Promise.reject(error);
   }
 );
+
+// Response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => {
+    console.log('✅ Response success:', response.config.url, response.status);
+    return response;
+  },
+  (error) => {
+    const status = error.response?.status;
+    const url = error.config?.url;
+    
+    console.error(`❌ Response error [${status}]:`, url, error.response?.data);
+    
+    // Handle 401 Unauthorized
+    if (status === 401) {
+      const errorMessage = error.response?.data?.message || 'Unauthorized - Please login';
+      console.error('🔒 Authentication required:', errorMessage);
+      
+      // Only redirect to login for certain endpoints
+      if (url && !url.includes('/auth/')) {
+        console.warn('💡 Tip: You need to login first to use this feature');
+        // Optionally show a toast or alert here
+      }
+      
+      // Token expired or invalid - clear auth data and redirect
+      localStorage.removeItem("authToken");
+      if (url && !url.includes('/auth/')) {
+        window.location.href = "/sign-in";
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Payment API endpoints
+export const paymentAPI = {
+  // Process payment
+  processPayment: (data: {
+    booking_id: string;
+    gateway: 'stripe';
+    payment_method_id?: string;
+  }) => api.post('/api/payments/process', data),
+
+  // Saved cards endpoints
+  listCards: () => api.get('/api/saved-cards'),
+  
+  saveCard: (data: {
+    provider_token: string;
+    brand: string;
+    last_four: string;
+    exp_month: number;
+    exp_year: number;
+    is_default?: boolean;
+  }) => api.post('/api/saved-cards', data),
+  
+  deleteCard: (id: string) => api.delete(`/api/saved-cards/${id}`),
+  
+  setDefaultCard: (id: string) => api.put(`/api/saved-cards/${id}/default`),
+};

@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Elements } from '@stripe/react-stripe-js';
 import { useDoctorDetails } from '../hooks/useDoctorDetails';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { usePayment } from '../hooks/usePayment';
 import { AddCardModal } from '../components/payment/AddCardModal';
 import { AppointmentSuccessModal } from '../components/payment/AppointmentSuccessModal';
 import toast, { Toaster } from "react-hot-toast";
+import { stripePromise } from '../services/paymentService';
+import { authHelper } from '../utils/authHelper';
 
 
 const formatCurrentDateTime = () => {
@@ -19,18 +22,13 @@ const formatCurrentDateTime = () => {
    return { date, time };
 };
 
-export const PaymentPage = () => {
+const PaymentPageContent = () => {
    const doctorId = '1' 
    const navigate = useNavigate();
 
    const { doctor, loading: doctorLoading } = useDoctorDetails(doctorId);
-   const { paymentMethods, addPaymentMethod, isAdding } = usePaymentMethods();
-   const {
-      createPaymentIntent,
-      processPayment,
-      isCreating,
-      isProcessing
-   } = usePayment();
+   const { paymentMethods, addPaymentMethod, isAdding, loading: cardsLoading } = usePaymentMethods();
+   const { processPayment, isProcessing } = usePayment();
 
    const [paymentType, setPaymentType] = useState<'credit' | 'paypal' | 'apple'>('credit');
    const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -39,46 +37,70 @@ export const PaymentPage = () => {
 
    const { date: currentDate, time: currentTime } = formatCurrentDateTime();
 
+   // Check authentication status on mount
+   useEffect(() => {
+      authHelper.logAuthStatus();
+      
+      if (!authHelper.isAuthenticated()) {
+         console.warn('⚠️ User not authenticated - some features may not work');
+         toast('Please login to use payment features (you can add token manually in console)', {
+            duration: 5000,
+            icon: '🔒',
+         });
+      }
+   }, []);
+
+   // Auto-select default card when payment methods load
+   useEffect(() => {
+      if (paymentMethods.length > 0 && !selectedCardId) {
+         const defaultCard = paymentMethods.find(card => card.isDefault);
+         setSelectedCardId(defaultCard?.id || paymentMethods[0].id);
+      }
+   }, [paymentMethods, selectedCardId]);
+
    const appointment = {
       id: '1',
       date: currentDate,
       time: currentTime,
-      doctorName: doctor?.name || "IDoctor Name Placeholder"
+      doctorName: doctor?.name || "Doctor Name Placeholder"
    };
 
-   const handleAddCard = async (cardData: any) => {
+   const handleAddCard = async (cardElement: any) => {
+      // Check authentication first
+      if (!authHelper.isAuthenticated()) {
+         toast.error('Please login first to save your card. Or use: authHelper.setToken("YOUR_TOKEN") in console');
+         setShowCardModal(false);
+         return;
+      }
+
       try {
-         const newCard = await addPaymentMethod(cardData);
+         const newCard = await addPaymentMethod(cardElement);
          setSelectedCardId(newCard.id);
          setShowCardModal(false);
          toast.success("Payment card added successfully!");
-      } catch (error) {
-         toast.error("Failed to add payment card.");
-         throw new Error("Failed to finalize adding card.");
+      } catch (error: any) {
+         console.error('Error adding card:', error);
+         const errorMessage = error.message || "Failed to add payment card.";
+         toast.error(errorMessage);
       }
    };
 
    const handlePayment = async () => {
       if (!doctor) {
-         toast.error('IDoctor details are missing. Cannot proceed.');
+         toast.error('Doctor details are missing. Cannot proceed.');
          return;
       }
 
       if (paymentType === 'credit' && !selectedCardId) {
-         toast.error('Please select a payment card or another method.');
+         toast.error('Please select a payment card.');
          return;
       }
 
       const paymentPromise = (async () => {
-         const paymentIntent = await createPaymentIntent({
-            amount: doctor.price,
-            appointmentId: appointment.id
-         });
-
+         // Process payment using the backend API
          await processPayment({
-            paymentIntentId: paymentIntent.id,
-            paymentMethodId: selectedCardId || 'pm_paypal',
-            appointmentId: appointment.id
+            bookingId: appointment.id,
+            paymentMethodId: paymentType === 'credit' ? selectedCardId! : undefined,
          });
 
          setShowSuccessModal(true);
@@ -86,23 +108,23 @@ export const PaymentPage = () => {
 
       toast.promise(paymentPromise, {
          loading: 'Processing payment...',
-         success: 'Payment successful! Redirecting...',
-         error: 'Payment failed. Please try again.',
+         success: 'Payment successful!',
+         error: (err) => err.message || 'Payment failed. Please try again.',
       });
    };
 
    const handleSuccessDone = () => {
+      setShowSuccessModal(false);
       setTimeout(() => {
          navigate('/');
-      }, 2000);
-      setShowSuccessModal(false);
+      }, 500);
    };
 
    if (doctorLoading || !doctor) {
       return <div className="flex items-center justify-center h-screen">Loading doctor details...</div>;
    }
 
-   const isButtonDisabled = isProcessing || isCreating || (paymentType === 'credit' && !selectedCardId);
+   const isButtonDisabled = isProcessing || (paymentType === 'credit' && !selectedCardId);
 
    return (
       <div className="min-h-screen bg-neutral-50 pb-6">
@@ -162,7 +184,12 @@ export const PaymentPage = () => {
                   </div>
                   {paymentType === 'credit' && (
                      <>
-                        {paymentMethods.length > 0 && (
+                        {cardsLoading && (
+                           <div className="mb-3 p-4 text-center text-secondary-500">
+                              Loading saved cards...
+                           </div>
+                        )}
+                        {!cardsLoading && paymentMethods.length > 0 && (
                            <div className="mb-3 space-y-2">
                               {paymentMethods.map((card) => (
                                  <button
@@ -184,6 +211,13 @@ export const PaymentPage = () => {
                                     </div>
                                  </button>
                               ))}
+                           </div>
+                        )}
+                        {!cardsLoading && paymentMethods.length === 0 && (
+                           <div className="mb-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                              <p className="text-sm text-blue-700">
+                                 No saved cards yet. Add a new card to continue.
+                              </p>
                            </div>
                         )}
                         <button
@@ -210,7 +244,7 @@ export const PaymentPage = () => {
                      disabled={isButtonDisabled}
                      className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white py-4 rounded-xl font-semibold text-lg"
                   >
-                     {isCreating ? 'Preparing...' : isProcessing ? 'Processing...' : 'Pay'}
+                     {isProcessing ? 'Processing...' : 'Pay Now'}
                   </button>
                </div>
             </div>
@@ -234,5 +268,14 @@ export const PaymentPage = () => {
             />
          )}
       </div>
+   );
+};
+
+// Main component wrapped with Stripe Elements
+export const PaymentPage = () => {
+   return (
+      <Elements stripe={stripePromise}>
+         <PaymentPageContent />
+      </Elements>
    );
 };

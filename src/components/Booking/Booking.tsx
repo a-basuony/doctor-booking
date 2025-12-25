@@ -184,8 +184,21 @@ const Booking = () => {
           </div>
         </div>
 
-        {/* Appointments grid */}
-        {filteredAppointments.length > 0 ? (
+       {appointments && appointments.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Calendar className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <p className="text-xl font-medium mb-2">No bookings found</p>
+            <p className="text-sm mb-6">
+              You haven't made any appointments yet
+            </p>
+            <button
+              onClick={() => navigate("/SearchDoctors")}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Find a Doctor
+            </button>
+          </div>
+        ) : filteredAppointments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAppointments.map((appointment) => (
               <div

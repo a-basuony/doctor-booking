@@ -1,5 +1,3 @@
-
-
 #  IDoctor Booking App — Frontend
 
 A **modern React + TypeScript** frontend for a IDoctor Booking system.  
@@ -159,4 +157,3 @@ Then open:
 [https://github.com/a-basuony/doctor-booking](https://github.com/a-basuony/doctor-booking)
 
 ---
-

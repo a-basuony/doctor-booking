@@ -41,12 +41,24 @@ export const useMyBookings = () => {
   return useQuery<BookingResponse[]>({
     queryKey: ["myBooking"],
     queryFn: async () => {
-      const response = await api.get<ApiResponse>("/bookings");
-      return response.data.data;
+      try {
+        const response = await api.get<ApiResponse>("/bookings");
+        return response.data.data;
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
     },
     enabled: !!localStorage.getItem("authToken"),
     staleTime: 1000 * 60 * 5,
-    retry: 2,
+    retry: (failureCount, error: any) => {
+      if (error.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     refetchOnWindowFocus: false,
   });
 };

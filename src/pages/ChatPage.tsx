@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import ChatSidebar from "../components/Chat/ChatSidebar";
 import ChatWindow from "../components/Chat/ChatWindow";
 import ChatEmptyState from "../components/Chat/ChatEmptyState";
@@ -14,12 +15,11 @@ import { Loader2 } from "lucide-react";
 
 const ChatPage = () => {
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
-  const [filterMode, setFilterMode] = useState<
-    "all" | "unread" | "favorite" | "archived"
-  >("all");
+  const [filterMode, setFilterMode] = useState<"all" | "unread" | "favorite" | "archived">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedChatIds, setSelectedChatIds] = useState<number[]>([]);
 
-  // Convert UI filter mode to API filter type if applicable
   const apiFilterType =
     filterMode === "all"
       ? undefined
@@ -33,15 +33,9 @@ const ChatPage = () => {
     data: conversationsData,
     isLoading: isLoadingChats,
     error: chatsError,
-  } = useConversations({
-    type: apiFilterType as any,
-    search: searchTerm,
-  });
+  } = useConversations({ type: apiFilterType as any, search: searchTerm });
 
-  const { data: messagesData, isLoading: isLoadingMessages } = useMessages(
-    activeChatId,
-    !!activeChatId
-  );
+  const { data: messagesData, isLoading: isLoadingMessages } = useMessages(activeChatId, !!activeChatId);
   const sendMessage = useSendMessage();
   const markAsRead = useMarkAsRead();
   const toggleFavorite = useToggleFavorite();
@@ -58,75 +52,58 @@ const ChatPage = () => {
   const chats = conversationsData?.data || [];
   const activeConversation = chats.find((c) => c.id === activeChatId);
 
-  // Selection Mode State
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedChatIds, setSelectedChatIds] = useState<number[]>([]);
+  const { conversationId } = useParams<{ conversationId?: string }>();
+  useEffect(() => {
+    if (conversationId) {
+      const id = Number(conversationId);
+      if (!Number.isNaN(id)) {
+        setActiveChatId(id);
+        markAsRead.mutate(id);
+      }
+    }
+  }, [conversationId]);
 
   const handleSelectChat = (id: number) => {
     setActiveChatId(id);
-    // Mark conversation as read when opened
     markAsRead.mutate(id);
   };
 
   const handleSendMessage = async (text: string) => {
     if (!activeChatId || !text.trim()) return;
 
-    sendMessage.mutate({
-      conversationId: activeChatId,
-      body: text,
-    });
+    sendMessage.mutate({ conversationId: activeChatId, body: text });
   };
 
   const handleSendAttachment = async (file: File) => {
     if (!activeChatId) return;
-
-    sendMessage.mutate({
-      conversationId: activeChatId,
-      body: file.name,
-      attachment: file,
-    });
+    sendMessage.mutate({ conversationId: activeChatId, body: file.name, attachment: file });
   };
 
-  // --- Bulk Deletion Logic ---
   const toggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
     setSelectedChatIds([]);
   };
 
   const toggleChatSelection = (chatId: number) => {
-    setSelectedChatIds((prev) =>
-      prev.includes(chatId)
-        ? prev.filter((id) => id !== chatId)
-        : [...prev, chatId]
-    );
+    setSelectedChatIds((prev) => (prev.includes(chatId) ? prev.filter((id) => id !== chatId) : [...prev, chatId]));
   };
 
   const deleteSelectedChats = async () => {
-    // TODO: Implement bulk delete when endpoint is available
     console.log("Delete chats:", selectedChatIds);
   };
 
-  // Extract messages correctly from the response
-  const messages = [...(messagesData?.data || [])].sort(
-    (a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
+  const messages = [...(messagesData?.data || [])].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   const activeChatAdapter = activeConversation
     ? {
         id: activeConversation.id,
         fullName: activeConversation.other_user.name,
-        avatar:
-          activeConversation.other_user.avatar ||
-          `https://ui-avatars.com/api/?name=${activeConversation.other_user.name}`,
+        avatar: activeConversation.other_user.avatar || `https://ui-avatars.com/api/?name=${activeConversation.other_user.name}`,
         messages: messages.map((msg) => ({
           id: msg.id,
           sender: msg.is_mine ? ("me" as const) : ("other" as const),
           text: msg.body,
-          time: new Date(msg.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           isRead: true,
           image: msg.type === "image" ? msg.body : null,
           type: msg.type,
@@ -149,9 +126,7 @@ const ChatPage = () => {
 
   if (chatsError) {
     return (
-      <div className="flex items-center justify-center h-screen text-red-500">
-        Error loading chats
-      </div>
+      <div className="flex items-center justify-center h-screen text-red-500">Error loading chats</div>
     );
   }
 
@@ -159,19 +134,13 @@ const ChatPage = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <main className="flex-grow flex flex-col max-w-[1440px] mx-auto w-full p-4 sm:p-6 lg:p-8 h-[calc(100vh-64px)] overflow-hidden">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex h-full overflow-hidden">
-          {/* Sidebar */}
-          <div
-            className={`${
-              activeChatId ? "hidden md:flex" : "flex"
-            } w-full md:w-auto h-full`}
-          >
+          <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-auto h-full`}>
             <ChatSidebar
               conversations={chats}
               activeChatId={activeChatId}
               onSelectChat={handleSelectChat}
               filterMode={filterMode}
               setFilterMode={setFilterMode}
-              // Selection Props
               isSelectionMode={isSelectionMode}
               selectedChatIds={selectedChatIds}
               onToggleSelectionMode={toggleSelectionMode}
@@ -182,18 +151,12 @@ const ChatPage = () => {
             />
           </div>
 
-          {/* Chat Window or Empty State */}
-          <div
-            className={`${
-              !activeChatId ? "hidden md:flex" : "flex"
-            } flex-1 h-full relative`}
-          >
+          <div className={`${!activeChatId ? "hidden md:flex" : "flex"} flex-1 h-full relative`}>
             {isLoadingMessages && activeChatId ? (
               <div className="flex items-center justify-center w-full">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
             ) : activeChatAdapter ? (
-              // @ts-ignore - Temporary ignore while types mismatch during migration
               <ChatWindow
                 chat={activeChatAdapter as any}
                 onSendMessage={handleSendMessage}

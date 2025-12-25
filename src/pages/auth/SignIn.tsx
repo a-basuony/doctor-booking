@@ -9,10 +9,12 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import PasswordInput from "../../components/common/PasswordInput";
 import { useSignIn } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
 const SignIn = () => {
+  const navigate = useNavigate();
   const { mutate: signIn, isPending } = useSignIn();
   const {
     control,
@@ -83,6 +85,12 @@ const SignIn = () => {
             size="small"
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
           />
+          <p
+            className="text-sm text-end text-gray-500 hover:text-black cursor-pointer duration-300 transition-colors m-0 "
+            onClick={() => navigate(ROUTES.PHONE_VERIFICATION)}
+          >
+            Forget Password ?
+          </p>
 
           <Button
             type="submit"

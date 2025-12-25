@@ -8,7 +8,13 @@ function Layout() {
   const location = useLocation();
 
   // we don't want Navbar and Footer in auth pages
-  const authRoutes = [ROUTES.SIGN_IN, ROUTES.SIGN_UP, ROUTES.VERIFY_OTP];
+  const authRoutes = [
+    ROUTES.SIGN_IN,
+    ROUTES.SIGN_UP,
+    ROUTES.VERIFY_OTP,
+    ROUTES.PHONE_VERIFICATION,
+    ROUTES.RESET_PASSWORD,
+  ];
   const isAuthPage = authRoutes.includes(location.pathname);
 
   return (

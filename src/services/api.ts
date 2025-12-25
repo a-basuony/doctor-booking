@@ -1,14 +1,19 @@
 import axios from "axios";
 
+// Base URL Configuration
+export const API_BASE_URL =
+  "https://round8-backend-team-one.huma-volve.com/api";
+
+// Create Axios instance
 export const api = axios.create({
-  baseURL: "https://round8-backend-team-one.huma-volve.com/",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "Accept": "application/json",
+    Accept: "application/json",
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token dynamically
 api.interceptors.request.use(
   (config) => {
     // Get auth token from localStorage
@@ -57,6 +62,12 @@ api.interceptors.response.use(
       if (url && !url.includes('/auth/')) {
         console.warn('💡 Tip: You need to login first to use this feature');
         // Optionally show a toast or alert here
+      }
+      
+      // Token expired or invalid - clear auth data and redirect
+      localStorage.removeItem("authToken");
+      if (url && !url.includes('/auth/')) {
+        window.location.href = "/sign-in";
       }
     }
     

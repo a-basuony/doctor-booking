@@ -2,27 +2,65 @@ import { Box, Button, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import toast from "react-hot-toast";
 import { passwordSchema } from "../../utils/validation";
 import PasswordInput from "../common/PasswordInput";
+import { useChangePassword } from "../../hooks/useAuth";
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 const PasswordManagement = () => {
+  const { mutate: changePassword, isPending } = useChangePassword();
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    setError,
+    formState: { errors },
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
   });
 
   const onSubmit = async (data: PasswordFormData) => {
     console.log("Password change data:", data);
-    // Add API call to update password here
-    toast.success("Password updated successfully!");
-    reset();
+    const formattedData = {
+      current_password: data.currentPassword,
+      new_password: data.newPassword,
+      new_password_confirmation: data.confirmPassword,
+    };
+
+    changePassword(formattedData, {
+      onSuccess: () => {
+        reset();
+      },
+      onError: (error: any) => {
+        // Handle validation errors from backend
+        if (error.response?.data?.errors) {
+          const backendErrors = error.response.data.errors;
+
+          // Map backend field names to form field names
+          if (backendErrors.current_password) {
+            setError("currentPassword", {
+              type: "manual",
+              message:
+                backendErrors.current_password[0] ||
+                "Current password is incorrect",
+            });
+          }
+          if (backendErrors.new_password) {
+            setError("newPassword", {
+              type: "manual",
+              message: backendErrors.new_password[0],
+            });
+          }
+          if (backendErrors.new_password_confirmation) {
+            setError("confirmPassword", {
+              type: "manual",
+              message: backendErrors.new_password_confirmation[0],
+            });
+          }
+        }
+      },
+    });
   };
 
   return (
@@ -91,13 +129,13 @@ const PasswordManagement = () => {
           <Button
             type="submit"
             variant="contained"
-            disabled={isSubmitting}
+            disabled={isPending}
             sx={{
               textTransform: "capitalize",
               borderRadius: "10px",
             }}
           >
-            {isSubmitting ? "Updating..." : "Update Password"}
+            {isPending ? "Updating..." : "Update Password"}
           </Button>
         </Box>
       </Box>

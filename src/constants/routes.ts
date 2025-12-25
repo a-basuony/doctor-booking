@@ -5,4 +5,7 @@ export const ROUTES = {
   VERIFY_OTP: "/verify-otp",
   PRIVACY_POLICY: "/privacy-policy",
   PROFILE: "/profile",
+  FORGET_PASSWORD: "/forget-password",
+  PHONE_VERIFICATION: "/phone-verification",
+  RESET_PASSWORD: "/reset-password",
 };

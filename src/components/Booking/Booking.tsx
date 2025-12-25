@@ -1,152 +1,120 @@
-import { useState, useEffect } from 'react';
-import { Calendar, ChevronDown, Clock, MapPin, User } from 'lucide-react';
-import { useMyBookings } from '../../hooks/useMyBookings';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  ChevronDown,
+  Clock,
+  MapPin,
+  User,
+  Loader2,
+} from "lucide-react";
+import { useMyBookings, useCancelBooking } from "../../hooks/useMyBookings";
 
-// Types
-interface Doctor {
-  name: string;
-  image?: string;
-  spec?: string;
-  address?: string;
-}
-
-interface ApiBooking {
-  id: number;
-  date: string;
-  time: string;
-  status: string;
-  doctor: Doctor;
-}
-
-interface Appointment {
-  id: number;
-  date: string;
-  time: string;
-  status: 'Upcoming' | 'Completed' | 'Canceled';
-  name: string;
-  image?: string;
-  specialty: string;
-  address: string;
-}
-
+// Define proper types
 interface DateOption {
   value: string;
   label: string;
 }
 
-// MOVE mapStatus ABOVE useEffect (FIX ERROR)
-const mapStatus = (apiStatus: string): 'Upcoming' | 'Completed' | 'Canceled' => {
-  switch(apiStatus) {
-    case 'pending_payment':
-      return 'Upcoming';
-    case 'confirmed':
-      return 'Completed';
-    case 'cancelled':
-      return 'Canceled';
-    default:
-      return 'Upcoming';
-  }
-};
-
 const Booking = () => {
-  const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const navigate = useNavigate();
+  const [selectedFilter, setSelectedFilter] = useState<string>("All");
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const { data, isLoading, error } = useMyBookings();
+  // Reschedule Modal State - Removed
 
-  useEffect(() => {
-  if (data?.data) {
-    const run = () => {
-      const mappedAppointments: Appointment[] = data.data.map(
-        (item: ApiBooking) => ({
-          id: item.id,
-          date: item.date,
-          time: item.time.replace(":00", ""),
-          status: mapStatus(item.status),
-          name: item.doctor.name,
-          image: item.doctor.image,
-          specialty: item.doctor.spec || "General Doctor",
-          address: item.doctor.address || "No address provided",
-        })
-      );
-
-      setAppointments(mappedAppointments);
-    };
-
-    run(); // ← كده مش synchronous جوه الـ effect مباشرة
-  }
-}, [data]);
+  const { data: appointments, isLoading, error } = useMyBookings();
+  const cancelBooking = useCancelBooking();
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'long', 
-      day: 'numeric' 
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     });
   };
 
-  const filters: string[] = ['All', 'Upcoming', 'Completed', 'Canceled'];
+  // Dynamic date options based on actual bookings
+  const availableDates: DateOption[] = [
+    { value: "", label: "All" },
+    ...Array.from(
+      new Set(appointments?.map((apt) => apt.appointment_date) || [])
+    )
+      .sort()
+      .map((date) => ({
+        value: date,
+        label: formatDate(date),
+      })),
+  ];
 
-  const dateOptions: DateOption[] = Array.from(
-    new Set(appointments.map(a => a.date))
-  ).map(date => ({
-    value: date,
-    label: formatDate(date)
-  }));
+  const filters: string[] = [
+    "All",
+    "Pending",
+    "Rescheduled",
+    "Completed",
+    "Cancelled",
+  ];
 
-  const filteredAppointments = appointments.filter(apt => {
-    const matchesFilter = selectedFilter === 'All' || apt.status === selectedFilter;
-    const matchesDate = !selectedDate || apt.date === selectedDate;
-    return matchesFilter && matchesDate;
-  });
+  const filteredAppointments =
+    appointments?.filter((apt) => {
+      const matchesFilter =
+        selectedFilter === "All" ||
+        apt.status.toLowerCase() === selectedFilter.toLowerCase() ||
+        (selectedFilter === "Cancelled" &&
+          apt.status.toLowerCase() === "canceled");
+      const matchesDate =
+        !selectedDate || apt.appointment_date === selectedDate;
+      return matchesFilter && matchesDate;
+    }) || [];
 
-  const handleBookAgain = (id: number) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === id ? { ...apt, status: 'Upcoming' } : apt
-    ));
+  const handleReschedule = (id: number): void => {
+    navigate(`/book-appointment/${id}`);
   };
 
-  const handleCancel = (id: number) => {
-    setAppointments(prev => prev.map(apt => 
-      apt.id === id ? { ...apt, status: 'Canceled' } : apt
-    ));
+  const handleFeedback = (): void => {
+    navigate("/SearchDoctors");
+  };
+
+  const handleViewDetails = (): void => {
+    navigate("/doctor-details");
+  };
+
+  const handleCancel = (id: number): void => {
+    cancelBooking.mutate(id);
   };
 
   const getStatusColor = (status: string): string => {
-    switch(status) {
-      case 'Upcoming': return 'text-blue-600';
-      case 'Completed': return 'text-green-600';
-      case 'Canceled': return 'text-red-600';
-      default: return 'text-gray-600';
+    switch (status.toLowerCase()) {
+      case "pending":
+      case "upcoming":
+      case "confirmed":
+        return "text-blue-600";
+      case "completed":
+        return "text-green-600";
+      case "canceled":
+      case "cancelled":
+        return "text-red-600";
+      case "rescheduled":
+        return "text-orange-600";
+      default:
+        return "text-gray-600";
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-xl text-gray-600">Loading your appointments...</p>
-        </div>
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-red-600 text-6xl mb-4">⚠️</div>
-          <p className="text-xl text-red-600">Failed to load appointments</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
+      <div className="flex items-center justify-center min-h-screen text-red-600">
+        Error loading appointments. Please try again later.
       </div>
     );
   }
@@ -155,18 +123,18 @@ const Booking = () => {
     <div className="max-w-6xl mx-auto p-6 min-h-screen">
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-2xl font-bold mb-6">Your appointments</h1>
-        
-        {/* Filters + Date Picker */}
+
+        {/* Filter buttons and date selector */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-between gap-3 mb-6">
           <div className="flex gap-2 flex-wrap">
-            {filters.map(filter => (
+            {filters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
                 className={`px-4 py-2 rounded-md font-medium transition-colors ${
                   selectedFilter === filter
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {filter}
@@ -177,32 +145,24 @@ const Booking = () => {
           <div className="relative">
             <button
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-white hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 border rounded-lg px-4 py-2 bg-white hover:bg-gray-50 transition-colors w-full sm:w-auto"
             >
               <Calendar className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-medium flex-1 text-left">
-                {dateOptions.find(d => d.value === selectedDate)?.label || 'Select Date'}
+                {availableDates.find((d) => d.value === selectedDate)?.label ||
+                  "Select Date"}
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500" />
             </button>
 
             {showDatePicker && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
+                <div
+                  className="fixed inset-0 z-10"
                   onClick={() => setShowDatePicker(false)}
                 />
-                <div className="absolute top-full mt-2 right-0 bg-white border rounded-md shadow-lg z-20 min-w-[250px] max-h-[300px] overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setSelectedDate('');
-                      setShowDatePicker(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-500"
-                  >
-                    All Dates
-                  </button>
-                  {dateOptions.map(date => (
+                <div className="absolute top-full mt-2 right-0 bg-white border rounded-md shadow-lg z-20 min-w-[250px]">
+                  {availableDates.map((date) => (
                     <button
                       key={date.value}
                       onClick={() => {
@@ -210,7 +170,9 @@ const Booking = () => {
                         setShowDatePicker(false);
                       }}
                       className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm ${
-                        selectedDate === date.value ? 'bg-blue-50 text-blue-600 font-medium' : ''
+                        selectedDate === date.value
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : ""
                       }`}
                     >
                       {date.label}
@@ -222,97 +184,151 @@ const Booking = () => {
           </div>
         </div>
 
-        {/* Appointments */}
-        {filteredAppointments.length > 0 ? (
+       {appointments && appointments.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <Calendar className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <p className="text-xl font-medium mb-2">No bookings found</p>
+            <p className="text-sm mb-6">
+              You haven't made any appointments yet
+            </p>
+            <button
+              onClick={() => navigate("/SearchDoctors")}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Find a Doctor
+            </button>
+          </div>
+        ) : filteredAppointments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredAppointments.map(appointment => (
-              <div 
-                key={appointment.id} 
+            {filteredAppointments.map((appointment) => (
+              <div
+                key={appointment.id}
                 className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="w-4 h-4" />
-                    <span>{formatDate(appointment.date)}</span>
+                    <span>{formatDate(appointment.appointment_date)}</span>
                   </div>
-                  <span className={`text-sm font-medium ${getStatusColor(appointment.status)}`}>
-                    {appointment.status}
+                  <span
+                    className={`text-sm font-medium ${getStatusColor(
+                      appointment.status
+                    )}`}
+                  >
+                    {appointment.status.charAt(0).toUpperCase() +
+                      appointment.status.slice(1)}
                   </span>
                 </div>
 
-                {/* Doctor */}
+                {/* Doctor info */}
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
-                    {appointment.image ? (
-                      <img 
-                        src={appointment.image} 
-                        alt={appointment.name} 
+                    {appointment.doctor.image ? (
+                      <img
+                        src={appointment.doctor.image}
+                        alt={appointment.doctor.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement!.innerHTML = '<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>';
-                        }}
                       />
                     ) : (
                       <User className="w-6 h-6 text-blue-600" />
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 truncate">{appointment.name}</h3>
-                    <p className="text-sm text-gray-600 truncate">{appointment.specialty}</p>
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {appointment.doctor.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 truncate">
+                      {appointment.doctor.speciality}
+                    </p>
                   </div>
                 </div>
 
                 {/* Time */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                   <Clock className="w-4 h-4" />
-                  <span>{appointment.time}</span>
+                  <span>{appointment.appointment_time}</span>
                 </div>
 
                 {/* Address */}
                 <div className="flex items-start gap-2 text-sm text-gray-600 mb-4">
-                  <MapPin className="w-4 h-4 mt-0.5" />
-                  <span className="line-clamp-2">{appointment.address}</span>
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span className="line-clamp-2">
+                    {appointment.doctor.address}
+                  </span>
                 </div>
 
-                {/* Buttons */}
+                {/* Action buttons */}
                 <div className="flex gap-2">
-                  {appointment.status === 'Upcoming' && (
+                  {(appointment.status === "pending" ||
+                    appointment.status === "rescheduled" ||
+                    appointment.status === "upcoming") && (
                     <>
                       <button
                         onClick={() => handleCancel(appointment.id)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        disabled={cancelBooking.isPending}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Cancel
+                        {cancelBooking.isPending ? "Cancelling..." : "Cancel"}
                       </button>
-                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">
+                      <button
+                        onClick={() => handleReschedule(appointment.id)}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
                         Reschedule
                       </button>
                     </>
                   )}
 
-                  {appointment.status === 'Completed' && (
+                  {appointment.status === "confirmed" && (
                     <>
-                      <button className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      <button
+                        onClick={() => handleCancel(appointment.id)}
+                        disabled={cancelBooking.isPending}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {cancelBooking.isPending ? "Cancelling..." : "Cancel"}
+                      </button>
+                      <button
+                        onClick={() => handleViewDetails()}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
                         View Details
                       </button>
-                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">
+                    </>
+                  )}
+
+                  {appointment.status === "completed" && (
+                    <>
+                      <button
+                        onClick={() => handleViewDetails()}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => handleFeedback()}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
                         Feedback
                       </button>
                     </>
                   )}
 
-                  {appointment.status === 'Canceled' && (
+                  {(appointment.status === "canceled" ||
+                    appointment.status === "cancelled") && (
                     <>
                       <button
-                        onClick={() => handleBookAgain(appointment.id)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        onClick={() => handleFeedback()}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                       >
-                        Book again
+                        Feedback
                       </button>
-                      <button className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700">
-                        Support
+                      <button
+                        onClick={() => handleReschedule(appointment.id)}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        Reschedule
                       </button>
                     </>
                   )}
@@ -323,7 +339,9 @@ const Booking = () => {
         ) : (
           <div className="text-center py-12 text-gray-500">
             <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-lg">No appointments found for the selected filters</p>
+            <p className="text-lg">
+              No appointments found for the selected filters
+            </p>
           </div>
         )}
       </div>

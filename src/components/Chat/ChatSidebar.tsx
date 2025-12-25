@@ -1,25 +1,27 @@
-import React, { useState } from "react";
+import React from "react";
 import { Search, Trash2, CheckSquare, X } from "lucide-react";
-import type { Chat } from "../../types/chat";
+import type { Conversation } from "../../types/chat";
 import { IoIosArrowBack } from "react-icons/io";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 
 interface ChatSidebarProps {
-  chats: Chat[];
+  conversations: Conversation[];
   activeChatId: number | null;
   onSelectChat: (id: number) => void;
-  filterMode: "all" | "unread" | "favorite";
-  setFilterMode: (mode: "all" | "unread" | "favorite") => void;
+  filterMode: "all" | "unread" | "favorite" | "archived";
+  setFilterMode: (mode: "all" | "unread" | "favorite" | "archived") => void;
   // Selection Props
   isSelectionMode: boolean;
   selectedChatIds: number[];
   onToggleSelectionMode: () => void;
   onToggleChatSelection: (id: number) => void;
   onDeleteSelected: () => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
-  chats,
+  conversations,
   activeChatId,
   onSelectChat,
   filterMode,
@@ -29,33 +31,26 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onToggleSelectionMode,
   onToggleChatSelection,
   onDeleteSelected,
+  searchTerm,
+  setSearchTerm,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredChats = chats.filter((chat) => {
-    // 1. Filter by mode
-    if (filterMode === "unread" && !chat.isUnread) return false;
-    if (filterMode === "favorite" && !chat.isFavorite) return false;
-
-    // 2. Filter by search
-    if (
-      searchTerm &&
-      !chat.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-      return false;
-
-    return true;
-  });
-
   const getHeaderTitle = () => {
     switch (filterMode) {
       case "unread":
         return "Unread";
       case "favorite":
         return "Favorite";
+      case "archived":
+        return "Archived";
       default:
         return "Chat";
     }
+  };
+
+  const formatTime = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -130,6 +125,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 >
                   Favorites
                 </button>
+                <button
+                  onClick={() => setFilterMode("archived")}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                >
+                  Archived
+                </button>
                 <div className="h-px bg-gray-100 my-1"></div>
                 <button
                   onClick={onToggleSelectionMode}
@@ -159,22 +160,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       {/* List */}
       <div className="overflow-y-auto flex-1">
-        {filteredChats.map((chat) => {
-          const isSelected = selectedChatIds.includes(chat.id);
+        {conversations.map((conv) => {
+          const isSelected = selectedChatIds.includes(conv.id);
 
           return (
             <div
-              key={chat.id}
+              key={conv.id}
               onClick={() => {
                 if (isSelectionMode) {
-                  onToggleChatSelection(chat.id);
+                  onToggleChatSelection(conv.id);
                 } else {
-                  onSelectChat(chat.id);
+                  onSelectChat(conv.id);
                 }
               }}
               className={`flex items-start gap-3 p-4 border-b border-gray-50 cursor-pointer transition-colors relative
                 ${
-                  activeChatId === chat.id && !isSelectionMode
+                  activeChatId === conv.id && !isSelectionMode
                     ? "bg-blue-50/50"
                     : "hover:bg-gray-50"
                 }
@@ -200,41 +201,47 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
               <div className="relative">
                 <img
-                  src={chat.avatar}
-                  alt={chat.fullName}
+                  src={
+                    conv.other_user.avatar ||
+                    "https://ui-avatars.com/api/?name=" + conv.other_user.name
+                  }
+                  alt={conv.other_user.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />
-                {/* Online indicator */}
-                {!isSelectionMode && (
+                {/* Online indicator - Removed as API doesn't provide online status yet */}
+                {/* {!isSelectionMode && (
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                )} */}
+              </div>
+
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <h3 className="font-semibold text-gray-900 text-[15px]">
+                  {conv.other_user.name}
+                </h3>
+                {!isSelectionMode && (
+                  <div className="flex items-center justify-between mt-0.5 w-full">
+                    <p className="text-sm text-gray-500 truncate pr-2 italic">
+                      {conv.last_message
+                        ? conv.last_message.type === "text"
+                          ? conv.last_message.body
+                          : `[${
+                              conv.last_message.type.charAt(0).toUpperCase() +
+                              conv.last_message.type.slice(1)
+                            }]`
+                        : "Start a conversation"}
+                    </p>
+                    <span className="text-xs text-blue-500 flex-shrink-0">
+                      {formatTime(conv.updated_at)}
+                    </span>
+                  </div>
                 )}
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="font-semibold text-gray-900 text-[15px]">
-                    {chat.fullName}
-                  </h3>
-                  <span
-                    className={`text-xs ${
-                      chat.unreadCount > 0
-                        ? "text-green-600 font-medium"
-                        : "text-gray-400"
-                    }`}
-                  >
-                    {chat.timestamp}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 truncate pr-4 leading-relaxed">
-                  {chat.lastMessage}
-                </p>
-              </div>
-
               {/* Unread Badge (hidden in selection mode) */}
-              {chat.unreadCount > 0 && !isSelectionMode && (
+              {conv.unread_count > 0 && !isSelectionMode && (
                 <div className="flex flex-col items-end gap-1">
                   <span className="w-5 h-5 bg-green-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold">
-                    {chat.unreadCount}
+                    {conv.unread_count}
                   </span>
                 </div>
               )}

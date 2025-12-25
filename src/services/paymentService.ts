@@ -151,6 +151,23 @@ export const paymentService = {
       }
    },
 
+   async createPaymentIntent(
+      amount: number,
+      _appointmentId: string
+   ): Promise<PaymentIntent> {
+      return  new Promise((resolve) => {
+         setTimeout(() => {
+            resolve({
+               id: `pi_${Date.now()}`,
+               amount: amount * 100,
+               currency: 'usd',
+               status: 'pending',
+               clientSecret: 'pi_secret_' + Date.now()
+            });
+         }, 800);
+      });
+   },
+
    /**
     * Process payment for a booking
     */
@@ -171,6 +188,24 @@ export const paymentService = {
         console.error('Failed to process payment:', error);
         throw new Error(error.response?.data?.message || 'Failed to process payment');
       }
+   },
+
+   /**
+    * Process payment with payment intent (alternative method)
+    */
+   async processPaymentWithIntent(
+      _paymentIntentId: string,
+      _paymentMethodId: string,
+      appointmentId: string
+   ): Promise<{ success: boolean; appointmentId: string }> {
+      return new Promise((resolve) => {
+         setTimeout(() => {
+            resolve({
+               success: true,
+               appointmentId
+            });
+         }, 2000);
+      });
    },
 
    /**

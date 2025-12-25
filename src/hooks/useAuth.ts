@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import toast from "react-hot-toast";
 import { authService } from "../services/authService";
+import { profileService } from "../services/profileService";
 import { ROUTES } from "../constants/routes";
 import { AuthContext } from "../contexts/AuthContext";
 import type {
@@ -10,27 +11,12 @@ import type {
   SignInData,
   VerifyOTPData,
   ResendOTPData,
+  ChangePasswordData,
+  ResetPasswordData,
+  GoogleLoginData,
 } from "../types/auth";
 import { TOAST_DURATION } from "../constants";
-
-// Helper function to extract error messages
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getErrorMessage = (error: any): string => {
-  // Check for validation errors with errors object
-  if (error.response?.data?.errors) {
-    const errors = error.response.data.errors;
-    const errorMessages = Object.values(errors).flat().join(", ");
-    return errorMessages;
-  }
-
-  // Check for simple error message
-  if (error.response?.data?.message) {
-    return error.response.data.message;
-  }
-
-  // Default error message
-  return "An error occurred. Please try again.";
-};
+import { getErrorMessage } from "../utils/utils.";
 
 // Sign Up mutation
 export const useSignUp = () => {
@@ -39,13 +25,12 @@ export const useSignUp = () => {
   return useMutation({
     mutationFn: (data: SignUpData) => authService.signUp(data),
     onSuccess: (response, data) => {
-      console.log(response);
+      console.log("Sign up response:", response);
       toast.success(response.message);
-      // Store user_id and phone for OTP verification
-      localStorage.setItem("tempUserId", response.data.user_id.toString());
+
       // Navigate to OTP verification
       navigate(ROUTES.VERIFY_OTP, {
-        state: { userId: response.data.user_id, phone: data.phone },
+        state: { phone: data.phone },
       });
     },
     onError: (error) => {
@@ -63,19 +48,27 @@ export const useSignIn = () => {
   return useMutation({
     mutationFn: (data: SignInData) => authService.signIn(data),
     onSuccess: (response) => {
-      // Save token and user data to localStorage
-      localStorage.setItem("authToken", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.data));
+      console.log("Sign in response:", response);
 
-      // Update React Query cache with user data
-      queryClient.setQueryData(["currentUser"], response.data.data);
+      // Save only the token
+      localStorage.setItem("authToken", response.data.token);
+
+      // Invalidate user query to trigger fresh fetch
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
 
       toast.success(response.message);
       navigate(ROUTES.HOME);
     },
     onError: (error) => {
+      console.log("Sign in error:", error);
       const message = getErrorMessage(error);
       toast.error(message, { duration: TOAST_DURATION });
+      if (
+        message.toLowerCase().includes("otp") ||
+        message.toLowerCase().includes("verify")
+      ) {
+        navigate(ROUTES.VERIFY_OTP);
+      }
     },
   });
 };
@@ -83,18 +76,12 @@ export const useSignIn = () => {
 // Verify OTP mutation
 export const useVerifyOTP = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: VerifyOTPData) => authService.verifyOTP(data),
     onSuccess: (response) => {
-      console.log(response);
-      // OTP verification doesn't return a token, need to sign in after
-      // Store user data temporarily
-      localStorage.setItem("user", JSON.stringify(response.data));
-      queryClient.setQueryData(["currentUser"], response.data);
-      // Clean up temporary data
-      localStorage.removeItem("tempUserId");
+      console.log("OTP verification response:", response);
+
       toast.success(response.message);
       // Navigate to sign in page to get the token
       toast("Please sign in to continue", { icon: "ℹ️" });
@@ -122,14 +109,93 @@ export const useResendOTP = () => {
   });
 };
 
-// Get current user from localStorage
+// Get current user from API
 export const useCurrentUser = () => {
   return useQuery({
     queryKey: ["currentUser"],
-    queryFn: authService.getCurrentUser,
+    queryFn: async () => {
+      const response = await profileService.getProfile();
+      return response.data;
+    },
     enabled: !!localStorage.getItem("authToken"),
     retry: false,
-    staleTime: Infinity, // User data from localStorage doesn't go stale
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: (data: ChangePasswordData) => authService.changePassword(data),
+    onSuccess: (response) => {
+      console.log(response);
+      toast.success("Password updated successfully!");
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message);
+    },
+  });
+};
+
+export const useForgetPassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: { phone: string }) => authService.forgetPassword(data),
+    onSuccess: (response, data) => {
+      console.log(response);
+      navigate(ROUTES.VERIFY_OTP, {
+        state: { phone: data.phone, isPasswordReset: true },
+      });
+      toast.success("OTP sent successfully!");
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message);
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: ResetPasswordData) => authService.resetPassword(data),
+    onSuccess: (response) => {
+      console.log(response);
+      toast.success("Password reset successfully!");
+      navigate(ROUTES.SIGN_IN);
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message);
+    },
+  });
+};
+
+// Google Login mutation
+export const useGoogleLogin = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: GoogleLoginData) => authService.googleLogin(data),
+    onSuccess: (response) => {
+      console.log("Google login response:", response);
+
+      // Save the token
+      localStorage.setItem("authToken", response.data.token);
+
+      // Invalidate user query to trigger fresh fetch
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+
+      toast.success(response.message || "Signed in successfully!");
+      navigate(ROUTES.HOME);
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error);
+      toast.error(message, { duration: TOAST_DURATION });
+    },
   });
 };
 
@@ -148,7 +214,6 @@ export const useLogout = () => {
     onError: () => {
       // Even if API call fails, clear local data
       localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
       queryClient.clear();
       navigate(ROUTES.SIGN_IN);
     },

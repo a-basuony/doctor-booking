@@ -1,316 +1,171 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import ChatSidebar from "../components/Chat/ChatSidebar";
 import ChatWindow from "../components/Chat/ChatWindow";
 import ChatEmptyState from "../components/Chat/ChatEmptyState";
-import type { Chat } from "../types/chat";
-import { chatService } from "../services/chatService";
+import {
+  useConversations,
+  useMessages,
+  useSendMessage,
+  useMarkAsRead,
+  useToggleFavorite,
+  useToggleArchive,
+} from "../hooks/useChat";
+import { Loader2 } from "lucide-react";
 
 const ChatPage = () => {
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
-  const [filterMode, setFilterMode] = useState<"all" | "unread" | "favorite">(
-    "all"
-  );
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Selection Mode State
+  const [filterMode, setFilterMode] = useState<"all" | "unread" | "favorite" | "archived">("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedChatIds, setSelectedChatIds] = useState<number[]>([]);
 
+  const apiFilterType =
+    filterMode === "all"
+      ? undefined
+      : filterMode === "unread"
+      ? "unread"
+      : filterMode === "favorite"
+      ? "favorites"
+      : "archived";
+
+  const {
+    data: conversationsData,
+    isLoading: isLoadingChats,
+    error: chatsError,
+  } = useConversations({ type: apiFilterType as any, search: searchTerm });
+
+  const { data: messagesData, isLoading: isLoadingMessages } = useMessages(activeChatId, !!activeChatId);
+  const sendMessage = useSendMessage();
+  const markAsRead = useMarkAsRead();
+  const toggleFavorite = useToggleFavorite();
+  const toggleArchive = useToggleArchive();
+
+  const handleToggleFavorite = () => {
+    if (activeChatId) toggleFavorite.mutate(activeChatId);
+  };
+
+  const handleToggleArchive = () => {
+    if (activeChatId) toggleArchive.mutate(activeChatId);
+  };
+
+  const chats = conversationsData?.data || [];
+  const activeConversation = chats.find((c) => c.id === activeChatId);
+
+  const { conversationId } = useParams<{ conversationId?: string }>();
   useEffect(() => {
-    loadChats();
-  }, []);
-
-  const loadChats = async () => {
-    try {
-      setIsLoading(true);
-      const data = await chatService.getChats();
-      // Ensure messages array exists
-      const mappedChats = data.map((c: any) => ({
-        ...c,
-        messages: c.messages || [],
-        // Ensure other fields are present to avoid runtime errors if API differs
-        unreadCount: c.unreadCount || c.unread_count || 0,
-        fullName: c.fullName || c.full_name || "User",
-        lastMessage: c.lastMessage || c.last_message || "",
-        timestamp: c.timestamp || "",
-        avatar: c.avatar || "https://i.pravatar.cc/150",
-        isFavorite: c.isFavorite || c.is_favorite || false,
-        isUnread:
-          c.isUnread ||
-          c.is_unread ||
-          c.unreadCount ||
-          c.unread_count > 0 ||
-          false,
-        lastSeen: c.lastSeen || c.last_seen || "Offline",
-      }));
-
-      // --- TEMPORARY: Add Mock Chats for Testing ---
-      const temporaryMockChats: Chat[] = [
-        {
-          id: 9991,
-          fullName: "Dr. Mock Test",
-          avatar: "https://i.pravatar.cc/150?img=11",
-          lastMessage: "Hello, this is a test chat pending real API data.",
-          unreadCount: 2,
-          isFavorite: true,
-          isUnread: true,
-          timestamp: "10:30 AM",
-          lastSeen: "Online",
-          messages: [
-            {
-              id: 1,
-              sender: "other",
-              text: "Hello, this is a test chat pending real API data.",
-              time: "10:30 AM",
-              isRead: false,
-            },
-          ],
-        },
-        {
-          id: 9992,
-          fullName: "Dr. Virtual Support",
-          avatar: "https://i.pravatar.cc/150?img=5",
-          lastMessage: "How can I help you today?",
-          unreadCount: 0,
-          isFavorite: false,
-          isUnread: false,
-          timestamp: "Yesterday",
-          lastSeen: "Last seen yesterday",
-          messages: [
-            {
-              id: 1,
-              sender: "other",
-              text: "Welcome to support.",
-              time: "9:00 AM",
-              isRead: true,
-            },
-            {
-              id: 2,
-              sender: "other",
-              text: "How can I help you today?",
-              time: "9:05 AM",
-              isRead: true,
-            },
-          ],
-        },
-      ];
-      setChats([...temporaryMockChats, ...mappedChats]);
-      // ---------------------------------------------
-    } catch (error) {
-      console.error("Failed to load chats:", error);
-    } finally {
-      setIsLoading(false);
+    if (conversationId) {
+      const id = Number(conversationId);
+      if (!Number.isNaN(id)) {
+        setActiveChatId(id);
+        markAsRead.mutate(id);
+      }
     }
-  };
+  }, [conversationId]);
 
-  const handleSelectChat = async (id: number) => {
+  const handleSelectChat = (id: number) => {
     setActiveChatId(id);
-
-    // If it's a mock chat (ID > 9000), don't fetch from API
-    if (id > 9000) {
-      return;
-    }
-
-    // Optimistic or just fetch
-    try {
-      const response = await chatService.getMessages(id);
-      const messages = Array.isArray(response) ? response : response.data || [];
-
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
-          if (chat.id === id) {
-            return {
-              ...chat,
-              messages: messages,
-              unreadCount: 0, // Mark as read locally
-              isUnread: false,
-            };
-          }
-          return chat;
-        })
-      );
-
-      // Also mark as read on server
-      chatService.markMessagesAsRead(id);
-    } catch (error) {
-      console.error("Failed to load messages:", error);
-    }
+    markAsRead.mutate(id);
   };
-
-  const activeChat = chats.find((c) => c.id === activeChatId);
 
   const handleSendMessage = async (text: string) => {
-    if (!activeChatId) return;
+    if (!activeChatId || !text.trim()) return;
 
-    // Optimistic update
-    const tempId = Date.now();
-    const newMessage = {
-      id: tempId,
-      sender: "me" as const,
-      text,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isRead: true,
-    };
-
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id === activeChatId) {
-          return {
-            ...chat,
-            messages: [...chat.messages, newMessage],
-            lastMessage: text,
-            timestamp: "Just now",
-          };
-        }
-        return chat;
-      })
-    );
-
-    // If it's a mock chat, stop here (don't send to API)
-    if (activeChatId > 9000) {
-      return;
-    }
-
-    try {
-      // Send to API
-      // Adjust payload based on what API expects. Assuming { message: text, chat_id: id } or similar
-      const sentMessage = await chatService.sendMessage({
-        chat_id: activeChatId, // or user_id depending on API
-        user_id: activeChatId, // This might differ if chat_id != user_id
-        message: text,
-      });
-
-      // Update with real ID and data from server
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
-          if (chat.id === activeChatId) {
-            const updatedMessages = chat.messages.map((m) =>
-              m.id === tempId ? { ...m, ...sentMessage } : m
-            );
-            return { ...chat, messages: updatedMessages };
-          }
-          return chat;
-        })
-      );
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      // Revert or show error
-    }
+    sendMessage.mutate({ conversationId: activeChatId, body: text });
   };
 
-  const handleDeleteMessage = async (messageId: number) => {
+  const handleSendAttachment = async (file: File) => {
     if (!activeChatId) return;
-
-    // Optimistic update
-    const previousChats = [...chats];
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id === activeChatId) {
-          const updatedMessages = chat.messages.filter(
-            (m) => m.id !== messageId
-          );
-          const lastMsg =
-            updatedMessages.length > 0
-              ? updatedMessages[updatedMessages.length - 1].text
-              : "No messages";
-          return {
-            ...chat,
-            messages: updatedMessages,
-            lastMessage: lastMsg,
-          };
-        }
-        return chat;
-      })
-    );
-
-    // If it's a mock chat, stop here
-    if (activeChatId > 9000) return;
-
-    try {
-      await chatService.deleteMessage(activeChatId, messageId);
-    } catch (error) {
-      console.error("Failed to delete message:", error);
-      setChats(previousChats); // Revert
-    }
+    sendMessage.mutate({ conversationId: activeChatId, body: file.name, attachment: file });
   };
-
-  // --- Bulk Deletion Logic ---
 
   const toggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
-    setSelectedChatIds([]); // clear selection on toggle
+    setSelectedChatIds([]);
   };
 
   const toggleChatSelection = (chatId: number) => {
-    setSelectedChatIds((prev) =>
-      prev.includes(chatId)
-        ? prev.filter((id) => id !== chatId)
-        : [...prev, chatId]
-    );
+    setSelectedChatIds((prev) => (prev.includes(chatId) ? prev.filter((id) => id !== chatId) : [...prev, chatId]));
   };
 
   const deleteSelectedChats = async () => {
-    // Optimistic
-    const previousChats = [...chats];
-    setChats((prev) => prev.filter((c) => !selectedChatIds.includes(c.id)));
-    if (activeChatId && selectedChatIds.includes(activeChatId)) {
-      setActiveChatId(null);
-    }
-    setIsSelectionMode(false);
-
-    try {
-      await Promise.all(
-        selectedChatIds.map((id) => chatService.deleteChat(id))
-      );
-      setSelectedChatIds([]);
-    } catch (error) {
-      console.error("Failed to delete chats:", error);
-      setChats(previousChats);
-      // Optional: show toast
-    }
+    console.log("Delete chats:", selectedChatIds);
   };
+
+  const messages = [...(messagesData?.data || [])].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+  const activeChatAdapter = activeConversation
+    ? {
+        id: activeConversation.id,
+        fullName: activeConversation.other_user.name,
+        avatar: activeConversation.other_user.avatar || `https://ui-avatars.com/api/?name=${activeConversation.other_user.name}`,
+        messages: messages.map((msg) => ({
+          id: msg.id,
+          sender: msg.is_mine ? ("me" as const) : ("other" as const),
+          text: msg.body,
+          time: new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          isRead: true,
+          image: msg.type === "image" ? msg.body : null,
+          type: msg.type,
+        })),
+        lastSeen: "Online",
+        isUnread: activeConversation.unread_count > 0,
+        isFavorite: activeConversation.is_favorite,
+        isArchived: activeConversation.is_archived,
+        unreadCount: activeConversation.unread_count,
+      }
+    : null;
+
+  if (isLoadingChats) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (chatsError) {
+    return (
+      <div className="flex items-center justify-center h-screen text-red-500">Error loading chats</div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <main className="flex-1 max-w-[1440px] mx-auto w-full p-4 sm:p-6 lg:p-8 h-[calc(100vh-80px)]">
+      <main className="flex-grow flex flex-col max-w-[1440px] mx-auto w-full p-4 sm:p-6 lg:p-8 h-[calc(100vh-64px)] overflow-hidden">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex h-full overflow-hidden">
-          {/* Sidebar */}
-          <div
-            className={`${
-              activeChatId ? "hidden md:flex" : "flex"
-            } w-full md:w-auto h-full`}
-          >
+          <div className={`${activeChatId ? "hidden md:flex" : "flex"} w-full md:w-auto h-full`}>
             <ChatSidebar
-              chats={chats}
+              conversations={chats}
               activeChatId={activeChatId}
               onSelectChat={handleSelectChat}
               filterMode={filterMode}
               setFilterMode={setFilterMode}
-              // Selection Props
               isSelectionMode={isSelectionMode}
               selectedChatIds={selectedChatIds}
               onToggleSelectionMode={toggleSelectionMode}
               onToggleChatSelection={toggleChatSelection}
               onDeleteSelected={deleteSelectedChats}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
             />
           </div>
 
-          {/* Chat Window or Empty State */}
-          <div
-            className={`${
-              !activeChatId ? "hidden md:flex" : "flex"
-            } flex-1 h-full`}
-          >
-            {activeChat ? (
+          <div className={`${!activeChatId ? "hidden md:flex" : "flex"} flex-1 h-full relative`}>
+            {isLoadingMessages && activeChatId ? (
+              <div className="flex items-center justify-center w-full">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              </div>
+            ) : activeChatAdapter ? (
               <ChatWindow
-                chat={activeChat}
+                chat={activeChatAdapter as any}
                 onSendMessage={handleSendMessage}
-                onDeleteMessage={handleDeleteMessage}
+                onSendAttachment={handleSendAttachment}
                 onBack={() => setActiveChatId(null)}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleArchive={handleToggleArchive}
+                isFavorite={activeChatAdapter.isFavorite}
+                isArchived={activeConversation?.is_archived}
               />
             ) : (
               <ChatEmptyState />

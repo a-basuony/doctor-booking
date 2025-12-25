@@ -16,6 +16,9 @@ type OTPFormData = z.infer<typeof otpSchema>;
 const OTPVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isPasswordReset = location.state?.isPasswordReset || false;
+  const phone = location.state?.phone;
+
   const { mutate: verifyOTP, isPending: isSending } = useVerifyOTP();
   const { mutate: resendOTP, isPending: isResending } = useResendOTP();
 
@@ -42,10 +45,10 @@ const OTPVerification = () => {
   }, [countdown]);
 
   useEffect(() => {
-    if (!location.state?.userId) {
+    if (!location.state?.phone) {
       navigate(ROUTES.SIGN_UP);
     }
-  }, [location.state?.userId, navigate]);
+  }, [location.state?.phone, navigate]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -83,19 +86,28 @@ const OTPVerification = () => {
 
   const onSubmit = async (data: OTPFormData) => {
     console.log("OTP data:", data);
-    //todo: your OTP verification logic
     const formattedData: VerifyOTPData = {
-      user_id: location.state?.userId,
+      phone: phone,
       otp: data.otp,
     };
-    verifyOTP(formattedData);
+    verifyOTP(formattedData, {
+      onSuccess: () => {
+        if (isPasswordReset) {
+          // Navigate to reset password page with phone and OTP
+          navigate(ROUTES.RESET_PASSWORD, {
+            state: { phone, otp: data.otp },
+          });
+        }
+        // For regular signup, the hook handles navigation to sign in
+      },
+    });
   };
 
   const handleResend = () => {
-    if (!canResend) return;
+    if (!canResend || !phone) return;
 
     resendOTP(
-      { phone: location.state.phone, user_id: location.state.userId },
+      { phone },
       {
         onSuccess: () => {
           // Reset OTP inputs
@@ -120,10 +132,14 @@ const OTPVerification = () => {
           gutterBottom
           sx={{ fontWeight: 600, color: "secondary.main" }}
         >
-          Code Verification
+          {isPasswordReset
+            ? "Password Reset Verification"
+            : "Code Verification"}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Code has been send to your phone number
+          {isPasswordReset
+            ? "Enter the verification code sent to your phone"
+            : "Code has been send to your phone number"}
         </Typography>
         <Typography variant="body2" color="primary.main" sx={{ mb: 4 }}>
           Check your phone number
@@ -217,19 +233,6 @@ const OTPVerification = () => {
                 </Typography>
               )}
             </Typography>
-          </Box>
-
-          <Box sx={{ textAlign: "center", mt: 2 }}>
-            <Link
-              href={ROUTES.SIGN_IN}
-              sx={{
-                color: "text.secondary",
-                textDecoration: "none",
-                fontSize: "14px",
-              }}
-            >
-              Back to Sign In
-            </Link>
           </Box>
         </Box>
       </Box>

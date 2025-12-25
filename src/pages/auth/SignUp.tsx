@@ -15,6 +15,7 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
   const { mutate: signUp, isPending } = useSignUp();
+  // const isPending = false; // Mock loading state
   const {
     control,
     register,

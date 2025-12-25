@@ -25,11 +25,6 @@ export interface IDoctor {
   };
   reviews: IReviews[]
 }
-export interface Appointment {
-  doctor: IDoctor;
-  date: string;
-  time: string;
-}
 
 
 
@@ -105,4 +100,22 @@ export interface ProcessPaymentResponse {
   message: string;
   payment_id?: string;
   booking?: any;
+}
+
+//////////////////////////////////--INotification--///////////////////////////////////////////////
+
+export interface INotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'upcoming' | 'completed' | 'cancelled' | 'info';
+  isRead: boolean;
+  createdAt: string;
+  appointmentId?: string;
+}
+
+export interface INotificationsResponse {
+  status: boolean;
+  message: string;
+  data: INotification[];
 }

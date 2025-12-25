@@ -156,8 +156,4 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
       </FadeIn>
     </div>
   );
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> 82de8c58ebae353eefb3af5667b1184b96aff4b3

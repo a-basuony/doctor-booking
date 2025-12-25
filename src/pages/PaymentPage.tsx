@@ -32,8 +32,7 @@ export const PaymentPage = () => {
 
   const { doctor, loading: doctorLoading } = useDoctorDetails(doctorId);
   const { paymentMethods, addPaymentMethod, isAdding } = usePaymentMethods();
-  const { createPaymentIntent, processPayment, isCreating, isProcessing } =
-    usePayment();
+  const { processPayment, isProcessing } = usePayment();
 
   const [paymentType, setPaymentType] = useState<"credit" | "paypal" | "apple">(
     "credit"
@@ -65,7 +64,7 @@ export const PaymentPage = () => {
 
   const handlePayment = async () => {
     if (!doctor) {
-      toast.error("IDoctor details are missing. Cannot proceed.");
+      toast.error("Doctor details are missing. Cannot proceed.");
       return;
     }
 
@@ -75,15 +74,9 @@ export const PaymentPage = () => {
     }
 
     const paymentPromise = (async () => {
-      const paymentIntent = await createPaymentIntent({
-        amount: doctor.price,
-        appointmentId: appointment.id,
-      });
-
       await processPayment({
-        paymentIntentId: paymentIntent.id,
-        paymentMethodId: selectedCardId || "pm_paypal",
-        appointmentId: appointment.id,
+        bookingId: appointment.id,
+        paymentMethodId: selectedCardId || undefined,
       });
 
       setShowSuccessModal(true);
@@ -112,7 +105,7 @@ export const PaymentPage = () => {
   }
 
   const isButtonDisabled =
-    isProcessing || isCreating || (paymentType === "credit" && !selectedCardId);
+    isProcessing || (paymentType === "credit" && !selectedCardId);
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-6">
@@ -234,9 +227,7 @@ export const PaymentPage = () => {
               disabled={isButtonDisabled}
               className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white py-4 rounded-xl font-semibold text-lg"
             >
-              {isCreating
-                ? "Preparing..."
-                : isProcessing
+              {isProcessing
                 ? "Processing..."
                 : "Pay"}
             </button>

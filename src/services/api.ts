@@ -1,43 +1,91 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://round8-cure-php-team-two.huma-volve.com/api/",
+  baseURL: "https://round8-backend-team-one.huma-volve.com/",
   headers: {
     "Content-Type": "application/json",
+    "Accept": "application/json",
   },
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    // First check for user auth token from localStorage
+    // Get auth token from localStorage
     const authToken = localStorage.getItem("authToken");
+    
     if (authToken) {
       config.headers.Authorization = `Bearer ${authToken}`;
+      console.log('🔐 Request with auth token:', config.url);
     } else {
-      // Fallback to public API key if no user token
+      // If no auth token, try public API key
       const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY;
       if (publicApiKey) {
         config.headers.Authorization = `Bearer ${publicApiKey}`;
+        console.log('🔑 Request with public key:', config.url);
+      } else {
+        console.warn('⚠️ No auth token or public key available for:', config.url);
       }
     }
+    
     return config;
   },
   (error) => {
+    console.error('❌ Request error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor to handle errors
+// Response interceptor for better error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ Response success:', response.config.url, response.status);
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid - clear auth data
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-      window.location.href = "/sign-in";
+    const status = error.response?.status;
+    const url = error.config?.url;
+    
+    console.error(`❌ Response error [${status}]:`, url, error.response?.data);
+    
+    // Handle 401 Unauthorized
+    if (status === 401) {
+      const errorMessage = error.response?.data?.message || 'Unauthorized - Please login';
+      console.error('🔒 Authentication required:', errorMessage);
+      
+      // Only redirect to login for certain endpoints
+      if (url && !url.includes('/auth/')) {
+        console.warn('💡 Tip: You need to login first to use this feature');
+        // Optionally show a toast or alert here
+      }
     }
+    
     return Promise.reject(error);
   }
-)
+);
+
+// Payment API endpoints
+export const paymentAPI = {
+  // Process payment
+  processPayment: (data: {
+    booking_id: string;
+    gateway: 'stripe';
+    payment_method_id?: string;
+  }) => api.post('/api/payments/process', data),
+
+  // Saved cards endpoints
+  listCards: () => api.get('/api/saved-cards'),
+  
+  saveCard: (data: {
+    provider_token: string;
+    brand: string;
+    last_four: string;
+    exp_month: number;
+    exp_year: number;
+    is_default?: boolean;
+  }) => api.post('/api/saved-cards', data),
+  
+  deleteCard: (id: string) => api.delete(`/api/saved-cards/${id}`),
+  
+  setDefaultCard: (id: string) => api.put(`/api/saved-cards/${id}/default`),
+};

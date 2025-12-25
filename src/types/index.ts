@@ -71,3 +71,38 @@ export interface CardFormData {
   expiry: string;
   cvc: string;
 }
+
+// Stripe-related types
+export interface SavedCard {
+  id: string;
+  provider_token: string;
+  brand: string;
+  last_four: string;
+  exp_month: number;
+  exp_year: number;
+  is_default: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SaveCardRequest {
+  provider_token: string;
+  brand: string;
+  last_four: string;
+  exp_month: number;
+  exp_year: number;
+  is_default?: boolean;
+}
+
+export interface ProcessPaymentRequest {
+  booking_id: string;
+  gateway: 'stripe';
+  payment_method_id?: string;
+}
+
+export interface ProcessPaymentResponse {
+  success: boolean;
+  message: string;
+  payment_id?: string;
+  booking?: any;
+}

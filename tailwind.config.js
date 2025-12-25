@@ -1,8 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   corePlugins: {
-    // Disable Tailwind's preflight to avoid conflicts with MUI
     preflight: false,
   },
   theme: {

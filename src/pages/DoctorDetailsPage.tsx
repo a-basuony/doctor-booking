@@ -6,6 +6,7 @@ import {
   Avatar,
   IconButton,
   Rating,
+  CircularProgress,
 } from "@mui/material";
 import {
   FaArrowLeft,
@@ -58,15 +59,41 @@ interface DoctorDetails {
   };
 }
 
+// Interface for API review response based on your example
+interface ApiReviewResponse {
+  success: boolean;
+  doctor: {
+    id: number;
+    name: string;
+    average_rating: number;
+  };
+  data: Array<{
+    id: number;
+    rating: number;
+    comment: string;
+    doctor_response: string | null;
+    created_at: string; // "1 day ago"
+    responded_at: string | null;
+    patient: {
+      id: number;
+      name: string;
+      photo: string | null;
+    };
+  }>;
+}
+
 const DoctorDetailsPage = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState<DoctorDetails | null>(null);
   const [reviews, setReviews] = useState<IReviews[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [userBookingId, setUserBookingId] = useState<string | null>(null);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [totalReviews, setTotalReviews] = useState<number>(0);
 
   // Function to get latest booking ID for this doctor
   const getLatestBookingId = () => {
@@ -99,81 +126,173 @@ const DoctorDetailsPage = () => {
     return localStorage.getItem(`review_submitted_${bookingId}`) === "true";
   };
 
+  // Get avatar URL
+  const getAvatarUrl = (patient: { id: number; photo: string | null }) => {
+    if (patient.photo) {
+      return `https://round8-backend-team-one.huma-volve.com/storage/${patient.photo}`;
+    }
+    // Fallback to random avatar based on patient ID
+    return `https://picsum.photos/100/100?random=${patient.id}`;
+  };
+
   // Fetch doctor details
-  useEffect(() => {
-    const fetchDoctorDetails = async () => {
-      if (!doctorId) return;
+  const fetchDoctorDetails = async () => {
+    if (!doctorId) return;
 
-      setLoading(true);
-      try {
-        // Fetch doctor data
-        const response = await api.get<{
-          success: boolean;
-          message: string;
-          data: ApiDoctor;
-        }>(`/doctors/${doctorId}`);
+    try {
+      const response = await api.get<{
+        success: boolean;
+        message: string;
+        data: ApiDoctor;
+      }>(`/doctors/${doctorId}`);
 
-        if (response.data.success && response.data.data) {
-          const apiDoctor = response.data.data;
+      if (response.data.success && response.data.data) {
+        const apiDoctor = response.data.data;
 
-          // Transform API data to match your component's expected format
-          const doctorDetails: DoctorDetails = {
-            id: apiDoctor.id,
-            name: apiDoctor.name,
-            specialty: apiDoctor.specialty?.name || "General Practitioner",
-            image: apiDoctor.profile_photo
-              ? `https://round8-backend-team-one.huma-volve.com/storage/${apiDoctor.profile_photo}`
-              : `https://picsum.photos/150/150?random=${apiDoctor.id}`,
-            rating: 4.5, // You might want to calculate this from reviews
-            price: apiDoctor.session_price,
-            about:
-              apiDoctor.bio || "Experienced doctor with years of practice.",
-            location: {
-              address: apiDoctor.clinic_address || "Cairo, Egypt",
-            },
-          };
+        // Transform API data to match your component's expected format
+        const doctorDetails: DoctorDetails = {
+          id: apiDoctor.id,
+          name: apiDoctor.name,
+          specialty: apiDoctor.specialty?.name || "General Practitioner",
+          image: apiDoctor.profile_photo
+            ? `https://round8-backend-team-one.huma-volve.com/storage/${apiDoctor.profile_photo}`
+            : `https://picsum.photos/150/150?random=${apiDoctor.id}`,
+          rating: averageRating || 4.5, // Will be updated after fetching reviews
+          price: apiDoctor.session_price,
+          about: apiDoctor.bio || "Experienced doctor with years of practice.",
+          location: {
+            address: apiDoctor.clinic_address || "Cairo, Egypt",
+          },
+        };
 
-          setDoctor(doctorDetails);
+        setDoctor(doctorDetails);
 
-          // Fetch reviews for this doctor
-          // Assuming you have an endpoint for reviews
-          // const reviewsResponse = await api.get(`/doctors/${doctorId}/reviews`);
-          // setReviews(reviewsResponse.data.data || []);
-
-          // For now, use mock reviews
-          setReviews([
-            {
-              id: "1",
-              name: "John Doe",
-              avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-              rating: 4.5,
-              time: "2 days ago",
-              comment: "Great doctor, very professional and caring.",
-            },
-            {
-              id: "2",
-              name: "Jane Smith",
-              avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-              rating: 5,
-              time: "1 week ago",
-              comment: "Excellent service and very knowledgeable.",
-            },
-          ]);
-
-          // Get latest booking ID for this doctor
-          const bookingId = getLatestBookingId();
-          setUserBookingId(bookingId);
-        }
-      } catch (error) {
-        console.error("Error fetching doctor details:", error);
-        toast.error("Failed to load doctor details");
-      } finally {
-        setLoading(false);
+        // Get latest booking ID for this doctor
+        const bookingId = getLatestBookingId();
+        setUserBookingId(bookingId);
       }
+    } catch (error) {
+      console.error("Error fetching doctor details:", error);
+      toast.error("Failed to load doctor details");
+    }
+  };
+
+  // Fetch reviews for this doctor
+  const fetchReviews = async () => {
+    if (!doctorId) return;
+
+    setLoadingReviews(true);
+    try {
+      const response = await api.get<ApiReviewResponse>(
+        `/reviews/doctor/${doctorId}`
+      );
+
+      if (response.data.success) {
+        const { doctor: doctorInfo, data: apiReviews } = response.data;
+
+        // Update average rating from API
+        if (doctorInfo.average_rating) {
+          setAverageRating(doctorInfo.average_rating);
+        }
+
+        // Transform API reviews to match IReviews interface
+        const processedReviews: IReviews[] = apiReviews.map((review) => ({
+          id: review.id.toString(),
+          name: review.patient.name || "Anonymous",
+          avatar: getAvatarUrl(review.patient),
+          time: review.created_at, // Already formatted as "1 day ago"
+          rating: review.rating,
+          comment: review.comment,
+          doctorResponse: review.doctor_response || undefined,
+        }));
+
+        setReviews(processedReviews);
+        setTotalReviews(processedReviews.length);
+
+        // Update doctor rating with API average if available
+        if (doctorInfo.average_rating > 0 && doctor) {
+          setDoctor({
+            ...doctor,
+            rating: doctorInfo.average_rating,
+          });
+        }
+      } else {
+        toast.error("Failed to load reviews");
+        // Fallback to mock reviews
+        setReviews([
+          {
+            id: "1",
+            name: "John Doe",
+            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+            rating: 4.5,
+            time: "2 days ago",
+            comment: "Great doctor, very professional and caring.",
+          },
+          {
+            id: "2",
+            name: "Jane Smith",
+            avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+            rating: 5,
+            time: "1 week ago",
+            comment: "Excellent service and very knowledgeable.",
+          },
+        ]);
+      }
+    } catch (error: any) {
+      console.error("Error fetching reviews:", error);
+
+      // Check if it's a 404 error (no reviews yet)
+      if (error.response?.status === 404) {
+        // No reviews yet - show empty state
+        setReviews([]);
+        setTotalReviews(0);
+      } else {
+        toast.error("Unable to load reviews. Please try again later.");
+        // Fallback to mock reviews
+        setReviews([
+          {
+            id: "1",
+            name: "John Doe",
+            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+            rating: 4.5,
+            time: "2 days ago",
+            comment: "Great doctor, very professional and caring.",
+          },
+          {
+            id: "2",
+            name: "Jane Smith",
+            avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+            rating: 5,
+            time: "1 week ago",
+            comment: "Excellent service and very knowledgeable.",
+          },
+        ]);
+      }
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await fetchDoctorDetails();
+      await fetchReviews();
+      setLoading(false);
     };
 
-    fetchDoctorDetails();
+    fetchData();
   }, [doctorId]);
+
+  // Refresh reviews after submitting a new one
+  const handleReviewSubmitted = async () => {
+    toast.success("Review submitted successfully!");
+    // Refresh reviews to show the new one
+    await fetchReviews();
+    // Refresh doctor details to update average rating
+    await fetchDoctorDetails();
+  };
 
   const handleFavorite = () => {
     setIsFavorite(!isFavorite);
@@ -208,33 +327,6 @@ const DoctorDetailsPage = () => {
   const handleBookAppointment = () => {
     // Navigate to booking page with doctor ID
     navigate(`/SearchDoctors/${doctorId}`);
-  };
-
-  const handleReviewSubmitted = (newReview: any) => {
-    // Add the review to the state
-    const reviewToAdd: IReviews = {
-      id: Date.now().toString(),
-      name: "You", // Or get user's actual name
-      avatar: "/user.jpg", // Or get user's actual avatar
-      rating: newReview.rating,
-      time: "Just now",
-      comment: newReview.comment,
-    };
-
-    setReviews([reviewToAdd, ...reviews]);
-
-    // Update the average rating (simple calculation)
-    if (doctor) {
-      const totalReviews = reviews.length + 1;
-      const totalRating =
-        reviews.reduce((sum, rev) => sum + rev.rating, 0) + newReview.rating;
-      const newAverage = totalRating / totalReviews;
-
-      setDoctor({
-        ...doctor,
-        rating: parseFloat(newAverage.toFixed(1)),
-      });
-    }
   };
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
@@ -317,7 +409,9 @@ const DoctorDetailsPage = () => {
               <Box className="flex flex-col items-center text-center space-y-1">
                 <FaStar className="text-secondary-500 text-2xl" />
                 <Typography className="font-bold text-secondary-700">
-                  {doctor.rating}
+                  {averageRating > 0
+                    ? averageRating.toFixed(1)
+                    : doctor.rating.toFixed(1)}
                 </Typography>
                 <Typography className="text-sm text-neutral-500">
                   rating
@@ -326,7 +420,7 @@ const DoctorDetailsPage = () => {
               <Box className="flex flex-col items-center text-center space-y-1">
                 <FaCommentDots className="text-secondary-500 text-2xl" />
                 <Typography className="font-bold text-secondary-700">
-                  {reviews.length}
+                  {totalReviews > 0 ? totalReviews : reviews.length}
                 </Typography>
                 <Typography className="text-sm text-neutral-500">
                   reviews
@@ -354,16 +448,19 @@ const DoctorDetailsPage = () => {
               {/* Desktop layout */}
               <Box className="hidden md:flex items-center gap-3">
                 <Rating
-                  value={doctor.rating}
+                  value={averageRating > 0 ? averageRating : doctor.rating}
                   precision={0.5}
                   readOnly
                   size="medium"
                 />
                 <Typography className="font-bold text-lg text-secondary-700 whitespace-nowrap">
-                  {doctor.rating}/5
+                  {(averageRating > 0 ? averageRating : doctor.rating).toFixed(
+                    1
+                  )}
+                  /5
                 </Typography>
                 <Typography className="text-secondary-600 whitespace-nowrap">
-                  {reviews.length} Reviews
+                  {totalReviews > 0 ? totalReviews : reviews.length} Reviews
                 </Typography>
                 <Button
                   startIcon={<FaPencilAlt />}
@@ -381,17 +478,21 @@ const DoctorDetailsPage = () => {
                 <Box className="flex items-center justify-between">
                   <Box className="flex items-center gap-2">
                     <Rating
-                      value={doctor.rating}
+                      value={averageRating > 0 ? averageRating : doctor.rating}
                       precision={0.5}
                       readOnly
                       size="small"
                     />
                     <Typography className="font-bold text-base text-secondary-700">
-                      {doctor.rating}/5
+                      {(averageRating > 0
+                        ? averageRating
+                        : doctor.rating
+                      ).toFixed(1)}
+                      /5
                     </Typography>
                   </Box>
                   <Typography className="text-secondary-600 text-sm">
-                    {reviews.length} Reviews
+                    {totalReviews > 0 ? totalReviews : reviews.length} Reviews
                   </Typography>
                 </Box>
 
@@ -409,41 +510,76 @@ const DoctorDetailsPage = () => {
 
             {/* Reviews List */}
             <Box className="space-y-3 md:space-y-4 max-h-80 md:max-h-96 overflow-y-auto pr-1 md:pr-2">
-              {reviews.map((rev) => (
-                <Box
-                  key={rev.id}
-                  className="p-3 md:p-4 bg-white rounded-lg shadow-sm space-y-2"
-                >
-                  <Box className="flex justify-between items-start gap-2">
-                    <Box className="flex items-start gap-3 min-w-0 flex-1">
-                      <Avatar
-                        src={rev.avatar}
-                        sx={{
-                          width: { xs: 36, sm: 40, md: 44 },
-                          height: { xs: 36, sm: 40, md: 44 },
-                        }}
-                      />
-                      <Box className="min-w-0 flex-1">
-                        <Typography className="font-bold text-secondary-700 text-sm md:text-base truncate">
-                          {rev.name}
-                        </Typography>
-                        <Typography className="text-xs text-neutral-500">
-                          {rev.time}
+              {loadingReviews ? (
+                <Box className="flex justify-center py-8">
+                  <CircularProgress size={32} />
+                </Box>
+              ) : reviews.length === 0 ? (
+                <Box className="text-center py-8">
+                  <Typography className="text-gray-500 mb-2">
+                    No reviews yet
+                  </Typography>
+                  <Typography className="text-gray-400 text-sm">
+                    Be the first to review this doctor!
+                  </Typography>
+                </Box>
+              ) : (
+                reviews.map((rev) => (
+                  <Box
+                    key={rev.id}
+                    className="p-3 md:p-4 bg-white rounded-lg shadow-sm space-y-2"
+                  >
+                    <Box className="flex justify-between items-start gap-2">
+                      <Box className="flex items-start gap-3 min-w-0 flex-1">
+                        <Avatar
+                          src={rev.avatar}
+                          sx={{
+                            width: { xs: 36, sm: 40, md: 44 },
+                            height: { xs: 36, sm: 40, md: 44 },
+                          }}
+                        />
+                        <Box className="min-w-0 flex-1">
+                          <Typography className="font-bold text-secondary-700 text-sm md:text-base truncate">
+                            {rev.name}
+                          </Typography>
+                          <Typography className="text-xs text-neutral-500">
+                            {rev.time}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box className="flex items-center gap-1 p-1 md:p-0.5 rounded-md bg-warning-200/50 flex-shrink-0">
+                        <FaStar className="text-warning-500 text-sm md:text-base" />
+                        <Typography className="font-semibold text-warning-700 text-sm">
+                          {rev.rating.toFixed(1)}
                         </Typography>
                       </Box>
                     </Box>
-                    <Box className="flex items-center gap-1 p-1 md:p-0.5 rounded-md bg-warning-200/50 flex-shrink-0">
-                      <FaStar className="text-warning-500 text-sm md:text-base" />
-                      <Typography className="font-semibold text-warning-700 text-sm">
-                        {rev.rating}
-                      </Typography>
-                    </Box>
+                    <Typography className="text-neutral-700 text-sm md:text-base line-clamp-2 md:line-clamp-3">
+                      {rev.comment}
+                    </Typography>
+
+                    {/* Doctor Response */}
+                    {rev.doctorResponse && (
+                      <Box className="mt-3 pt-3 border-t border-gray-100">
+                        <Box className="flex items-start gap-2">
+                          <FaStar
+                            className="text-blue-500 mt-1 flex-shrink-0"
+                            size={14}
+                          />
+                          <Box className="min-w-0">
+                            <Typography className="text-xs font-semibold text-blue-800 mb-1">
+                              Doctor's Response
+                            </Typography>
+                            <Typography className="text-neutral-600 text-xs line-clamp-2">
+                              {rev.doctorResponse}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
-                  <Typography className="text-neutral-700 text-sm md:text-base line-clamp-2 md:line-clamp-3">
-                    {rev.comment}
-                  </Typography>
-                </Box>
-              ))}
+                ))
+              )}
             </Box>
 
             {/* Booking Section */}

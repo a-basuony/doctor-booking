@@ -104,6 +104,20 @@ export interface ProcessPaymentResponse {
 
 //////////////////////////////////--INotification--///////////////////////////////////////////////
 
+// API response notification (raw from backend)
+export interface INotificationRaw {
+  id: string;
+  data: string; // JSON stringified data containing type and message
+  read_at: string | null;
+}
+
+// Parsed notification data from the stringified JSON
+export interface INotificationData {
+  type: string;
+  message: string;
+}
+
+// Client-side notification (transformed for UI)
 export interface INotification {
   id: string;
   title: string;
@@ -115,7 +129,6 @@ export interface INotification {
 }
 
 export interface INotificationsResponse {
-  status: boolean;
-  message: string;
-  data: INotification[];
+  success: boolean;
+  notifications: INotificationRaw[];
 }

@@ -1,128 +1,283 @@
-import { TextField, Button, Typography, Box } from '@mui/material';
+import { useState } from "react";
+import type { FormEvent } from "react";
 import {
-   FaEnvelope,
-   FaPhone,
-   FaMapMarkerAlt,
-} from 'react-icons/fa';
+  Mail,
+  Phone,
+  MapPin,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { api } from "../services/api";
+import toast from "react-hot-toast";
+
+// Types
+interface ContactFormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+interface ContactInfo {
+  icon: typeof Phone;
+  label: string;
+  value: string | React.ReactNode;
+}
+
+// Constants
+const CONTACT_INFO: ContactInfo[] = [
+  {
+    icon: Phone,
+    label: "Phone",
+    value: "080 707 555-321",
+  },
+  {
+    icon: Mail,
+    label: "Email",
+    value: "demo@example.com",
+  },
+  {
+    icon: MapPin,
+    label: "Address",
+    value: (
+      <>
+        526 Melrose Street, Water Mill, 11976
+        <br />
+        New York
+      </>
+    ),
+  },
+];
+
+const INITIAL_FORM_STATE: ContactFormData = {
+  name: "",
+  email: "",
+  message: "",
+};
 
 const ContactUsPage = () => {
-   return (
-      <div className="min-h-screen bg-white flex justify-center items-center py-16">
-         <div className="w-full max-w-6xl px-4 md:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-start">
-               <div className="flex flex-col space-y-8">
-                  <div className="space-y-4">
-                     <Typography variant="h3" component="h1"
-                        className="!text-[32px] !font-semibold !text-[#05162c] !tracking-tight">
-                        Contact Us
-                     </Typography>
+  const [formData, setFormData] = useState<ContactFormData>(INITIAL_FORM_STATE);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-                     <Typography variant="body1" className="!text-lg !text-neutral-700 !leading-relaxed">
-                        We are committed to processing the information in order to contact you
-                        and talk about your questions.
-                     </Typography>
-                  </div>
+  // Validation
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
-                  <div className="space-y-6 pt-4">
+  const validateForm = (): string | null => {
+    if (!formData.name.trim()) {
+      return "Name is required";
+    }
+    if (!formData.email.trim()) {
+      return "Email is required";
+    }
+    if (!validateEmail(formData.email)) {
+      return "Please enter a valid email address";
+    }
+    if (!formData.message.trim()) {
+      return "Message is required";
+    }
+    if (formData.message.trim().length < 10) {
+      return "Message must be at least 10 characters";
+    }
+    return null;
+  };
 
-                     <Box className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <FaPhone className="!text-primary-500 !text-xl" />
-                        <Typography variant="body1" className="!text-neutral-700 !text-lg !font-medium">
-                           080 707 555-321
-                        </Typography>
-                     </Box>
+  // Handlers
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // Clear errors when user starts typing
+    if (error) setError("");
+    if (success) setSuccess(false);
+  };
 
-                     <Box className="flex items-center space-x-3 rtl:space-x-reverse">
-                        <FaEnvelope className="!text-primary-500 !text-xl" />
-                        <Typography variant="body1" className="!text-neutral-700 !text-lg !font-medium">
-                           demo@example.com
-                        </Typography>
-                     </Box>
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
 
-                     <Box className="flex items-start space-x-3 rtl:space-x-reverse">
-                        <FaMapMarkerAlt className="!text-primary-500 !text-xl mt-1 flex-shrink-0" />
-                        <Typography variant="body1" className="!text-neutral-700 !text-lg !font-medium">
-                           526 Melrose Street, Water Mill, 11976
-                           <br />
-                           New York
-                        </Typography>
-                     </Box>
-                  </div>
-               </div>
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      toast.error(validationError);
+      return;
+    }
 
-               <Box component="form" className="space-y-6 w-full">
+    setLoading(true);
+    setError("");
+    setSuccess(false);
 
-                  <TextField
-                     fullWidth
-                     variant="outlined"
-                     label="Name"
-                     placeholder="Name"
-                     name="name"
-                     InputLabelProps={{ shrink: true }}
-                     className="!rounded-lg"
-                     sx={{
-                        '& .MuiOutlinedInput-root': {
-                           borderRadius: '8px',
-                           '& fieldset': { borderColor: '#D0D4D8' },
-                           '&:hover fieldset': { borderColor: '#A0A0A0' },
-                           '&.Mui-focused fieldset': { borderColor: '#145db8' },
-                        },
-                     }}
-                  />
+    try {
+      await api.post("/contact-us", formData);
 
-                  <TextField
-                     fullWidth
-                     variant="outlined"
-                     label="Email"
-                     placeholder="Email"
-                     name="email"
-                     InputLabelProps={{ shrink: true }}
-                     className="!rounded-lg"
-                     sx={{
-                        '& .MuiOutlinedInput-root': {
-                           borderRadius: '8px',
-                           '& fieldset': { borderColor: '#D0D4D8' },
-                           '&:hover fieldset': { borderColor: '#A0A0A0' },
-                           '&.Mui-focused fieldset': { borderColor: '#145db8' },
-                        },
-                     }}
-                  />
+      setSuccess(true);
+      setFormData(INITIAL_FORM_STATE);
+      toast.success("Message sent successfully! We'll get back to you soon.");
 
-                  <TextField
-                     fullWidth
-                     multiline
-                     rows={6}
-                     variant="outlined"
-                     label="Message"
-                     placeholder="Message"
-                     name="message"
-                     InputLabelProps={{ shrink: true }}
-                     className="!rounded-lg"
-                     sx={{
-                        '& .MuiOutlinedInput-root': {
-                           borderRadius: '8px',
-                           '& fieldset': { borderColor: '#D0D4D8' },
-                           '&:hover fieldset': { borderColor: '#A0A0A0' },
-                           '&.Mui-focused fieldset': { borderColor: '#145db8' },
-                        },
-                     }}
-                  />
+      // Auto-clear success message after 5 seconds
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                  <Button
-                     variant="contained"
-                     color="primary"
-                     type="submit"
-                     size="large"
-                     className="!bg-primary-500 !text-white !font-semibold !py-3 !mt-8 !rounded-lg !shadow-none"
-                     fullWidth
-                  >
-                     Submit
-                  </Button>
-               </Box>
+  return (
+    <div className="min-h-screen bg-white flex justify-center items-center py-16">
+      <div className="w-full max-w-6xl px-4 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-start">
+          {/* Left Column - Contact Info */}
+          <div className="flex flex-col space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-semibold text-gray-900 tracking-tight">
+                Contact Us
+              </h1>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                We are committed to processing the information in order to
+                contact you and talk about your questions.
+              </p>
             </div>
-         </div>
+
+            <div className="space-y-6 pt-4">
+              {CONTACT_INFO.map((contact, index) => {
+                const IconComponent = contact.icon;
+                return (
+                  <div key={index} className="flex items-start space-x-3">
+                    <IconComponent
+                      className="text-blue-600 text-xl flex-shrink-0 mt-0.5"
+                      size={24}
+                    />
+                    <span className="text-gray-700 text-lg font-medium">
+                      {contact.value}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column - Contact Form */}
+          <div className="space-y-6 w-full">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Name Input */}
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="Enter your name"
+                />
+              </div>
+
+              {/* Email Input */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              {/* Message Textarea */}
+              <div>
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  disabled={loading}
+                  rows={6}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="Enter your message (minimum 10 characters)"
+                />
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle
+                    className="text-red-600 flex-shrink-0"
+                    size={20}
+                  />
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <CheckCircle
+                    className="text-green-600 flex-shrink-0"
+                    size={20}
+                  />
+                  <p className="text-sm text-green-600">
+                    Message sent successfully! We'll get back to you soon.
+                  </p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <span>Send Message</span>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
-   );
+    </div>
+  );
 };
 
 export default ContactUsPage;

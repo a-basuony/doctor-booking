@@ -81,11 +81,11 @@ export const paymentAPI = {
     booking_id: string;
     gateway: 'stripe';
     payment_method_id?: string;
-  }) => api.post('/api/payments/process', data),
+  }) => api.post('/payments/process', data),
 
   // Saved cards endpoints
-  listCards: () => api.get('/api/saved-cards'),
-  
+  listCards: () => api.get('/saved-cards'),
+
   saveCard: (data: {
     provider_token: string;
     brand: string;
@@ -93,9 +93,9 @@ export const paymentAPI = {
     exp_month: number;
     exp_year: number;
     is_default?: boolean;
-  }) => api.post('/api/saved-cards', data),
-  
-  deleteCard: (id: string) => api.delete(`/api/saved-cards/${id}`),
-  
-  setDefaultCard: (id: string) => api.put(`/api/saved-cards/${id}/default`),
+  }) => api.post('/saved-cards', data),
+
+  deleteCard: (id: string) => api.delete(`/saved-cards/${id}`),
+
+  setDefaultCard: (id: string) => api.put(`/saved-cards/${id}/default`),
 };

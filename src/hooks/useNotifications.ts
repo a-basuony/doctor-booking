@@ -5,7 +5,7 @@ import {
    markNotificationAsRead,
    markAllNotificationsAsRead,
    } from '../services/notificationsService'
-import type { INotification, INotificationsResponse } from '../types';
+import type { INotification } from '../types';
 
 
 
@@ -25,7 +25,7 @@ export const useNotifications = () => {
 export const useUnreadNotifications = () => {
    const hasToken = !!localStorage.getItem("authToken");
 
-   return useQuery<INotificationsResponse, Error>({
+   return useQuery<INotification[], Error>({
       queryKey: ['notifications', 'unread'],
       queryFn: getUnreadNotifications,
       staleTime: 5 * 60 * 1000,

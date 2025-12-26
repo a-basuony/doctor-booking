@@ -128,6 +128,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/favorites"
           element={
@@ -137,13 +138,14 @@ function App() {
           }
         />
         <Route
-          path="/doctor-details"
+          path="/doctor-details/:doctorId"
           element={
             <ProtectedRoute>
               <DoctorDetailsPage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/map"
           element={

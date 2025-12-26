@@ -41,6 +41,19 @@ interface BookingRequest {
   notes?: string;
 }
 
+interface BookingData {
+  id: number | string;
+  [key: string]: unknown;
+}
+
+interface BookingResponse {
+  success: boolean;
+  message: string;
+  data?: BookingData;
+  id?: number | string;
+  [key: string]: unknown;
+}
+
 export default function BookAppointment() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [doctor, setDoctor] = useState<ApiDoctor | null>(null);
@@ -199,21 +212,30 @@ export default function BookAppointment() {
 
       console.log("API Response:", response.data);
 
-      if (response.data.success) {
+      // Check if the response indicates success (either through success flag or status code)
+      const isSuccess =
+        response.data.success !== false &&
+        (response.status === 200 || response.status === 201);
+
+      if (isSuccess && (response.data.data || (response.data as BookingResponse).id)) {
+        // Get booking data - handle different response structures
+        const bookingData = response.data.data || (response.data as BookingResponse);
+        const bookingId = bookingData?.id;
+
         // Store booking ID for review submission
-        if (response.data.data?.id) {
-          const bookingId = response.data.data.id.toString();
-          setUserBookingId(bookingId);
+        if (bookingId) {
+          const bookingIdStr = bookingId.toString();
+          setUserBookingId(bookingIdStr);
 
           // Save to localStorage for persistence
-          localStorage.setItem(`doctor_${doctorId}_booking_id`, bookingId);
+          localStorage.setItem(`doctor_${doctorId}_booking_id`, bookingIdStr);
 
           // Also store in sessionStorage for immediate use
-          sessionStorage.setItem(`current_booking_id`, bookingId);
+          sessionStorage.setItem(`current_booking_id`, bookingIdStr);
 
           // Store booking info for review
           localStorage.setItem(
-            `booking_${bookingId}_info`,
+            `booking_${bookingIdStr}_info`,
             JSON.stringify({
               doctorId,
               doctorName: doctor?.name,
@@ -229,7 +251,7 @@ export default function BookAppointment() {
         // Navigate to payment page with booking details
         navigate("/payment", {
           state: {
-            bookingId: response.data.data?.id,
+            bookingId: bookingData?.id,
             doctorId: doctorId,
             doctorName: doctor?.name,
             doctorImage: doctor?.profile_photo
@@ -420,35 +442,35 @@ export default function BookAppointment() {
       </header>
 
       {doctor && (
-      <div className="flex items-start flex-col px-3 gap-8 lg:flex-row">
-        {/* Left Column: Calendar & Reviews */}
-        <main className="w-full lg:w-2/3 flex-1 px-5">
-          <AppointmentBooking
-            doctorId={doctorId}
-            sessionPrice={doctor.session_price}
-            doctorName={doctor.name}
-            onBookAppointment={handleBooking}
-          />
-          <ReviewsSection
-            doctorId={doctorId}
-            onAddReview={() => {
-              // Check if user has a booking before allowing review
-              // if (!latestBookingId) {
-              //   // Show a message that they need to book first
-              //   alert(
-              //     "You need to book an appointment before you can leave a review."
-              //   );
-              //   return;
-              // }
-              setIsReviewModalOpen(true);
-            }}
-          />
-        </main>
-        {/* Right Column: Profile Sidebar */}
-        <aside className="w-full lg:w-1/3 relative px-5">
-          <DoctorProfile doctor={doctor} />
-        </aside>
-      </div>
+        <div className="flex items-start flex-col px-3 gap-8 lg:flex-row">
+          {/* Left Column: Calendar & Reviews */}
+          <main className="w-full lg:w-2/3 flex-1 px-5">
+            <AppointmentBooking
+              doctorId={doctorId}
+              sessionPrice={doctor.session_price}
+              doctorName={doctor.name}
+              onBookAppointment={handleBooking}
+            />
+            <ReviewsSection
+              doctorId={doctorId}
+              onAddReview={() => {
+                // Check if user has a booking before allowing review
+                // if (!latestBookingId) {
+                //   // Show a message that they need to book first
+                //   alert(
+                //     "You need to book an appointment before you can leave a review."
+                //   );
+                //   return;
+                // }
+                setIsReviewModalOpen(true);
+              }}
+            />
+          </main>
+          {/* Right Column: Profile Sidebar */}
+          <aside className="w-full lg:w-1/3 relative px-5">
+            <DoctorProfile doctor={doctor} />
+          </aside>
+        </div>
       )}
     </div>
   );

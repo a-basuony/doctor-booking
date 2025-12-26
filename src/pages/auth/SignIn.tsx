@@ -5,7 +5,6 @@ import { z } from "zod";
 import AuthLayout from "../../layouts/AuthLayout";
 import { ROUTES } from "../../constants/routes";
 import { signInSchema } from "../../utils/validation";
-import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import PasswordInput from "../../components/common/PasswordInput";
 import { useSignIn } from "../../hooks/useAuth";
@@ -26,6 +25,7 @@ const SignIn = () => {
   });
 
   const onSubmit = (data: SignInFormData) => {
+    console.log("subbmited data: ", data);
     signIn(data);
   };
 
@@ -50,13 +50,21 @@ const SignIn = () => {
             control={control}
             render={({ field: { onChange, value } }) => (
               <Box sx={{ mt: 2, mb: 1 }}>
-                <PhoneInput
-                  defaultCountry="EG"
+                {/* <PhoneInput
+                  // defaultCountry="EG"
                   value={value}
                   onChange={onChange}
                   className="w-full px-4 py-3 border border-gray-300 focus:border-none focus:outline-none rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition no-focus"
                   placeholder="Enter phone number"
+                /> */}
+                <input
+                  type="text"
+                  value={value}
+                  onChange={onChange}
+                  name="number"
+                  id="number"
                 />
+
                 {errors.phone && (
                   <Typography
                     variant="caption"

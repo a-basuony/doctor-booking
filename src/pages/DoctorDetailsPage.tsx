@@ -356,7 +356,13 @@ const DoctorDetailsPage = () => {
       <AddReviewModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSubmit={(review: { name: string; rating: number; time: string; comment: string; avatar: string }) => {
+        onSubmit={(review: {
+          name: string;
+          rating: number;
+          time: string;
+          comment: string;
+          avatar: string;
+        }) => {
           const newReview: IReviews = {
             id: Date.now().toString(),
             ...review,

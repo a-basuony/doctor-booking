@@ -70,7 +70,7 @@ const Booking = () => {
     }) || [];
 
   const handleReschedule = (id: number): void => {
-    navigate(`/book-appointment/${id}`);
+    navigate(`/SearchDoctors/${id}`);
   };
 
   const handleFeedback = (): void => {
@@ -184,7 +184,7 @@ const Booking = () => {
           </div>
         </div>
 
-       {appointments && appointments.length === 0 ? (
+        {appointments && appointments.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <Calendar className="w-16 h-16 mx-auto mb-4 opacity-30" />
             <p className="text-xl font-medium mb-2">No bookings found</p>
@@ -272,7 +272,7 @@ const Booking = () => {
                         {cancelBooking.isPending ? "Cancelling..." : "Cancel"}
                       </button>
                       <button
-                        onClick={() => handleReschedule(appointment.id)}
+                        onClick={() => handleReschedule(appointment.doctor.id)}
                         className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
                         Reschedule

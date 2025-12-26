@@ -1,16 +1,14 @@
 import z from "zod";
 
 // Password validation helper
-const passwordValidation = z
-  .string()
-  .min(8, "Must be at least 8 characters")
-  .refine((val) => /[a-z]/.test(val), "Must contain a lowercase letter")
-  .refine((val) => /[A-Z]/.test(val), "Must contain an uppercase letter")
-  .refine((val) => /\d/.test(val), "Must contain a number")
-  .refine(
-    (val) => /[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/]/.test(val),
-    "Must contain a special character"
-  );
+const passwordValidation = z.string().min(8, "Must be at least 8 characters");
+// .refine((val) => /[a-z]/.test(val), "Must contain a lowercase letter")
+// .refine((val) => /[A-Z]/.test(val), "Must contain an uppercase letter")
+// .refine((val) => /\d/.test(val), "Must contain a number")
+// .refine(
+//   (val) => /[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/]/.test(val),
+//   "Must contain a special character"
+// );
 
 // Auth pages
 export const signInSchema = z.object({

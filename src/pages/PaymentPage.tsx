@@ -1,36 +1,46 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDoctorDetails } from "../hooks/useDoctorDetails";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Elements } from "@stripe/react-stripe-js";
 import { usePaymentMethods } from "../hooks/usePaymentMethods";
 import { usePayment } from "../hooks/usePayment";
 import { AddCardModal } from "../components/payment/AddCardModal";
 import { AppointmentSuccessModal } from "../components/payment/AppointmentSuccessModal";
 import toast, { Toaster } from "react-hot-toast";
+import { stripePromise } from "../services/paymentService";
 
-const formatCurrentDateTime = () => {
-  const now = new Date();
+const formatAppointmentDate = (dateString: string): string => {
+  const date = new Date(dateString);
   const dateOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "long",
     day: "numeric",
   };
-  const date = now.toLocaleDateString("en-US", dateOptions);
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  };
-  const time = now.toLocaleTimeString("en-US", timeOptions);
-
-  return { date, time };
+  return date.toLocaleDateString("en-US", dateOptions);
 };
 
-export const PaymentPage = () => {
-  const doctorId = "1";
-  const navigate = useNavigate();
+interface BookingState {
+  bookingId?: string | number;
+  doctorId?: string;
+  doctorName?: string;
+  doctorImage?: string | null;
+  specialty?: string;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  formattedAppointmentTime?: string;
+  startTime?: string;
+  endTime?: string;
+  sessionPrice?: number;
+  clinicAddress?: string;
+}
 
-  const { doctor, loading: doctorLoading } = useDoctorDetails(doctorId);
+export const PaymentPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get booking data from navigation state
+  const bookingState = location.state as BookingState | null;
+
+  // Call all hooks before any conditional returns (React rules)
   const { paymentMethods, addPaymentMethod, isAdding } = usePaymentMethods();
   const { processPayment, isProcessing } = usePayment();
 
@@ -41,30 +51,66 @@ export const PaymentPage = () => {
   const [showCardModal, setShowCardModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const { date: currentDate, time: currentTime } = formatCurrentDateTime();
+  // Redirect if no booking data (using useEffect to avoid rendering issues)
+  useEffect(() => {
+    if (!bookingState || !bookingState.bookingId) {
+      toast.error(
+        "No booking information found. Please book an appointment first."
+      );
+      navigate("/SearchDoctors", { replace: true });
+    }
+  }, [bookingState, navigate]);
+
+  // Return early if no booking data (after hooks are called)
+  if (!bookingState || !bookingState.bookingId) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const formattedDate = bookingState.appointmentDate
+    ? formatAppointmentDate(bookingState.appointmentDate)
+    : "";
+
+  const displayTime =
+    bookingState.appointmentTime || bookingState.formattedAppointmentTime || "";
 
   const appointment = {
-    id: "1",
-    date: currentDate,
-    time: currentTime,
-    doctorName: doctor?.name || "IDoctor Name Placeholder",
+    id: bookingState.bookingId.toString(),
+    date: formattedDate,
+    time: displayTime,
+    doctorName: bookingState.doctorName || "Doctor",
   };
 
-  const handleAddCard = async (cardData: any) => {
+  const doctor = {
+    name: bookingState.doctorName || "Doctor",
+    image: bookingState.doctorImage || "/default-doctor.png",
+    specialty: bookingState.specialty || "Specialist",
+    location: {
+      address: bookingState.clinicAddress || "Clinic Address",
+    },
+    price: bookingState.sessionPrice || 150,
+  };
+
+  const handleAddCard = async (cardData: unknown) => {
     try {
       const newCard = await addPaymentMethod(cardData);
       setSelectedCardId(newCard.id);
       setShowCardModal(false);
       toast.success("Payment card added successfully!");
-    } catch (error: any) {
+    } catch {
       toast.error("Failed to add payment card.");
       throw new Error("Failed to finalize adding card.");
     }
   };
 
   const handlePayment = async () => {
-    if (!doctor) {
-      toast.error("Doctor details are missing. Cannot proceed.");
+    if (!bookingState || !bookingState.bookingId) {
+      toast.error("Booking information is missing. Cannot proceed.");
       return;
     }
 
@@ -73,36 +119,39 @@ export const PaymentPage = () => {
       return;
     }
 
-    const paymentPromise = (async () => {
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading("Processing payment...");
+
+      // Process payment with the API (only requires booking_id)
       await processPayment({
-        bookingId: appointment.id,
-        paymentMethodId: selectedCardId || undefined,
+        bookingId: bookingState.bookingId.toString(),
       });
 
-      setShowSuccessModal(true);
-    })();
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
 
-    toast.promise(paymentPromise, {
-      loading: "Processing payment...",
-      success: "Payment successful! Redirecting...",
-      error: "Payment failed. Please try again.",
-    });
+      // Show success toast
+      toast.success("Payment successful!");
+
+      // Show success modal
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Payment error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Payment failed. Please try again.";
+      toast.error(errorMessage);
+    }
   };
 
   const handleSuccessDone = () => {
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
     setShowSuccessModal(false);
+    setTimeout(() => {
+      navigate("/BookingPage");
+    }, 500);
   };
-
-  if (doctorLoading || !doctor) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        Loading doctor details...
-      </div>
-    );
-  }
 
   const isButtonDisabled =
     isProcessing || (paymentType === "credit" && !selectedCardId);
@@ -125,7 +174,7 @@ export const PaymentPage = () => {
           </div>
         </div>
 
-        {/* IDoctor Info */}
+        {/* Doctor Info */}
         <div className="p-4 space-y-4">
           <div className="bg-white rounded-2xl p-4 shadow-sm border">
             <div className="flex gap-3">
@@ -133,6 +182,10 @@ export const PaymentPage = () => {
                 src={doctor.image}
                 alt={doctor.name}
                 className="w-16 h-16 rounded-xl object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/default-doctor.png";
+                }}
               />
               <div className="flex-1">
                 <h2 className="font-semibold">{doctor.name}</h2>
@@ -148,7 +201,12 @@ export const PaymentPage = () => {
             <span className="font-medium text-sm">
               {appointment.date} - {appointment.time}
             </span>
-            <button className="text-primary-600 text-sm font-medium">
+            <button
+              onClick={() =>
+                navigate(`/SearchDoctors/${bookingState.doctorId}`)
+              }
+              className="text-primary-600 text-sm font-medium"
+            >
               Reschedule
             </button>
           </div>
@@ -156,10 +214,10 @@ export const PaymentPage = () => {
           <div className="bg-white rounded-2xl p-4 shadow-sm border">
             <h3 className="font-semibold mb-3">Payment Method</h3>
             <div className="space-y-3 mb-4">
-              {["credit", "paypal", "apple"].map((type) => (
+              {(["credit", "paypal", "apple"] as const).map((type) => (
                 <button
                   key={type}
-                  onClick={() => setPaymentType(type as any)}
+                  onClick={() => setPaymentType(type)}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border-2 ${
                     paymentType === type
                       ? "border-success-500 bg-secondary-50"
@@ -216,9 +274,9 @@ export const PaymentPage = () => {
               <span className="text-secondary-600">Total Price</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-red-500">
-                  {doctor.price}$
+                  ${doctor.price}
                 </span>
-                <span className="text-sm text-secondary-500">/hour</span>
+                <span className="text-sm text-secondary-500">/session</span>
               </div>
             </div>
 
@@ -227,9 +285,7 @@ export const PaymentPage = () => {
               disabled={isButtonDisabled}
               className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white py-4 rounded-xl font-semibold text-lg"
             >
-              {isProcessing
-                ? "Processing..."
-                : "Pay"}
+              {isProcessing ? "Processing..." : "Pay Now"}
             </button>
           </div>
         </div>
@@ -237,11 +293,13 @@ export const PaymentPage = () => {
 
       {/* Add Card Modal */}
       {showCardModal && (
-        <AddCardModal
-          onSuccess={handleAddCard}
-          onCancel={() => setShowCardModal(false)}
-          isLoading={isAdding}
-        />
+        <Elements stripe={stripePromise}>
+          <AddCardModal
+            onSuccess={handleAddCard}
+            onCancel={() => setShowCardModal(false)}
+            isLoading={isAdding}
+          />
+        </Elements>
       )}
 
       {showSuccessModal && (

@@ -3,18 +3,13 @@ import { paymentService } from '../services/paymentService';
 
 export const usePayment = () => {
     const processPaymentMutation = useMutation({
-        mutationFn: ({
-            bookingId,
-            paymentMethodId
-        }: {
-            bookingId: string;
-            paymentMethodId?: string;
-        }) => paymentService.processPayment(bookingId, paymentMethodId),
+        mutationFn: ({ bookingId }: { bookingId: string }) =>
+            paymentService.processPayment(bookingId),
     });
 
     return {
         processPayment: processPaymentMutation.mutateAsync,
-        isProcessing: processPaymentMutation.isPending, 
+        isProcessing: processPaymentMutation.isPending,
         error: processPaymentMutation.error,
     };
 };

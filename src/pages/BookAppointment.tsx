@@ -7,6 +7,7 @@ import { DoctorProfile } from "./../components/BookAppointment/DoctorProfile";
 import { AppointmentBooking } from "./../components/BookAppointment/AppointmentBooking";
 import { useNavigate, useParams, useLocation } from "react-router-dom"; // Added useLocation
 import { api } from "../services/api";
+import toast from "react-hot-toast";
 
 // Interface for API response
 interface ApiDoctor {
@@ -44,7 +45,7 @@ export default function BookAppointment() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [doctor, setDoctor] = useState<ApiDoctor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, _setError] = useState<string | null>(null);
   const [userBookingId, setUserBookingId] = useState<string | null>(null);
 
   const navigate = useNavigate();
@@ -104,13 +105,13 @@ export default function BookAppointment() {
   useEffect(() => {
     const fetchDoctor = async () => {
       if (!doctorId) {
-        setError("Doctor ID is missing");
+        _setError("Doctor ID is missing");
         setIsLoading(false);
         return;
       }
 
       setIsLoading(true);
-      setError(null);
+      _setError(null);
 
       try {
         const response = await api.get<{
@@ -122,11 +123,11 @@ export default function BookAppointment() {
         if (response.data.success && response.data.data) {
           setDoctor(response.data.data);
         } else {
-          setError("Failed to load doctor details");
+          _setError("Failed to load doctor details");
         }
       } catch (err) {
         console.error("Error fetching doctor:", err);
-        setError("Unable to load doctor details. Please try again later.");
+        _setError("Unable to load doctor details. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -136,6 +137,8 @@ export default function BookAppointment() {
   }, [doctorId]);
 
   // Function to handle booking and navigate to payment
+  // In BookAppointment parent component, update handleBooking:
+
   const handleBooking = async (bookingData: {
     appointmentDate: Date;
     appointmentTime: string;
@@ -145,7 +148,8 @@ export default function BookAppointment() {
     notes?: string;
   }) => {
     if (!doctorId) {
-      setError("Doctor ID is missing");
+      _setError("Doctor ID is missing");
+      toast.error("Doctor information is missing");
       return;
     }
 
@@ -155,28 +159,45 @@ export default function BookAppointment() {
         .toISOString()
         .split("T")[0];
 
-      // Use the startTime directly (already in 24-hour format from API)
+      // Validate and format time
       const formattedTime = bookingData.startTime;
 
+      console.log("Time validation - startTime:", bookingData.startTime);
+      console.log(
+        "Time validation - appointmentTime:",
+        bookingData.appointmentTime
+      );
+
+      if (!formattedTime || !formattedTime.match(/^\d{2}:\d{2}$/)) {
+        console.error("Invalid time format:", formattedTime);
+        toast.error(
+          `Invalid time format: ${formattedTime}. Please select a valid time slot.`
+        );
+        return;
+      }
+
+      // Construct booking request
       const bookingRequest: BookingRequest = {
-        doctor_id: doctorId,
+        doctor_id: doctorId.toString(), // Ensure it's a string
         appointment_date: formattedDate,
         appointment_time: formattedTime,
         payment_method: bookingData.paymentMethod || "stripe",
         notes:
           bookingData.notes ||
           `Appointment with ${doctor?.name || "doctor"} at ${
-            bookingData.startTime
-          } - ${bookingData.endTime}`,
+            bookingData.appointmentTime
+          }`,
       };
 
-      console.log("Submitting booking:", bookingRequest);
+      console.log("Making API call with:", bookingRequest);
 
       const response = await api.post<{
         success: boolean;
         message: string;
         data?: any;
       }>("/bookings", bookingRequest);
+
+      console.log("API Response:", response.data);
 
       if (response.data.success) {
         // Store booking ID for review submission
@@ -202,6 +223,9 @@ export default function BookAppointment() {
           );
         }
 
+        // Show success toast
+        toast.success("Appointment booked successfully!");
+
         // Navigate to payment page with booking details
         navigate("/payment", {
           state: {
@@ -222,14 +246,54 @@ export default function BookAppointment() {
           },
         });
       } else {
-        setError(response.data.message || "Failed to create booking");
+        const errorMsg = response.data.message || "Failed to create booking";
+        _setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err: any) {
-      console.error("Error creating booking:", err);
-      setError(
-        err.response?.data?.message ||
-          "Unable to create booking. Please try again."
-      );
+      console.error("Full error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        headers: err.response?.headers,
+      });
+      // Enhanced error logging
+      if (err.response) {
+        console.error("Error response data:", err.response.data);
+        console.error("Error response status:", err.response.status);
+        console.error("Error response headers:", err.response.headers);
+      }
+
+      let errorMessage = "Unable to create booking. Please try again.";
+
+      if (err.response) {
+        if (err.response.status === 409) {
+          errorMessage =
+            "This time slot is no longer available. Please select another time.";
+        } else if (err.response.status === 400) {
+          // Show more specific error message
+          if (err.response.data?.errors) {
+            errorMessage = Object.values(err.response.data.errors)
+              .flat()
+              .join(", ");
+          } else if (err.response.data?.message) {
+            errorMessage = err.response.data.message;
+          } else {
+            errorMessage =
+              "Invalid booking data. Please check all fields and try again.";
+          }
+        } else if (err.response.status === 401) {
+          errorMessage = "Please login to book an appointment";
+          navigate("/login");
+        } else if (err.response.status === 422) {
+          errorMessage = "Validation error. Please check your input.";
+        } else {
+          errorMessage = err.response.data?.message || errorMessage;
+        }
+      }
+
+      _setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -241,7 +305,7 @@ export default function BookAppointment() {
           <button className="bg-transparent cursor-pointer flex items-center gap-1 text-slate-800 hover:text-blue-600 transition-colors group">
             <div
               className="p-2 rounded-full transition-colors"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/SearchDoctors")}
             >
               <ArrowLeft size={20} />
             </div>
@@ -291,40 +355,40 @@ export default function BookAppointment() {
   }
 
   // Error state
-  if (error || !doctor) {
-    return (
-      <div className="min-h-screen py-4 md:py-8 lg:py-12 max-w-7xl mx-auto font-sans">
-        <header className="mb-8">
-          <button className="bg-transparent cursor-pointer flex items-center gap-1 text-slate-800 hover:text-blue-600 transition-colors group">
-            <div
-              className="p-2 rounded-full transition-colors"
-              onClick={() => navigate("-1")}
-            >
-              <ArrowLeft size={20} />
-            </div>
-            <h1 className="text-[18px] md:text-2xl font-serif font-medium">
-              Make an appointment
-            </h1>
-          </button>
-        </header>
+  // if (error || !doctor) {
+  //   return (
+  //     <div className="min-h-screen py-4 md:py-8 lg:py-12 max-w-7xl mx-auto font-sans">
+  //       <header className="mb-8">
+  //         <button className="bg-transparent cursor-pointer flex items-center gap-1 text-slate-800 hover:text-blue-600 transition-colors group">
+  //           <div
+  //             className="p-2 rounded-full transition-colors"
+  //             onClick={() => navigate("/SearchDoctors")}
+  //           >
+  //             <ArrowLeft size={20} />
+  //           </div>
+  //           <h1 className="text-[18px] md:text-2xl font-serif font-medium">
+  //             Make an appointment
+  //           </h1>
+  //         </button>
+  //       </header>
 
-        <div className="flex items-center justify-center py-12">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md w-full text-center">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">
-              Unable to Load Doctor Details
-            </h3>
-            <p className="text-red-600 mb-4">{error || "Doctor not found"}</p>
-            <button
-              onClick={() => navigate("/SearchDoctors")}
-              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-            >
-              Back to Doctors List
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  //       <div className="flex items-center justify-center py-12">
+  //         <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md w-full text-center">
+  //           <h3 className="text-lg font-semibold text-red-800 mb-2">
+  //             Unable to Load Doctor Details
+  //           </h3>
+  //           <p className="text-red-600 mb-4">{error || "Doctor not found"}</p>
+  //           <button
+  //             onClick={() => navigate("/SearchDoctors")}
+  //             className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+  //           >
+  //             Back to Doctors List
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen py-4 md:py-8 lg:py-12 max-w-7xl mx-auto font-sans">
@@ -344,17 +408,18 @@ export default function BookAppointment() {
           <button className="bg-transparent cursor-pointer flex items-center gap-1 text-slate-800 hover:text-blue-600 transition-colors group">
             <div
               className="p-2 rounded-full transition-colors"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/SearchDoctors")}
             >
               <ArrowLeft size={20} />
             </div>
             <h1 className="text-[18px] md:text-2xl font-serif font-medium">
-              Make an appointment with {doctor.name}
+              Make an appointment with {doctor?.name}
             </h1>
           </button>
         </FadeIn>
       </header>
 
+      {doctor && (
       <div className="flex items-start flex-col px-3 gap-8 lg:flex-row">
         {/* Left Column: Calendar & Reviews */}
         <main className="w-full lg:w-2/3 flex-1 px-5">
@@ -384,6 +449,7 @@ export default function BookAppointment() {
           <DoctorProfile doctor={doctor} />
         </aside>
       </div>
+      )}
     </div>
   );
 }

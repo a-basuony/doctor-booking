@@ -15,7 +15,7 @@ export const profileService = {
     // Check if data is FormData (contains image)
     const isFormData = data instanceof FormData;
 
-    const response = await api.put<ApiResponse<User>>("/profile/edit", data, {
+    const response = await api.post<ApiResponse<User>>("/profile/edit", data, {
       headers: isFormData
         ? {
             "Content-Type": "multipart/form-data",

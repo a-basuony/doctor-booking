@@ -1,67 +1,72 @@
-import { useState } from 'react';
-import type { CardFormData } from '../../types/';
+import { useState, useEffect } from 'react';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 interface AddCardModalProps {
-    onSuccess: (cardData: CardFormData) => Promise<void>;
+    onSuccess: (cardElement: any) => Promise<void>;
     onCancel: () => void;
     isLoading?: boolean;
 }
 
+const CARD_ELEMENT_OPTIONS = {
+    style: {
+        base: {
+            fontSize: '16px',
+            color: '#1f2937',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            '::placeholder': {
+                color: '#9ca3af',
+            },
+        },
+        invalid: {
+            color: '#ef4444',
+            iconColor: '#ef4444',
+        },
+    },
+    hidePostalCode: true,
+};
+
 export const AddCardModal = ({ onSuccess, onCancel, isLoading }: AddCardModalProps) => {
-    const [formData, setFormData] = useState<CardFormData>({
-        cardNumber: '',
-        cardholderName: '',
-        expiry: '',
-        cvc: ''
-    });
+    const stripe = useStripe();
+    const elements = useElements();
     const [error, setError] = useState('');
+    const [cardComplete, setCardComplete] = useState(false);
+    const [isStripeReady, setIsStripeReady] = useState(false);
 
-    const formatCardNumber = (value: string) => {
-        const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-        const parts = [];
-        for (let i = 0; i < Math.min(v.length, 16); i += 4) {
-            parts.push(v.substring(i, i + 4));
+    useEffect(() => {
+        // Check if Stripe is ready
+        if (stripe && elements) {
+            setIsStripeReady(true);
         }
-        return parts.join(' ');
-    };
-
-    const formatExpiry = (value: string) => {
-        const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-        if (v.length >= 2) return v.slice(0, 2) + '/' + v.slice(2, 4);
-        return v;
-    };
-
-    const validateForm = (): boolean => {
-        const cleanNumber = formData.cardNumber.replace(/\s/g, '');
-        
-        if (!formData.cardholderName.trim()) {
-            setError('Cardholder name is required');
-            return false;
-        }
-        if (cleanNumber.length !== 16) {
-            setError('Invalid card number (must be 16 digits)');
-            return false;
-        }
-        if (!formData.expiry.match(/^\d{2}\/\d{2}$/)) {
-            setError('Invalid expiry date (MM/YY)');
-            return false;
-        }
-        if (formData.cvc.length < 3) {
-            setError('Invalid CVC');
-            return false;
-        }
-        setError('');
-        return true;
-    };
+    }, [stripe, elements]);
 
     const handleSubmit = async () => {
-        if (!validateForm()) return;
+        if (!stripe || !elements) {
+            setError('Stripe is not loaded. Please check your internet connection and try again.');
+            return;
+        }
+
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            setError('Card element not found');
+            return;
+        }
+
+        if (!cardComplete) {
+            setError('Please complete card details');
+            return;
+        }
         
         try {
-            await onSuccess(formData);
-        } catch (err) {
-            setError('Failed to add card. Please check details.');
+            setError('');
+            await onSuccess(cardElement);
+        } catch (err: any) {
+            setError(err.message || 'Failed to add card. Please check details.');
         }
+    };
+
+    const handleCardChange = (event: any) => {
+        setError(event.error?.message || '');
+        setCardComplete(event.complete);
     };
 
     return (
@@ -75,64 +80,30 @@ export const AddCardModal = ({ onSuccess, onCancel, isLoading }: AddCardModalPro
                 </div>
 
                 <div className="space-y-4 mb-4">
-                    {/* Cardholder Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Cardholder Name
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="John Doe"
-                            value={formData.cardholderName}
-                            onChange={(e) => setFormData({...formData, cardholderName: e.target.value})}
-                            className="w-full border-2 border-gray-200 rounded-xl p-4 outline-none focus:border-blue-500"
-                        />
-                    </div>
+                    {/* Loading State */}
+                    {!isStripeReady && (
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                            <p className="text-sm text-blue-700">Loading payment form...</p>
+                        </div>
+                    )}
 
-                    {/* Card Number */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Card Number
-                        </label>
-                        <input
-                            type="text"
-                            maxLength={19}
-                            placeholder="1234 5678 9012 3456"
-                            value={formData.cardNumber}
-                            onChange={(e) => setFormData({...formData, cardNumber: formatCardNumber(e.target.value)})}
-                            className="w-full border-2 border-gray-200 rounded-xl p-4 outline-none focus:border-blue-500 font-mono"
-                        />
-                    </div>
-
-                    {/* Expiry & CVC */}
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Card Element */}
+                    {isStripeReady && (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Expiry
+                                Card Details
                             </label>
-                            <input
-                                type="text"
-                                maxLength={5}
-                                placeholder="MM/YY"
-                                value={formData.expiry}
-                                onChange={(e) => setFormData({...formData, expiry: formatExpiry(e.target.value)})}
-                                className="w-full border-2 border-gray-200 rounded-xl p-4 outline-none focus:border-blue-500 font-mono"
-                            />
+                            <div className="w-full border-2 border-gray-200 rounded-xl p-4 focus-within:border-blue-500 transition-colors">
+                                <CardElement 
+                                    options={CARD_ELEMENT_OPTIONS}
+                                    onChange={handleCardChange}
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                Enter your card number, expiry date, and CVC
+                            </p>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                CVC
-                            </label>
-                            <input
-                                type="text"
-                                maxLength={4}
-                                placeholder="123"
-                                value={formData.cvc}
-                                onChange={(e) => setFormData({...formData, cvc: e.target.value.replace(/[^0-9]/g, '')})}
-                                className="w-full border-2 border-gray-200 rounded-xl p-4 outline-none focus:border-blue-500 font-mono"
-                            />
-                        </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Error Message */}

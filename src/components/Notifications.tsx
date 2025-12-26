@@ -105,13 +105,13 @@ const Notifications = () => {
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    // Mark all as read endpoint not available yet - just show a warning
-    toast("Mark all as read feature coming soon", {
-      icon: "ℹ️",
-    });
-    markAllAsRead();
-  };
+  // const handleMarkAllAsRead = () => {
+  //   // Mark all as read endpoint not available yet - just show a warning
+  //   toast("Mark all as read feature coming soon", {
+  //     icon: "ℹ️",
+  //   });
+  //   markAllAsRead();
+  // };
 
   return (
     <div className="relative" ref={menuRef}>

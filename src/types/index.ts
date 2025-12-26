@@ -1,18 +1,18 @@
-
 export interface IReviews {
-  id: string,
-  name: string,
-  avatar: string,
-  rating: number,
-  comment: string,
-  time: string,
+  id: string;
+  name: string;
+  avatar: string;
+  time: string; // or timeAgo if that's what you're using
+  rating: number;
+  comment: string;
+  doctorResponse?: string; // Add this optional property
 }
 
 export interface IDoctor {
   id: string;
   name: string;
   specialty: string;
-  about: string,
+  about: string;
   hospital: string;
   rating: number;
   image: string;
@@ -23,15 +23,13 @@ export interface IDoctor {
     lng: number;
     address?: string;
   };
-  reviews: IReviews[]
+  reviews: IReviews[];
 }
-
-
 
 //////////////////////////////////--PaymentMethod--///////////////////////////////////////////////
 export interface PaymentMethod {
   id: string;
-  type: 'card' | 'paypal' | 'apple';
+  type: "card" | "paypal" | "apple";
   last4?: string;
   brand?: string;
   expiryMonth?: number;
@@ -49,14 +47,14 @@ export interface Appointment {
   location: string;
   date: string;
   time: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: "pending" | "confirmed" | "completed" | "cancelled";
 }
 
 export interface PaymentIntent {
   id: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'processing' | 'succeeded' | 'failed';
+  status: "pending" | "processing" | "succeeded" | "failed";
   clientSecret?: string;
 }
 
@@ -91,7 +89,7 @@ export interface SaveCardRequest {
 
 export interface ProcessPaymentRequest {
   booking_id: string;
-  gateway: 'stripe';
+  gateway: "stripe";
   payment_method_id?: string;
 }
 
@@ -122,7 +120,7 @@ export interface INotification {
   id: string;
   title: string;
   message: string;
-  type: 'upcoming' | 'completed' | 'cancelled' | 'info';
+  type: "upcoming" | "completed" | "cancelled" | "info";
   isRead: boolean;
   createdAt: string;
   appointmentId?: string;

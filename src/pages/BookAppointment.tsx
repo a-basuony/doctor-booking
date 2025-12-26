@@ -5,7 +5,7 @@ import { AddReviewModal } from "./../components/BookAppointment/AddReviewModal";
 import { ReviewsSection } from "./../components/BookAppointment/ReviewsSection";
 import { DoctorProfile } from "./../components/BookAppointment/DoctorProfile";
 import { AppointmentBooking } from "./../components/BookAppointment/AppointmentBooking";
-import { useNavigate, useParams, useLocation } from "react-router-dom"; // Added useLocation
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { api } from "../services/api";
 import toast from "react-hot-toast";
 
@@ -54,12 +54,22 @@ interface BookingResponse {
   [key: string]: unknown;
 }
 
+// Interface for booking status
+interface BookingStatus {
+  id: number | string;
+  status: string;
+  appointment_date: string;
+  appointment_time: string;
+  [key: string]: unknown;
+}
+
 export default function BookAppointment() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [doctor, setDoctor] = useState<ApiDoctor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [_error, _setError] = useState<string | null>(null);
   const [userBookingId, setUserBookingId] = useState<string | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   const navigate = useNavigate();
   const { doctorId } = useParams();
@@ -115,6 +125,68 @@ export default function BookAppointment() {
   // Get the latest booking ID for review modal
   const latestBookingId = getLatestBookingId();
 
+  // Function to check appointment status
+  const checkAppointmentStatus = async (bookingId: string) => {
+    try {
+      const response = await api.get<{
+        success: boolean;
+        message: string;
+        data?: BookingStatus;
+      }>(`/bookings/${bookingId}`);
+
+      if (response.data.success && response.data.data) {
+        const status = response.data.data.status;
+        const validStatuses = ["completed", "finished", "done", "closed"];
+        return validStatuses.includes(status.toLowerCase());
+      }
+      return false;
+    } catch (err) {
+      console.error("Error checking appointment status:", err);
+      return false;
+    }
+  };
+
+  // Function to check if user has already reviewed
+  const hasUserReviewed = (bookingId: string) => {
+    return localStorage.getItem(`review_submitted_${bookingId}`) === "true";
+  };
+
+  // Handle the "Add Review" button click
+  const handleAddReviewClick = async () => {
+    if (!latestBookingId) {
+      toast.error(
+        "You need to book an appointment before you can leave a review."
+      );
+      return;
+    }
+
+    // Check if already reviewed
+    if (hasUserReviewed(latestBookingId)) {
+      toast.error("You have already submitted a review for this appointment.");
+      return;
+    }
+
+    setIsCheckingStatus(true);
+    try {
+      const isCompleted = await checkAppointmentStatus(latestBookingId);
+
+      if (!isCompleted) {
+        toast.error(
+          "You can only submit a review after your appointment session is completed. Please wait until your session is finished."
+        );
+        return;
+      }
+
+      // Open the review modal
+      setIsReviewModalOpen(true);
+    } catch (err) {
+      console.error("Error checking appointment:", err);
+      toast.error("Unable to verify appointment status. Please try again.");
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  };
+
   useEffect(() => {
     const fetchDoctor = async () => {
       if (!doctorId) {
@@ -148,9 +220,6 @@ export default function BookAppointment() {
 
     fetchDoctor();
   }, [doctorId]);
-
-  // Function to handle booking and navigate to payment
-  // In BookAppointment parent component, update handleBooking:
 
   const handleBooking = async (bookingData: {
     appointmentDate: Date;
@@ -191,7 +260,7 @@ export default function BookAppointment() {
 
       // Construct booking request
       const bookingRequest: BookingRequest = {
-        doctor_id: doctorId.toString(), // Ensure it's a string
+        doctor_id: doctorId.toString(),
         appointment_date: formattedDate,
         appointment_time: formattedTime,
         payment_method: bookingData.paymentMethod || "stripe",
@@ -212,14 +281,18 @@ export default function BookAppointment() {
 
       console.log("API Response:", response.data);
 
-      // Check if the response indicates success (either through success flag or status code)
+      // Check if the response indicates success
       const isSuccess =
         response.data.success !== false &&
         (response.status === 200 || response.status === 201);
 
-      if (isSuccess && (response.data.data || (response.data as BookingResponse).id)) {
+      if (
+        isSuccess &&
+        (response.data.data || (response.data as BookingResponse).id)
+      ) {
         // Get booking data - handle different response structures
-        const bookingData = response.data.data || (response.data as BookingResponse);
+        const bookingData =
+          response.data.data || (response.data as BookingResponse);
         const bookingId = bookingData?.id;
 
         // Store booking ID for review submission
@@ -376,53 +449,18 @@ export default function BookAppointment() {
     );
   }
 
-  // Error state
-  // if (error || !doctor) {
-  //   return (
-  //     <div className="min-h-screen py-4 md:py-8 lg:py-12 max-w-7xl mx-auto font-sans">
-  //       <header className="mb-8">
-  //         <button className="bg-transparent cursor-pointer flex items-center gap-1 text-slate-800 hover:text-blue-600 transition-colors group">
-  //           <div
-  //             className="p-2 rounded-full transition-colors"
-  //             onClick={() => navigate("/SearchDoctors")}
-  //           >
-  //             <ArrowLeft size={20} />
-  //           </div>
-  //           <h1 className="text-[18px] md:text-2xl font-serif font-medium">
-  //             Make an appointment
-  //           </h1>
-  //         </button>
-  //       </header>
-
-  //       <div className="flex items-center justify-center py-12">
-  //         <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md w-full text-center">
-  //           <h3 className="text-lg font-semibold text-red-800 mb-2">
-  //             Unable to Load Doctor Details
-  //           </h3>
-  //           <p className="text-red-600 mb-4">{error || "Doctor not found"}</p>
-  //           <button
-  //             onClick={() => navigate("/SearchDoctors")}
-  //             className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-  //           >
-  //             Back to Doctors List
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="min-h-screen py-4 md:py-8 lg:py-12 max-w-7xl mx-auto font-sans">
       <AddReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         doctorId={doctorId}
-        bookingId={latestBookingId} // Make sure this is not null/undefined
+        bookingId={latestBookingId}
         doctorName={doctor?.name}
         onReviewSubmitted={() => {
           console.log("Review submitted successfully");
           // You might want to refresh the reviews here
+          // You could add a callback to refresh the reviews section
         }}
       />
       <header className="mb-8">
@@ -453,17 +491,8 @@ export default function BookAppointment() {
             />
             <ReviewsSection
               doctorId={doctorId}
-              onAddReview={() => {
-                // Check if user has a booking before allowing review
-                // if (!latestBookingId) {
-                //   // Show a message that they need to book first
-                //   alert(
-                //     "You need to book an appointment before you can leave a review."
-                //   );
-                //   return;
-                // }
-                setIsReviewModalOpen(true);
-              }}
+              onAddReview={handleAddReviewClick}
+              isChecking={isCheckingStatus}
             />
           </main>
           {/* Right Column: Profile Sidebar */}

@@ -546,7 +546,7 @@ export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
             disabled={
               isBooking || !selectedDateObj || !selectedTimeSlot || isLoading
             }
-            className={`no-underline text-center w-96 md:w-auto px-10 py-3 sm:py-4 cursor-pointer rounded-xl border font-semibold transition-colors ${
+            className={`no-underline text-center  md:w-auto px-10 py-3 sm:py-4 cursor-pointer rounded-xl border font-semibold transition-colors ${
               isBooking || !selectedDateObj || !selectedTimeSlot || isLoading
                 ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
                 : "bg-transparent border-blue-600 text-blue-600 hover:bg-blue-50"

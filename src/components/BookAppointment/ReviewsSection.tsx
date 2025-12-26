@@ -32,11 +32,13 @@ export interface Review {
 interface ReviewsSectionProps {
   doctorId?: string;
   onAddReview: () => void;
+  isChecking?: boolean; // Add this
 }
 
 export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   doctorId,
   onAddReview,
+  isChecking = false,
 }) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -252,15 +254,16 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
     <div className="mt-8">
       <FadeIn delay={200}>
         <div className="flex justify-between items-end mb-6">
-          <h3 className="text-xl font-serif text-slate-800">
+          <h3 className="mb-2 sm:m-2 text-xl font-serif text-slate-800">
             Reviews and Rating
           </h3>
           <button
             onClick={onAddReview}
+            disabled={isChecking} // Disable while checking
             className="flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors font-medium text-sm bg-transparent cursor-pointer mb-5"
           >
             <Pencil size={16} />
-            add review
+            {isChecking ? "Checking..." : "Add Review"}
           </button>
         </div>
 

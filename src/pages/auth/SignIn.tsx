@@ -61,6 +61,8 @@ const SignIn = () => {
                   type="text"
                   value={value}
                   onChange={onChange}
+                  className="w-full px-4 py-3 border border-gray-300 focus:border-none focus:outline-none rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition no-focus"
+                  placeholder="Enter phone number"
                   name="number"
                   id="number"
                 />

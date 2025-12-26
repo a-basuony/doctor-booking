@@ -66,6 +66,38 @@ const DoctorDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [userBookingId, setUserBookingId] = useState<string | null>(null);
+
+  // Function to get latest booking ID for this doctor
+  const getLatestBookingId = () => {
+    if (!doctorId) return null;
+
+    // Check localStorage for doctor-specific booking
+    const doctorBookingId = localStorage.getItem(
+      `doctor_${doctorId}_booking_id`
+    );
+    if (doctorBookingId) return doctorBookingId;
+
+    // Check sessionStorage
+    const sessionBookingId = sessionStorage.getItem(`current_booking_id`);
+    if (sessionBookingId) return sessionBookingId;
+
+    // Check for any booking ID in localStorage
+    const keys = Object.keys(localStorage);
+    const bookingKey = keys.find(
+      (key) => key.startsWith("doctor_") && key.endsWith("_booking_id")
+    );
+    if (bookingKey) {
+      return localStorage.getItem(bookingKey);
+    }
+
+    return null;
+  };
+
+  // Check if user has already reviewed
+  const hasUserReviewed = (bookingId: string) => {
+    return localStorage.getItem(`review_submitted_${bookingId}`) === "true";
+  };
 
   // Fetch doctor details
   useEffect(() => {
@@ -127,6 +159,10 @@ const DoctorDetailsPage = () => {
               comment: "Excellent service and very knowledgeable.",
             },
           ]);
+
+          // Get latest booking ID for this doctor
+          const bookingId = getLatestBookingId();
+          setUserBookingId(bookingId);
         }
       } catch (error) {
         console.error("Error fetching doctor details:", error);
@@ -148,15 +184,57 @@ const DoctorDetailsPage = () => {
     );
   };
 
-  const addReview = (newReview: IReviews) => {
-    // Add the review to the state
-    setReviews([newReview, ...reviews]);
-    toast.success("Review added successfully!");
+  const handleAddReviewClick = () => {
+    // Get latest booking ID
+    const bookingId = getLatestBookingId();
+
+    if (!bookingId) {
+      toast.error(
+        "You need to book an appointment before you can leave a review."
+      );
+      return;
+    }
+
+    // Check if user has already reviewed
+    if (hasUserReviewed(bookingId)) {
+      toast.error("You have already submitted a review for this appointment.");
+      return;
+    }
+
+    setUserBookingId(bookingId);
+    setModalOpen(true);
   };
 
   const handleBookAppointment = () => {
     // Navigate to booking page with doctor ID
     navigate(`/SearchDoctors/${doctorId}`);
+  };
+
+  const handleReviewSubmitted = (newReview: any) => {
+    // Add the review to the state
+    const reviewToAdd: IReviews = {
+      id: Date.now().toString(),
+      name: "You", // Or get user's actual name
+      avatar: "/user.jpg", // Or get user's actual avatar
+      rating: newReview.rating,
+      time: "Just now",
+      comment: newReview.comment,
+    };
+
+    setReviews([reviewToAdd, ...reviews]);
+
+    // Update the average rating (simple calculation)
+    if (doctor) {
+      const totalReviews = reviews.length + 1;
+      const totalRating =
+        reviews.reduce((sum, rev) => sum + rev.rating, 0) + newReview.rating;
+      const newAverage = totalRating / totalReviews;
+
+      setDoctor({
+        ...doctor,
+        rating: parseFloat(newAverage.toFixed(1)),
+      });
+    }
   };
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
@@ -263,25 +341,66 @@ const DoctorDetailsPage = () => {
           </div>
 
           {/* Right Column */}
-          <div className="flex flex-col space-y-8 bg-neutral-50 p-6 rounded-xl md:p-8">
-            {/* Rating Overview */}
-            <Box className="space-y-2">
-              <Typography variant="h5" className="font-bold text-primary-700">
+          <div className="flex flex-col space-y-4 md:space-y-8 bg-neutral-50 p-4 md:p-6 lg:p-8 rounded-xl w-full">
+            {/* Rating Overview - Mobile optimized */}
+            <Box className="space-y-3 md:space-y-2">
+              <Typography
+                variant="h5"
+                className="font-bold text-primary-700 text-lg md:text-xl"
+              >
                 Reviews and Rating
               </Typography>
-              <Box className="flex items-center gap-3">
-                <Rating value={doctor.rating} precision={0.5} readOnly />
-                <Typography className="font-bold text-lg text-secondary-700">
+
+              {/* Desktop layout */}
+              <Box className="hidden md:flex items-center gap-3">
+                <Rating
+                  value={doctor.rating}
+                  precision={0.5}
+                  readOnly
+                  size="medium"
+                />
+                <Typography className="font-bold text-lg text-secondary-700 whitespace-nowrap">
                   {doctor.rating}/5
                 </Typography>
-                <Typography className="text-secondary-600">
+                <Typography className="text-secondary-600 whitespace-nowrap">
                   {reviews.length} Reviews
                 </Typography>
                 <Button
                   startIcon={<FaPencilAlt />}
                   variant="contained"
-                  onClick={() => setModalOpen(true)}
-                  className="ml-auto rounded-xl bg-primary-500 hover:bg-primary-600 text-white"
+                  onClick={handleAddReviewClick}
+                  className="ml-auto rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm md:text-base"
+                  size="medium"
+                >
+                  Add Review
+                </Button>
+              </Box>
+
+              {/* Mobile layout */}
+              <Box className="md:hidden space-y-3">
+                <Box className="flex items-center justify-between">
+                  <Box className="flex items-center gap-2">
+                    <Rating
+                      value={doctor.rating}
+                      precision={0.5}
+                      readOnly
+                      size="small"
+                    />
+                    <Typography className="font-bold text-base text-secondary-700">
+                      {doctor.rating}/5
+                    </Typography>
+                  </Box>
+                  <Typography className="text-secondary-600 text-sm">
+                    {reviews.length} Reviews
+                  </Typography>
+                </Box>
+
+                <Button
+                  startIcon={<FaPencilAlt />}
+                  variant="contained"
+                  onClick={handleAddReviewClick}
+                  className="w-full rounded-xl bg-primary-500 hover:bg-primary-600 text-white py-2.5"
+                  size="medium"
                 >
                   Add Review
                 </Button>
@@ -289,17 +408,23 @@ const DoctorDetailsPage = () => {
             </Box>
 
             {/* Reviews List */}
-            <Box className="space-y-4 max-h-96 overflow-y-auto">
+            <Box className="space-y-3 md:space-y-4 max-h-80 md:max-h-96 overflow-y-auto pr-1 md:pr-2">
               {reviews.map((rev) => (
                 <Box
                   key={rev.id}
-                  className="p-4 bg-white rounded-lg shadow-sm space-y-2"
+                  className="p-3 md:p-4 bg-white rounded-lg shadow-sm space-y-2"
                 >
-                  <Box className="flex justify-between items-start">
-                    <Box className="flex items-center gap-3">
-                      <Avatar src={rev.avatar} />
-                      <Box>
-                        <Typography className="font-bold text-secondary-700">
+                  <Box className="flex justify-between items-start gap-2">
+                    <Box className="flex items-start gap-3 min-w-0 flex-1">
+                      <Avatar
+                        src={rev.avatar}
+                        sx={{
+                          width: { xs: 36, sm: 40, md: 44 },
+                          height: { xs: 36, sm: 40, md: 44 },
+                        }}
+                      />
+                      <Box className="min-w-0 flex-1">
+                        <Typography className="font-bold text-secondary-700 text-sm md:text-base truncate">
                           {rev.name}
                         </Typography>
                         <Typography className="text-xs text-neutral-500">
@@ -307,33 +432,37 @@ const DoctorDetailsPage = () => {
                         </Typography>
                       </Box>
                     </Box>
-                    <Box className="flex items-center gap-1 p-0.5 rounded-md bg-warning-200/50">
-                      <FaStar className="text-warning-500" />
-                      <Typography className="font-semibold text-warning-700">
+                    <Box className="flex items-center gap-1 p-1 md:p-0.5 rounded-md bg-warning-200/50 flex-shrink-0">
+                      <FaStar className="text-warning-500 text-sm md:text-base" />
+                      <Typography className="font-semibold text-warning-700 text-sm">
                         {rev.rating}
                       </Typography>
                     </Box>
                   </Box>
-                  <Typography className="text-neutral-700">
+                  <Typography className="text-neutral-700 text-sm md:text-base line-clamp-2 md:line-clamp-3">
                     {rev.comment}
                   </Typography>
                 </Box>
               ))}
             </Box>
 
-            {/* Booking */}
+            {/* Booking Section */}
             <Box className="pt-4 space-y-4">
               <Box className="flex justify-between items-baseline">
-                <Typography
-                  variant="h6"
-                  className="font-semibold text-secondary-700"
-                >
-                  Price
-                  <span className="ml-1 text-sm text-neutral-500">/ hour</span>
-                </Typography>
+                <Box className="flex flex-col md:flex-row md:items-baseline gap-1 md:gap-2">
+                  <Typography
+                    variant="h6"
+                    className="font-semibold text-secondary-700 text-base md:text-lg"
+                  >
+                    Price
+                  </Typography>
+                  <Typography className="text-sm text-neutral-500">
+                    / hour
+                  </Typography>
+                </Box>
                 <Typography
                   variant="h5"
-                  className="font-extrabold text-error-500"
+                  className="font-extrabold text-error-500 text-lg md:text-xl"
                 >
                   ${doctor.price}
                 </Typography>
@@ -342,7 +471,7 @@ const DoctorDetailsPage = () => {
                 variant="contained"
                 size="large"
                 fullWidth
-                className="rounded-lg bg-primary-500 hover:bg-primary-600 text-white"
+                className="rounded-lg bg-primary-500 hover:bg-primary-600 text-white py-3 md:py-2.5 text-base md:text-base"
                 onClick={handleBookAppointment}
               >
                 Book Appointment
@@ -356,20 +485,10 @@ const DoctorDetailsPage = () => {
       <AddReviewModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSubmit={(review: {
-          name: string;
-          rating: number;
-          time: string;
-          comment: string;
-          avatar: string;
-        }) => {
-          const newReview: IReviews = {
-            id: Date.now().toString(),
-            ...review,
-          };
-          addReview(newReview);
-          setModalOpen(false);
-        }}
+        bookingId={userBookingId}
+        doctorId={doctorId}
+        doctorName={doctor?.name}
+        onSubmit={handleReviewSubmitted}
       />
     </div>
   );

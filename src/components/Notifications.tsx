@@ -4,7 +4,7 @@ import { MdDone, MdCancel, MdAccessTime, MdInfo } from "react-icons/md";
 import {
   useNotifications,
   useMarkNotificationAsRead,
-  useMarkAllNotificationsAsRead,
+  // useMarkAllNotificationsAsRead,
 } from "../hooks/useNotifications";
 import type { INotification } from "../types";
 import toast from "react-hot-toast";
@@ -15,7 +15,7 @@ const Notifications = () => {
 
   const { data: notifications = [], isLoading, isError } = useNotifications();
   const { mutate: markAsRead } = useMarkNotificationAsRead();
-  const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
+  // const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 

@@ -29,7 +29,7 @@ export const AddReviewModal = ({
   onClose,
   onSubmit,
   bookingId,
-  doctorId,
+  // doctorId,
   doctorName = "the doctor",
 }: AddReviewModalProps) => {
   const [rating, setRating] = useState(0);

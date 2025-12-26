@@ -485,7 +485,7 @@ const DoctorDetailsPage = () => {
       <AddReviewModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        bookingId={userBookingId}
+        bookingId={userBookingId || undefined}
         doctorId={doctorId}
         doctorName={doctor?.name}
         onSubmit={handleReviewSubmitted}

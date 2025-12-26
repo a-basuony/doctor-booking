@@ -30,6 +30,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const navigate = useNavigate();
 
+  const handleDoctorClick = () => {
+    navigate(`/doctor-details/${doctor.id}`);
+  };
+
   const mapCenterLat = doctor?.location?.latitude || 30.0444;
   const mapCenterLng = doctor?.location?.longitude || 31.2357;
   const profileImage = doctor?.profile_photo
@@ -85,7 +89,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
           </div>
 
           {/* Profile Image */}
-          <div className="flex flex-col items-center mb-8 relative">
+          {/* Make the profile section clickable */}
+          <div
+            className="flex flex-col items-center mb-8 cursor-pointer hover:bg-gray-50/50 p-2 rounded-xl transition-colors relative"
+            onClick={handleDoctorClick}
+          >
             <img
               src={profileImage}
               alt={doctor?.name || "Doctor"}
@@ -95,7 +103,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
             <div className="absolute bottom-4 right-0 bg-blue-600 text-white rounded-full border-2 border-white p-1">
               <Check size={12} strokeWidth={4} />
             </div>
-            <h1 className="text-xl font-serif text-slate-800 mb-1">{doctor?.name || "Dr. Unavailable"}</h1>
+            <h1 className="text-xl font-serif text-slate-800 mb-1 hover:text-blue-600 transition-colors">{doctor?.name || "Dr. Unavailable"}</h1>
             <span className="text-gray-500 text-sm">{specialtyName}</span>
           </div>
 

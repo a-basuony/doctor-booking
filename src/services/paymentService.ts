@@ -9,6 +9,15 @@ import type {
   ProcessPaymentResponse 
 } from '../types';
 
+// Define PaymentIntent type
+export interface PaymentIntent {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  clientSecret: string;
+}
+
 // Initialize Stripe - Export this to use the same instance everywhere
 const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 if (!key) {
@@ -30,12 +39,13 @@ export const getStripe = () => {
   return stripePromise;
 };
 
-const detectCardBrand = (cardNumber: string): string => {
-   if (cardNumber.startsWith('4')) return 'Visa';
-   if (cardNumber.startsWith('5')) return 'Mastercard';
-   if (cardNumber.startsWith('34') || cardNumber.startsWith('37')) return 'Amex';
-   return 'Unknown';
-};
+// Helper function to detect card brand (can be used in future enhancements)
+// const _detectCardBrand = (cardNumber: string): string => {
+//    if (cardNumber.startsWith('4')) return 'Visa';
+//    if (cardNumber.startsWith('5')) return 'Mastercard';
+//    if (cardNumber.startsWith('34') || cardNumber.startsWith('37')) return 'Amex';
+//    return 'Unknown';
+// };
 
 // Convert SavedCard from backend to PaymentMethod for UI
 const mapSavedCardToPaymentMethod = (card: SavedCard): PaymentMethod => ({

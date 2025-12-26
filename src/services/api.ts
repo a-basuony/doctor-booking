@@ -32,7 +32,6 @@ api.interceptors.request.use(
         console.warn('⚠️ No auth token or public key available for:', config.url);
       }
     }
-    
     return config;
   },
   (error) => {

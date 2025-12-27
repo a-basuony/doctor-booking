@@ -37,6 +37,7 @@ export interface PaymentMethod {
   expiryMonth?: number;
   expiryYear?: number;
   isDefault?: boolean;
+  providerToken?: string;
 }
 
 export interface Appointment {

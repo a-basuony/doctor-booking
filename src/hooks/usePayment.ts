@@ -3,8 +3,8 @@ import { paymentService } from '../services/paymentService';
 
 export const usePayment = () => {
     const processPaymentMutation = useMutation({
-        mutationFn: ({ bookingId }: { bookingId: string }) =>
-            paymentService.processPayment(bookingId),
+        mutationFn: ({ bookingId, paymentMethodId }: { bookingId: string; paymentMethodId?: string }) =>
+            paymentService.processPayment(bookingId, paymentMethodId),
     });
 
     return {

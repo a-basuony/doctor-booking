@@ -51,15 +51,18 @@ export const getStripe = () => {
 // };
 
 // Convert SavedCard from backend to PaymentMethod for UI
-const mapSavedCardToPaymentMethod = (card: SavedCard): PaymentMethod => ({
-  id: card.id,
-  type: "card",
-  last4: card.last_four,
-  brand: card.brand,
-  expiryMonth: card.exp_month,
-  expiryYear: card.exp_year,
-  isDefault: card.is_default,
-});
+const mapSavedCardToPaymentMethod = (card: SavedCard): PaymentMethod => {
+  return {
+    id: card.id,
+    type: "card",
+    last4: card.last_four,
+    brand: card.brand,
+    expiryMonth: card.exp_month,
+    expiryYear: card.exp_year,
+    isDefault: card.is_default,
+    providerToken: card.provider_token,
+  };
+};
 
 export const paymentService = {
   /**
@@ -189,15 +192,16 @@ export const paymentService = {
   /**
    * Process payment for a booking
    */
-  async processPayment(bookingId: string): Promise<ProcessPaymentResponse> {
+  async processPayment(bookingId: string, paymentMethodId?: string): Promise<ProcessPaymentResponse> {
     try {
-      // Only send booking_id and gateway (payment_method_id not needed for this API)
+      // Send booking_id, gateway and optional payment_method_id
       const request = {
         booking_id: bookingId,
         gateway: "stripe" as const,
+        // Ensure payment_method_id is a string if present
+        ...(paymentMethodId && { payment_method_id: String(paymentMethodId) }),
       };
 
-      console.log("💳 Processing payment with request:", request);
       const response = await paymentAPI.processPayment(request);
       return response.data;
     } catch (error: any) {

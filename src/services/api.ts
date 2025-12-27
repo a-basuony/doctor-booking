@@ -52,22 +52,28 @@ api.interceptors.response.use(
     
     console.error(`❌ Response error [${status}]:`, url, error.response?.data);
     
-    // Handle 401 Unauthorized
+      // Handle 401 Unauthorized
     if (status === 401) {
       const errorMessage = error.response?.data?.message || 'Unauthorized - Please login';
-      console.error('🔒 Authentication required:', errorMessage);
+      console.error('🔒 Authentication required for URL:', url);
+      console.error('🔒 Error details:', errorMessage);
       
+      // DEBUG: Log the full error to see what's happening
+      console.log('🐞 Full 401 Error Object:', error);
+
       // Only redirect to login for certain endpoints
       if (url && !url.includes('/auth/')) {
         console.warn('💡 Tip: You need to login first to use this feature');
-        // Optionally show a toast or alert here
       }
       
       // Token expired or invalid - clear auth data and redirect
-      localStorage.removeItem("authToken");
-      if (url && !url.includes('/auth/')) {
-        window.location.href = "/sign-in";
-      }
+      // TEMPORARILY DISABLED FOR DEBUGGING - The user reported issues with persistence
+      // localStorage.removeItem("authToken");
+      
+      // if (url && !url.includes('/auth/')) {
+      //   console.warn('⛔ Auto-logout prevented for debugging. URL causing 401:', url);
+      //   // window.location.href = "/sign-in";
+      // }
     }
     
     return Promise.reject(error);

@@ -53,7 +53,7 @@ export const getStripe = () => {
 // Convert SavedCard from backend to PaymentMethod for UI
 const mapSavedCardToPaymentMethod = (card: SavedCard): PaymentMethod => {
   return {
-    id: card.id,
+    id: String(card.id),
     type: "card",
     last4: card.last_four,
     brand: card.brand,
@@ -153,7 +153,7 @@ export const paymentService = {
    */
   async deletePaymentMethod(paymentMethodId: string): Promise<void> {
     try {
-      await paymentAPI.deleteCard(paymentMethodId);
+      await paymentAPI.deleteCard(Number(paymentMethodId));
     } catch (error) {
       console.error("Failed to delete payment method:", error);
       throw new Error("Failed to delete payment method");
@@ -165,7 +165,7 @@ export const paymentService = {
    */
   async setDefaultPaymentMethod(paymentMethodId: string): Promise<void> {
     try {
-      await paymentAPI.setDefaultCard(paymentMethodId);
+      await paymentAPI.setDefaultCard(Number(paymentMethodId));
     } catch (error) {
       console.error("Failed to set default payment method:", error);
       throw new Error("Failed to set default payment method");

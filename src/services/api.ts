@@ -95,7 +95,13 @@ export const paymentAPI = {
     is_default?: boolean;
   }) => api.post('/saved-cards', data),
 
-  deleteCard: (id: string) => api.delete(`/saved-cards/${id}`),
+  updateCard: (id: number, data: {
+    exp_month: number;
+    exp_year: number;
+    is_default?: boolean;
+  }) => api.put(`/saved-cards/${id}`, data),
 
-  setDefaultCard: (id: string) => api.put(`/saved-cards/${id}/default`),
+  deleteCard: (id: number) => api.delete(`/saved-cards/${id}`),
+
+  setDefaultCard: (id: number) => api.put(`/saved-cards/${id}/default`),
 };

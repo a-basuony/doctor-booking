@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
-import { usePaymentMethods } from "../hooks/usePaymentMethods";
+import type { StripeCardElement } from "@stripe/stripe-js";
+import { useSavedCards } from "../hooks/usePaymentMethods";
 import { usePayment } from "../hooks/usePayment";
 import { AddCardModal } from "../components/payment/AddCardModal";
 import { AppointmentSuccessModal } from "../components/payment/AppointmentSuccessModal";
+import SavedCardsList from "../components/payment/SavedCardsList";
 import toast, { Toaster } from "react-hot-toast";
 import { stripePromise } from "../services/paymentService";
 
@@ -41,15 +43,28 @@ export const PaymentPage = () => {
   const bookingState = location.state as BookingState | null;
 
   // Call all hooks before any conditional returns (React rules)
-  const { paymentMethods, addPaymentMethod, isAdding } = usePaymentMethods();
+  const {
+    cards,
+    addCard,
+    deleteCard,
+    setDefaultCard,
+    isAdding,
+    isDeleting,
+    isSettingDefault
+  } = useSavedCards();
   const { processPayment, isProcessing } = usePayment();
 
   const [paymentType, setPaymentType] = useState<"credit" | "paypal" | "apple">(
     "credit"
   );
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [showCardModal, setShowCardModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Dismiss any existing toasts when component mounts
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   // Redirect if no booking data (using useEffect to avoid rendering issues)
   useEffect(() => {
@@ -96,15 +111,48 @@ export const PaymentPage = () => {
     price: bookingState.sessionPrice || 150,
   };
 
-  const handleAddCard = async (cardData: unknown) => {
+  const handleAddCard = async (cardElement: StripeCardElement) => {
     try {
-      const newCard = await addPaymentMethod(cardData);
+      // Create a payment method with Stripe
+      const stripe = (await stripePromise);
+      if (!stripe) {
+        throw new Error("Stripe not loaded");
+      }
+
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!paymentMethod) {
+        throw new Error("Failed to create payment method");
+      }
+
+      // Extract card details
+      const cardDetails = paymentMethod.card;
+      if (!cardDetails) {
+        throw new Error("Card details not found");
+      }
+
+      // Save card to backend
+      const newCard = await addCard({
+        provider_token: paymentMethod.id,
+        brand: cardDetails.brand || 'unknown',
+        last_four: cardDetails.last4 || '0000',
+        exp_month: cardDetails.exp_month || 1,
+        exp_year: cardDetails.exp_year || 2025,
+        is_default: cards.length === 0, // First card is default
+      });
+
       setSelectedCardId(newCard.id);
       setShowCardModal(false);
-      toast.success("Payment card added successfully!");
-    } catch {
-      toast.error("Failed to add payment card.");
-      throw new Error("Failed to finalize adding card.");
+    } catch (error) {
+      console.error("Failed to add card:", error);
+      throw error;
     }
   };
 
@@ -131,8 +179,10 @@ export const PaymentPage = () => {
       // Dismiss loading toast
       toast.dismiss(loadingToast);
 
-      // Show success toast
-      toast.success("Payment successful!");
+      // Show success toast with auto-dismiss
+      toast.success("Payment successful!", {
+        duration: 3000, // Auto dismiss after 3 seconds
+      });
 
       // Show success modal
       setShowSuccessModal(true);
@@ -231,37 +281,18 @@ export const PaymentPage = () => {
             </div>
             {paymentType === "credit" && (
               <>
-                {paymentMethods.length > 0 && (
-                  <div className="mb-3 space-y-2">
-                    {paymentMethods.map((card) => (
-                      <button
-                        key={card.id}
-                        onClick={() => setSelectedCardId(card.id)}
-                        className={`w-full p-4 rounded-xl border-2 flex items-center justify-between ${
-                          selectedCardId === card.id
-                            ? "border-primary-500 bg-primary-50"
-                            : "border-secondary-200"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-8 bg-primary-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                            {card.brand}
-                          </div>
-                          <div className="text-left">
-                            <p className="font-medium">•••• {card.last4}</p>
-                            <p className="text-xs text-secondary-500">
-                              {String(card.expiryMonth).padStart(2, "0")}/
-                              {card.expiryYear}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <SavedCardsList
+                  cards={cards}
+                  selectedCardId={selectedCardId}
+                  onSelectCard={setSelectedCardId}
+                  onDeleteCard={deleteCard}
+                  onSetDefault={setDefaultCard}
+                  isDeleting={isDeleting}
+                  isSettingDefault={isSettingDefault}
+                />
                 <button
                   onClick={() => setShowCardModal(true)}
-                  className="w-full py-3 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 font-medium"
+                  className="w-full py-3 mt-3 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 font-medium"
                 >
                   + Add new card
                 </button>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import type { StripeCardElement } from '@stripe/stripe-js';
 
 interface AddCardModalProps {
-    onSuccess: (cardElement: any) => Promise<void>;
+    onSuccess: (cardElement: StripeCardElement) => Promise<void>;
     onCancel: () => void;
     isLoading?: boolean;
 }
@@ -55,12 +56,13 @@ export const AddCardModal = ({ onSuccess, onCancel, isLoading }: AddCardModalPro
             setError('Please complete card details');
             return;
         }
-        
+
         try {
             setError('');
-            await onSuccess(cardElement);
-        } catch (err: any) {
-            setError(err.message || 'Failed to add card. Please check details.');
+            await onSuccess(cardElement as StripeCardElement);
+        } catch (err) {
+            const error = err as Error;
+            setError(error.message || 'Failed to add card. Please check details.');
         }
     };
 

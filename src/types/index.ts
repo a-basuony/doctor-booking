@@ -69,8 +69,8 @@ export interface CardFormData {
 
 // Stripe-related types
 export interface SavedCard {
-  id: string;
-  provider_token: string;
+  id: number;
+  provider_token?: string;
   brand: string;
   last_four: string;
   exp_month: number;
@@ -87,6 +87,20 @@ export interface SaveCardRequest {
   exp_month: number;
   exp_year: number;
   is_default?: boolean;
+}
+
+export interface UpdateCardRequest {
+  exp_month: number;
+  exp_year: number;
+  is_default?: boolean;
+}
+
+export interface SavedCardsResponse {
+  data: SavedCard[];
+}
+
+export interface SavedCardResponse {
+  data: SavedCard;
 }
 
 export interface ProcessPaymentRequest {

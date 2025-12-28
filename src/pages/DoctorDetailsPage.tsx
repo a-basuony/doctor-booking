@@ -22,6 +22,7 @@ import { toast } from "react-hot-toast";
 import type { IReviews } from "../types/index";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { useToggleFavorite } from "../hooks/useFavorites";
 
 interface ApiDoctor {
   id: number;
@@ -43,6 +44,7 @@ interface ApiDoctor {
     longitude: number;
   };
   experience_years: number;
+  is_favorite?: boolean;
 }
 
 interface DoctorDetails {
@@ -66,6 +68,7 @@ const DoctorDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const toggleFavoriteMutation = useToggleFavorite();
 
   // Fetch doctor details
   useEffect(() => {
@@ -83,6 +86,9 @@ const DoctorDetailsPage = () => {
 
         if (response.data.success && response.data.data) {
           const apiDoctor = response.data.data;
+
+          // Set favorite status from API
+          setIsFavorite(apiDoctor.is_favorite || false);
 
           // Transform API data to match your component's expected format
           const doctorDetails: DoctorDetails = {
@@ -139,13 +145,26 @@ const DoctorDetailsPage = () => {
     fetchDoctorDetails();
   }, [doctorId]);
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    toast.success(
-      isFavorite
-        ? `Removed ${doctor?.name} from favorites`
-        : `Added ${doctor?.name} to favorites`
-    );
+  const handleFavorite = async () => {
+    if (!doctorId) return;
+
+    const previousState = isFavorite;
+
+    try {
+      // Optimistically update UI
+      setIsFavorite(!isFavorite);
+
+      console.log(`Toggling favorite for doctor ${doctorId}, current state: ${isFavorite}`);
+
+      // Call API to toggle favorite
+      const result = await toggleFavoriteMutation.mutateAsync(parseInt(doctorId));
+
+      console.log('Toggle favorite result:', result);
+    } catch (error) {
+      // Revert on error
+      console.error("Failed to toggle favorite:", error);
+      setIsFavorite(previousState);
+    }
   };
 
   const addReview = (newReview: IReviews) => {

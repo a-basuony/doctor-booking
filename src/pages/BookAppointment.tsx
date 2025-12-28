@@ -245,8 +245,10 @@ export default function BookAppointment() {
           );
         }
 
-        // Show success toast
-        toast.success("Appointment booked successfully!");
+        // Show success toast with auto-dismiss
+        toast.success("Appointment booked successfully!", {
+          duration: 2000, // Auto dismiss after 2 seconds
+        });
 
         // Navigate to payment page with booking details
         navigate("/payment", {

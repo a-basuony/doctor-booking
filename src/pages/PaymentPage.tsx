@@ -172,9 +172,9 @@ export const PaymentPage = () => {
       const loadingToast = toast.loading("Processing payment...");
 
       // Find selected card to get the provider token (Stripe ID)
-      const selectedCard = paymentMethods.find((m) => m.id === selectedCardId);
+      const selectedCard = cards.find((c) => c.id === selectedCardId);
 
-      if (paymentType === "credit" && !selectedCard?.providerToken) {
+      if (paymentType === "credit" && !selectedCard?.provider_token) {
         toast.error(
           "Error: Selected card has no provider token. Please try adding the card again."
         );
@@ -185,7 +185,7 @@ export const PaymentPage = () => {
       await processPayment({
         bookingId: bookingState.bookingId.toString(),
         paymentMethodId:
-          paymentType === "credit" ? selectedCard?.providerToken : undefined,
+          paymentType === "credit" ? selectedCard?.provider_token : undefined,
       });
 
       // Dismiss loading toast

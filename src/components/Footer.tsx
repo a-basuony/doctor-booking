@@ -1,7 +1,12 @@
-import React from 'react';
+import React from "react";
 import { Link } from "react-router-dom";
 import { RiFacebookFill, RiTwitterFill } from "react-icons/ri";
-import { IoLogoWhatsapp, IoLogoYoutube, IoLogoLinkedin, IoLogoInstagram } from "react-icons/io";
+import {
+  IoLogoWhatsapp,
+  IoLogoYoutube,
+  IoLogoLinkedin,
+  IoLogoInstagram,
+} from "react-icons/io";
 import { LiaPhoneVolumeSolid } from "react-icons/lia";
 import { TfiEmail } from "react-icons/tfi";
 import { SlLocationPin } from "react-icons/sl";
@@ -13,15 +18,23 @@ interface SocialIconProps {
   isMobile?: boolean;
 }
 
-const SocialIcon: React.FC<SocialIconProps> = ({ Icon, link, isMobile = false }) => (
-  <a 
-    href={link} 
-    target="_blank" 
+const SocialIcon: React.FC<SocialIconProps> = ({
+  Icon,
+  link,
+  isMobile = false,
+}) => (
+  <a
+    href={link}
+    target="_blank"
     rel="noopener noreferrer"
     className={`w-9 h-9 rounded-lg flex items-center justify-center transition text-2xl 
-                ${isMobile ? 'bg-black/20 text-white' : 'bg-white border-0 border-white/30'}`}
+                ${
+                  isMobile
+                    ? "bg-black/20 text-white"
+                    : "bg-white border-0 border-white/30"
+                }`}
   >
-    <Icon className={isMobile ? 'text-white' : 'text-gray-700'} />
+    <Icon className={isMobile ? "text-white" : "text-gray-700"} />
   </a>
 );
 
@@ -30,61 +43,129 @@ const Footer = () => {
   return (
     <footer className="bg-[#05162c] text-white pt-12 md:pt-28 pb-10 px-6">
       <div className="max-w-7xl mx-auto">
-
         {/* Desktop Footer */}
         <div className="hidden md:flex justify-between gap-10">
-
           {/* Cure Section */}
           <div className="w-1/1">
             <div className="flex items-center mb-6">
-              <img src="/images/BsHeartPulse.png" alt="Cure Logo" className="w-10 h-10 mr-2" />
+              <img
+                src="/images/BsHeartPulse.png"
+                alt="Cure Logo"
+                className="w-10 h-10 mr-2"
+              />
               <span className="text-4xl font-serif">Cure</span>
             </div>
 
-            <p className="text-gray-300 text-xl leading-relaxed mb-6 font-georgia  " >
-              Cure helps you find trusted doctors,<br/>
-              book appointments, and manage<br/>
+            <p className="text-gray-300 text-xl leading-relaxed mb-6 font-georgia  ">
+              Cure helps you find trusted doctors,
+              <br />
+              book appointments, and manage
+              <br />
               your health—quickly and easily.
             </p>
 
             <div className="flex gap-3 mt-4">
               <p className="w-9 h-9 rounded-lg bg-white border border-white/30 flex items-center justify-center">
-                <RiFacebookFill className='text-sky-700 text-2xl' />
+                <RiFacebookFill className="text-sky-700 text-2xl" />
               </p>
               <p className="w-9 h-9 rounded-lg bg-white border border-white/30 flex items-center justify-center">
-                <IoLogoWhatsapp className='text-green-600 text-2xl' />
+                <IoLogoWhatsapp className="text-green-600 text-2xl" />
               </p>
               <p className="w-9 h-9 rounded-lg bg-white border border-white/30 flex items-center justify-center">
-                <IoLogoYoutube className='text-red-600 text-xl' />
+                <IoLogoYoutube className="text-red-600 text-xl" />
               </p>
               <p className="w-9 h-9 rounded-lg bg-white border border-white/30 flex items-center justify-center">
-                <IoLogoLinkedin className='text-blue-700 text-2xl' />
+                <IoLogoLinkedin className="text-blue-700 text-2xl" />
               </p>
             </div>
           </div>
 
           {/* Right Sections */}
           <div className="w-1/1 grid grid-cols-3 gap-5 pr-10 ">
-
             {/* Company */}
             <div>
-              <h3 className="text-white font-georgia  font-normal text-2xl mb-4">Company</h3>
+              <h3 className="text-white font-georgia  font-normal text-2xl mb-4">
+                Company
+              </h3>
               <ul className="space-y-3 list-none font-sans font-normal">
-                <li><Link to="/" className="no-underline text-white text-xl">Home</Link></li>
-                <li><Link to="/doctor-details" className="no-underline text-white text-xl">Doctors</Link></li>
-                <li><Link to="/FQAPage" className="no-underline text-white text-xl">FAQs</Link></li>
-                <li><Link to="/contact" className="no-underline text-white text-xl">Contact Us</Link></li>
+                <li>
+                  <Link to="/" className="no-underline text-white text-xl">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/doctor-details"
+                    className="no-underline text-white text-xl"
+                  >
+                    Doctors
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/FQAPage"
+                    className="no-underline text-white text-xl"
+                  >
+                    FAQs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/favorites"
+                    className="no-underline text-white text-xl"
+                  >
+                    Favorites
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="no-underline text-white text-xl"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
               </ul>
             </div>
 
             {/* Support */}
             <div>
-              <h3 className="text-white  font-georgia  font-normal text-2xl mb-4">Support</h3>
+              <h3 className="text-white  font-georgia  font-normal text-2xl mb-4">
+                Support
+              </h3>
               <ul className="space-y-3 list-none">
-                <li><Link to="/FQAPage" className=" font-sans font-normal no-underline text-white text-xl">Help Center</Link></li>
-                <li><Link to="/FQAPage" className="no-underline text-white text-xl">How it works</Link></li>
-                <li><Link to="/FQAPage" className="no-underline text-white text-xl">Privacy Policy</Link></li>
-                <li><Link to="/FQAPage" className="no-underline text-white text-xl">Terms & Conditions</Link></li>
+                <li>
+                  <Link
+                    to="/FQAPage"
+                    className=" font-sans font-normal no-underline text-white text-xl"
+                  >
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/FQAPage"
+                    className="no-underline text-white text-xl"
+                  >
+                    How it works
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/FQAPage"
+                    className="no-underline text-white text-xl"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/FQAPage"
+                    className="no-underline text-white text-xl"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -114,13 +195,13 @@ const Footer = () => {
                   <div>
                     <p className="text-white text-xl leading-none">Address</p>
                     <p className="text-gray-200 text-sm">
-                      526 Melrose Street,<br/>
+                      526 Melrose Street,
+                      <br />
                       Water Mill, 11976 New York
                     </p>
                   </div>
                 </li>
               </ul>
-
             </div>
           </div>
         </div>
@@ -130,19 +211,24 @@ const Footer = () => {
           <p>@2024 Techvio - All Right Reserved</p>
 
           <div className="flex items-center gap-3">
-            <p  className="no-underline text-white">Terms & Condition</p>
+            <p className="no-underline text-white">Terms & Condition</p>
 
             <span className="text-white text-xl">|</span>
 
-            <Link to={'/privacy-policy'} className="no-underline text-white">Privacy Policy</Link>
+            <Link to={"/privacy-policy"} className="no-underline text-white">
+              Privacy Policy
+            </Link>
           </div>
         </div>
 
         {/* Mobile Version */}
         <div className="md:hidden bg-[#05162c] text-white pt-8 pb-4  text-center">
-          
           <div className="flex mb-6 justify-start items-center">
-            <img src="/images/BsHeartPulse.png" alt="Cure Logo" className="w-10 h-10" />
+            <img
+              src="/images/BsHeartPulse.png"
+              alt="Cure Logo"
+              className="w-10 h-10"
+            />
             <span className="text-4xl font-serif font-bold ml-2">Cure</span>
           </div>
 
@@ -151,8 +237,10 @@ const Footer = () => {
           </h4>
 
           <p className="text-gray-300 text-[15px] leading-relaxed mb-8  font-georgia">
-            Cure helps you find trusted doctors,<br/>
-            book appointments, and manage your health—<br/>
+            Cure helps you find trusted doctors,
+            <br />
+            book appointments, and manage your health—
+            <br />
             quickly and easily.
           </p>
 
@@ -163,11 +251,11 @@ const Footer = () => {
               <SocialIcon Icon={IoLogoInstagram} link="#" isMobile />
               <SocialIcon Icon={IoLogoLinkedin} link="#" isMobile />
             </div>
-                        <p className="text-[16px] font-serif ">@ Cure - All rights reserved</p> 
-
+            <p className="text-[16px] font-serif ">
+              @ Cure - All rights reserved
+            </p>
           </div>
         </div>
-
       </div>
     </footer>
   );

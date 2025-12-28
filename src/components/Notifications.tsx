@@ -4,7 +4,7 @@ import { MdDone, MdCancel, MdAccessTime, MdInfo } from "react-icons/md";
 import {
   useNotifications,
   useMarkNotificationAsRead,
-  useMarkAllNotificationsAsRead,
+  // useMarkAllNotificationsAsRead,
 } from "../hooks/useNotifications";
 import type { INotification } from "../types";
 import toast from "react-hot-toast";
@@ -15,7 +15,7 @@ const Notifications = () => {
 
   const { data: notifications = [], isLoading, isError } = useNotifications();
   const { mutate: markAsRead } = useMarkNotificationAsRead();
-  const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
+  // const { mutate: markAllAsRead } = useMarkAllNotificationsAsRead();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -105,13 +105,13 @@ const Notifications = () => {
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    // Mark all as read endpoint not available yet - just show a warning
-    toast("Mark all as read feature coming soon", {
-      icon: "ℹ️",
-    });
-    markAllAsRead();
-  };
+  // const handleMarkAllAsRead = () => {
+  //   // Mark all as read endpoint not available yet - just show a warning
+  //   toast("Mark all as read feature coming soon", {
+  //     icon: "ℹ️",
+  //   });
+  //   markAllAsRead();
+  // };
 
   return (
     <div className="relative" ref={menuRef}>

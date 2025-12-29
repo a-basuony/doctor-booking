@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { SavedCard } from '../../types/index';
 import { CreditCard, Trash2, Edit2, Star } from 'lucide-react';
 import EditCardModal from './EditCardModal';
+import { DeleteCardConfirmModal } from './DeleteCardConfirmModal';
 
 interface SavedCardsListProps {
   cards: SavedCard[];
@@ -23,6 +24,7 @@ const SavedCardsList: React.FC<SavedCardsListProps> = ({
   isSettingDefault,
 }) => {
   const [editingCard, setEditingCard] = useState<SavedCard | null>(null);
+  const [deletingCard, setDeletingCard] = useState<SavedCard | null>(null);
 
   const getCardIcon = (brand: string) => {
     return <CreditCard className="w-6 h-6" />;
@@ -105,9 +107,7 @@ const SavedCardsList: React.FC<SavedCardsListProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm('Are you sure you want to delete this card?')) {
-                      onDeleteCard(card.id);
-                    }
+                    setDeletingCard(card);
                   }}
                   disabled={isDeleting}
                   className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
@@ -143,6 +143,19 @@ const SavedCardsList: React.FC<SavedCardsListProps> = ({
         <EditCardModal
           card={editingCard}
           onClose={() => setEditingCard(null)}
+        />
+      )}
+
+      {deletingCard && (
+        <DeleteCardConfirmModal
+          cardBrand={formatCardBrand(deletingCard.brand)}
+          cardLastFour={deletingCard.last_four}
+          onConfirm={() => {
+            onDeleteCard(deletingCard.id);
+            setDeletingCard(null);
+          }}
+          onCancel={() => setDeletingCard(null)}
+          isDeleting={isDeleting}
         />
       )}
     </>

@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
-import type { StripeCardElement } from "@stripe/stripe-js";
 import { useSavedCards } from "../hooks/usePaymentMethods";
 import { usePayment } from "../hooks/usePayment";
-import { AddCardModal } from "../components/payment/AddCardModal";
 import { AppointmentSuccessModal } from "../components/payment/AppointmentSuccessModal";
+import { AddCardModal } from "../components/payment/AddCardModal";
 import SavedCardsList from "../components/payment/SavedCardsList";
-import toast, { Toaster } from "react-hot-toast";
 import { stripePromise } from "../services/paymentService";
+import toast, { Toaster } from "react-hot-toast";
 
 const formatAppointmentDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -54,9 +53,6 @@ export const PaymentPage = () => {
   } = useSavedCards();
   const { processPayment, isProcessing } = usePayment();
 
-  const [paymentType, setPaymentType] = useState<"credit" | "paypal" | "apple">(
-    "credit"
-  );
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [showCardModal, setShowCardModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -111,40 +107,17 @@ export const PaymentPage = () => {
     price: bookingState.sessionPrice || 150,
   };
 
-  const handleAddCard = async (cardElement: StripeCardElement) => {
+  const handleAddCard = async (cardData: {
+    provider_token: string;
+    brand: string;
+    last_four: string;
+    exp_month: number;
+    exp_year: number;
+  }) => {
     try {
-      // Create a payment method with Stripe
-      const stripe = (await stripePromise);
-      if (!stripe) {
-        throw new Error("Stripe not loaded");
-      }
-
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (!paymentMethod) {
-        throw new Error("Failed to create payment method");
-      }
-
-      // Extract card details
-      const cardDetails = paymentMethod.card;
-      if (!cardDetails) {
-        throw new Error("Card details not found");
-      }
-
-      // Save card to backend
+      // Save card to backend directly
       const newCard = await addCard({
-        provider_token: paymentMethod.id,
-        brand: cardDetails.brand || 'unknown',
-        last_four: cardDetails.last4 || '0000',
-        exp_month: cardDetails.exp_month || 1,
-        exp_year: cardDetails.exp_year || 2025,
+        ...cardData,
         is_default: cards.length === 0, // First card is default
       });
 
@@ -162,30 +135,16 @@ export const PaymentPage = () => {
       return;
     }
 
-    if (paymentType === "credit" && !selectedCardId) {
-      toast.error("Please select a payment card or another method.");
-      return;
-    }
-
     try {
       // Show loading toast
       const loadingToast = toast.loading("Processing payment...");
 
-      // Find selected card to get the provider token (Stripe ID)
-      const selectedCard = cards.find((c) => c.id === selectedCardId);
+      console.log('Processing payment for booking:', bookingState.bookingId);
 
-      if (paymentType === "credit" && !selectedCard?.provider_token) {
-        toast.error(
-          "Error: Selected card has no provider token. Please try adding the card again."
-        );
-        return;
-      }
-
-      // Process payment with the API (requires booking_id and payment_method_id)
+      // Process payment with the API - just send booking_id and gateway
+      // Backend will handle Stripe payment processing
       await processPayment({
         bookingId: bookingState.bookingId.toString(),
-        paymentMethodId:
-          paymentType === "credit" ? selectedCard?.provider_token : undefined,
       });
 
       // Dismiss loading toast
@@ -215,8 +174,7 @@ export const PaymentPage = () => {
     }, 500);
   };
 
-  const isButtonDisabled =
-    isProcessing || (paymentType === "credit" && !selectedCardId);
+  const isButtonDisabled = isProcessing;
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-6">
@@ -275,41 +233,22 @@ export const PaymentPage = () => {
 
           <div className="bg-white rounded-2xl p-4 shadow-sm border">
             <h3 className="font-semibold mb-3">Payment Method</h3>
-            <div className="space-y-3 mb-4">
-              {(["credit", "paypal", "apple"] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setPaymentType(type)}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 ${
-                    paymentType === type
-                      ? "border-success-500 bg-secondary-50"
-                      : "border-secondary-200"
-                  }`}
-                >
-                  <span className="font-medium capitalize">{type}</span>
-                  {paymentType === type && <span>✓</span>}
-                </button>
-              ))}
-            </div>
-            {paymentType === "credit" && (
-              <>
-                <SavedCardsList
-                  cards={cards}
-                  selectedCardId={selectedCardId}
-                  onSelectCard={setSelectedCardId}
-                  onDeleteCard={deleteCard}
-                  onSetDefault={setDefaultCard}
-                  isDeleting={isDeleting}
-                  isSettingDefault={isSettingDefault}
-                />
-                <button
-                  onClick={() => setShowCardModal(true)}
-                  className="w-full py-3 mt-3 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 font-medium"
-                >
-                  + Add new card
-                </button>
-              </>
-            )}
+
+            <SavedCardsList
+              cards={cards}
+              selectedCardId={selectedCardId}
+              onSelectCard={setSelectedCardId}
+              onDeleteCard={deleteCard}
+              onSetDefault={setDefaultCard}
+              isDeleting={isDeleting}
+              isSettingDefault={isSettingDefault}
+            />
+            <button
+              onClick={() => setShowCardModal(true)}
+              className="w-full py-3 mt-3 border-2 border-dashed border-primary-300 rounded-xl text-primary-600 font-medium"
+            >
+              + Add new card
+            </button>
           </div>
 
           <div className="bg-white rounded-2xl p-4 shadow-sm border">

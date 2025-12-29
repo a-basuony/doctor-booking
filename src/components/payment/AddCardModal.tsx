@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import type { StripeCardElement } from '@stripe/stripe-js';
 
 interface AddCardModalProps {
-    onSuccess: (cardElement: StripeCardElement) => Promise<void>;
+    onSuccess: (cardData: {
+        provider_token: string;
+        brand: string;
+        last_four: string;
+        exp_month: number;
+        exp_year: number;
+    }) => Promise<void>;
     onCancel: () => void;
     isLoading?: boolean;
 }
@@ -59,7 +64,31 @@ export const AddCardModal = ({ onSuccess, onCancel, isLoading }: AddCardModalPro
 
         try {
             setError('');
-            await onSuccess(cardElement as StripeCardElement);
+
+            // Create payment method with Stripe to get the token
+            const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+            });
+
+            if (stripeError) {
+                throw new Error(stripeError.message);
+            }
+
+            if (!paymentMethod) {
+                throw new Error('Failed to create payment method');
+            }
+
+            // Extract card details and pass to backend
+            const cardData = {
+                provider_token: paymentMethod.id,
+                brand: paymentMethod.card?.brand || 'unknown',
+                last_four: paymentMethod.card?.last4 || '0000',
+                exp_month: paymentMethod.card?.exp_month || 0,
+                exp_year: paymentMethod.card?.exp_year || 0,
+            };
+
+            await onSuccess(cardData);
         } catch (err) {
             const error = err as Error;
             setError(error.message || 'Failed to add card. Please check details.');

@@ -11,6 +11,7 @@ export const useSavedCards = () => {
       queryFn: async () => {
          const response = await paymentAPI.listCards();
          const data = response.data as SavedCardsResponse;
+         console.log('📦 Fetched saved cards:', data.data);
          return data.data;
       },
    });

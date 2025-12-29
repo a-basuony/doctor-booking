@@ -23,7 +23,6 @@ import { toast } from "react-hot-toast";
 import type { IReviews } from "../types/index";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import { useToggleFavorite } from "../hooks/useFavorites";
 
 interface ApiDoctor {
   id: number;

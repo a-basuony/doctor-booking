@@ -26,12 +26,12 @@ const SavedCardsList: React.FC<SavedCardsListProps> = ({
   const [editingCard, setEditingCard] = useState<SavedCard | null>(null);
   const [deletingCard, setDeletingCard] = useState<SavedCard | null>(null);
 
-  const getCardIcon = (brand: string) => {
+  const getCardIcon = (_brand: string) => {
     return <CreditCard className="w-6 h-6" />;
   };
 
-  const formatCardBrand = (brand: string) => {
-    return brand.charAt(0).toUpperCase() + brand.slice(1);
+  const formatCardBrand = (_brand: string) => {
+    return _brand.charAt(0).toUpperCase() + _brand.slice(1);
   };
 
   if (cards.length === 0) {

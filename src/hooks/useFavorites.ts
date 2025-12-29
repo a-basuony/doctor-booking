@@ -72,12 +72,6 @@ export interface FavoriteDoctor {
   is_favorite: boolean;
 }
 
-interface FavoritesResponse {
-  success: boolean;
-  message: string;
-  data: FavoriteDoctor[];
-}
-
 interface ToggleFavoriteResponse {
   success: boolean;
   message: string;

@@ -17,7 +17,7 @@
 
 ## 📖 Overview
 
-A **production-ready** healthcare appointment booking platform built with modern web technologies. This application provides a seamless experience for patients to discover doctors, book appointments, manage their medical records, and communicate with healthcare providers.
+A **production-ready** healthcare appointment booking platform built with modern web technologies. This application provides a seamless experience for patients to discover doctors, book appointments, manage their medical records, and communicate with healthcare providers......
 
 ### ✨ Key Features
 

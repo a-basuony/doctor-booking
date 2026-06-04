@@ -273,12 +273,3 @@ If you encounter any issues or have questions:
 - 📖 Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - 💬 Contact the development team
 
----
-
-<div align="center">
-
-**[⬆ Back to Top](#-doctor-booking-app)**
-
-Made with ❤️ by Team 2
-
-</div>

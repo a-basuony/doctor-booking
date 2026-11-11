@@ -151,11 +151,12 @@ VITE_PUBLIC_API_KEY=your_api_key_here
 
 # Google OAuth
 VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
-VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 
 # Additional configurations (if needed)
-VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key_here
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
 ```
+
+**Security:** Never commit `.env` or other local environment files. `VITE_` variables are included in browser bundles and must never contain secrets. If a credential was previously committed, revoke/rotate it at its provider and assess Git history and deployed builds; removing the file now does not erase Git history.
 
 **📝 How to get these values:**
 
@@ -163,9 +164,9 @@ VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key_here
 - **Google OAuth Credentials**:
   1. Go to [Google Cloud Console](https://console.cloud.google.com/)
   2. Create a new project or select existing one
-  3. Enable Google+ API
-  4. Create OAuth 2.0 credentials
-  5. Add authorized redirect URIs
+  3. Create an OAuth 2.0 client for a web application
+  4. Configure authorized JavaScript origins and redirect URIs
+  5. Use the public OAuth Client ID in the frontend; keep client secrets on a backend only
 - **Stripe Key**: Get from [Stripe Dashboard](https://dashboard.stripe.com/)
 
 4. **Start the development server**
